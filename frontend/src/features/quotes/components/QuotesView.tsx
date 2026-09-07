@@ -1,28 +1,52 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useCRM } from '../../../context/CRMContext';
 import { PageHeader } from '../../../components/layout/PageHeader';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../components/ui/card';
+import { FileText, Plus } from 'lucide-react';
 
 export const QuotesView: React.FC = () => {
+  const { quotes, addQuote } = useCRM();
+
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Quotations & Estimates Engine" 
-        subtitle="Quotation Drafting, Tax Calculations & Customer Approval" 
+        title="Formal Quotations" 
+        subtitle="Manage commercial quotations, discounts, and customer acceptance."
       />
-      <Card>
-        <CardHeader>
-          <CardTitle>Quotations & Estimates Engine</CardTitle>
-          <CardDescription>Feature Module Domain Component [quotes]</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-6 bg-slate-950/80 rounded-xl border border-slate-800/80 text-xs text-slate-300">
-            <p>Active Domain Feature: <strong className="text-indigo-400 font-mono">src/features/quotes/components/QuotesView.tsx</strong></p>
-            <p className="mt-2 text-slate-400">Connected to production REST API client and reactive CRM Context Provider.</p>
-          </div>
-        </CardContent>
-      </Card>
+
+      <div className="shadcn-card overflow-hidden">
+        <table className="crm-table">
+          <thead>
+            <tr>
+              <th>Quote #</th>
+              <th>Account Name</th>
+              <th>Subtotal</th>
+              <th>Tax (18% GST)</th>
+              <th>Grand Total</th>
+              <th>Status</th>
+              <th>Created Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quotes.map(q => (
+              <tr key={q.id}>
+                <td className="font-mono font-semibold text-xs text-[#111111]">{q.quote_number}</td>
+                <td className="font-semibold text-[#111111]">{q.account_name}</td>
+                <td className="font-mono text-xs text-[#666666]">₹{Number(q.subtotal).toLocaleString()}</td>
+                <td className="font-mono text-xs text-[#666666]">₹{Number(q.tax).toLocaleString()}</td>
+                <td className="font-mono font-bold text-[#111111]">₹{Number(q.total).toLocaleString()}</td>
+                <td>
+                  <span className={`shadcn-badge ${q.status === 'Accepted' ? 'shadcn-badge-success' : 'shadcn-badge-default'}`}>
+                    {q.status}
+                  </span>
+                </td>
+                <td className="text-xs text-[#888888]">{q.created_date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

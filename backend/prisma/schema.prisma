@@ -17,6 +17,7 @@ model Organization {
   created_at DateTime @default(now())
 
   users        User[]
+  roles        Role[]
   leads        Lead[]
   contacts     Contact[]
   accounts     Account[]
@@ -24,10 +25,17 @@ model Organization {
   tasks        Task[]
   callLogs     CallLog[]
   meetings     Meeting[]
+  products     Product[]
   quotes       Quote[]
+  orders       Order[]
   invoices     Invoice[]
   customFields CustomField[]
   auditLogs    AuditLog[]
+  workflows    Workflow[]
+  webhooks     Webhook[]
+  apiKeys      ApiKey[]
+  files        FileRecord[]
+  tags         Tag[]
 }
 
 model User {
@@ -36,6 +44,7 @@ model User {
   name            String
   email           String   @unique
   phone           String?
+  password_hash   String?  @default("$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ecr5eGdpfrWwHKgCu") // Default hash for 'password123'
   role            String   @default("Admin") // Admin, Manager, Sales Executive
   department      String?
   profile_photo   String?
@@ -44,6 +53,51 @@ model User {
   last_login      String?
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  userRoles    UserRole[]
+}
+
+model Role {
+  id              String   @id @default(cuid())
+  organization_id String
+  name            String   // Owner, Admin, Manager, Sales Executive, Custom
+  description     String?
+  is_system       Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  organization Organization     @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  permissions  RolePermission[]
+  userRoles    UserRole[]
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  slug        String   @unique // e.g. leads:view, leads:create, deals:edit
+  module      String   // leads, contacts, deals, finance, etc.
+  description String?
+
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  id            String @id @default(cuid())
+  role_id       String
+  permission_id String
+
+  role       Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+}
+
+model UserRole {
+  id      String @id @default(cuid())
+  user_id String
+  role_id String
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id])
 }
 
 model Lead {
@@ -95,6 +149,7 @@ model Account {
   contacts     Contact[]
   deals        Deal[]
   quotes       Quote[]
+  orders       Order[]
   invoices     Invoice[]
 }
 
@@ -158,13 +213,17 @@ model Meeting {
 }
 
 model Product {
-  id           String @id @default(cuid())
-  code         String
-  name         String
-  category     String
-  unit_price   Float
-  stock        Int
-  gst_rate_percent Float @default(18)
+  id               String   @id @default(cuid())
+  organization_id  String   @default("ORG001")
+  code             String
+  name             String
+  category         String
+  unit_price       Float
+  stock            Int
+  gst_rate_percent Float    @default(18)
+  created_at       DateTime @default(now())
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
 }
 
 model Quote {
@@ -193,6 +252,32 @@ model QuoteItem {
   total        Float
 
   quote Quote @relation(fields: [quote_id], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  organization_id String
+  account_id      String?
+  order_number    String   @unique
+  account_name    String
+  total_amount    Float
+  status          String   @default("Pending") // Pending, Confirmed, Shipped, Delivered, Cancelled
+  created_date    DateTime @default(now())
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  account      Account?     @relation(fields: [account_id], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+}
+
+model OrderItem {
+  id           String @id @default(cuid())
+  order_id     String
+  product_name String
+  qty          Int
+  unit_price   Float
+  total        Float
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
 }
 
 model Invoice {
@@ -247,9 +332,117 @@ model AuditLog {
   entity_id       String
   previous_value  String?
   new_value       String?
+  ip_address      String?
   timestamp       String
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+}
+
+model Workflow {
+  id              String   @id @default(cuid())
+  organization_id String
+  name            String
+  description     String?
+  trigger_event   String   // lead.created, deal.won, invoice.overdue
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+
+  organization Organization        @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  triggers     WorkflowTrigger[]
+  actions      WorkflowAction[]
+  executions   WorkflowExecution[]
+}
+
+model WorkflowTrigger {
+  id          String   @id @default(cuid())
+  workflow_id String
+  condition   String   // e.g. status == 'Qualified'
+  created_at  DateTime @default(now())
+
+  workflow Workflow @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
+}
+
+model WorkflowAction {
+  id          String   @id @default(cuid())
+  workflow_id String
+  action_type String   // create_task, send_email, notify_slack, webhook
+  parameters  Json
+  created_at  DateTime @default(now())
+
+  workflow Workflow @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
+}
+
+model WorkflowExecution {
+  id          String   @id @default(cuid())
+  workflow_id String
+  status      String   // Success, Failed
+  log_message String?
+  executed_at DateTime @default(now())
+
+  workflow Workflow @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
+}
+
+model Webhook {
+  id              String   @id @default(cuid())
+  organization_id String
+  target_url      String
+  events          String[] // lead.created, deal.won, invoice.paid
+  secret_token    String?
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  logs         WebhookLog[]
+}
+
+model WebhookLog {
+  id          String   @id @default(cuid())
+  webhook_id  String
+  event       String
+  status_code Int
+  payload     Json
+  response    String?
+  executed_at DateTime @default(now())
+
+  webhook Webhook @relation(fields: [webhook_id], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id              String    @id @default(cuid())
+  organization_id String
+  key_name        String
+  api_key_hash    String    @unique
+  permissions     String[]
+  expires_at      DateTime?
+  created_at      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+}
+
+model FileRecord {
+  id              String   @id @default(cuid())
+  organization_id String
+  entity_type     String   // Lead, Deal, Account, Invoice
+  entity_id       String
+  file_name       String
+  file_url        String
+  mime_type       String
+  file_size_bytes Int
+  created_at      DateTime @default(now())
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id              String   @id @default(cuid())
+  organization_id String
+  name            String
+  color           String   @default("#2563eb")
+  created_at      DateTime @default(now())
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, name])
 }
 
 model SaaSPlan {

@@ -1,51 +1,76 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateDealDto } from './dto/create-deal.dto';
 
 @Injectable()
 export class DealsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(orgId: string = 'ORG001') {
+  async findAll(orgId: string) {
     return this.prisma.deal.findMany({
       where: { organization_id: orgId },
+      include: { account: true },
       orderBy: { created_date: 'desc' },
     });
   }
 
-  async create(data: any, orgId: string = 'ORG001') {
+  async findOne(orgId: string, id: string) {
+    const deal = await this.prisma.deal.findFirst({
+      where: { id, organization_id: orgId },
+      include: { account: true },
+    });
+    if (!deal) throw new NotFoundException('Deal not found');
+    return deal;
+  }
+
+  async create(orgId: string, dto: CreateDealDto) {
     return this.prisma.deal.create({
       data: {
         organization_id: orgId,
-        account_id: data.account_id,
-        title: data.title,
-        account_name: data.account_name,
-        stage: data.stage || 'Qualification',
-        value: Number(data.value) || 0,
-        closing_date: data.closing_date || new Date(Date.now() + 30*86400000).toISOString().split('T')[0],
-        owner: data.owner || 'Vikram Sales Manager',
-        probability: Number(data.probability) || 50,
+        title: dto.title,
+        account_name: dto.account_name,
+        account_id: dto.account_id || null,
+        stage: dto.stage,
+        value: Number(dto.value),
+        closing_date: dto.closing_date,
+        owner: dto.owner,
+        probability: dto.probability ? Number(dto.probability) : 50,
       },
     });
   }
 
-  async updateStage(dealId: string, stage: string, orgId: string = 'ORG001') {
-    const updated = await this.prisma.deal.update({
-      where: { id: dealId },
+  async updateStage(orgId: string, id: string, stage: string) {
+    const deal = await this.prisma.deal.update({
+      where: { id },
       data: { stage },
     });
 
+    // Create Audit Log for Deal Stage Change
     await this.prisma.auditLog.create({
       data: {
         organization_id: orgId,
-        user_name: 'Sales Manager',
-        action: `Moved Deal Stage to ${stage}`,
+        user_name: deal.owner,
+        action: 'STAGE_UPDATED',
         entity_type: 'Deal',
-        entity_id: dealId,
+        entity_id: deal.id,
         new_value: stage,
         timestamp: new Date().toISOString(),
       },
     });
 
-    return updated;
+    return deal;
+  }
+
+  async update(orgId: string, id: string, data: any) {
+    return this.prisma.deal.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async remove(orgId: string, id: string) {
+    return this.prisma.deal.delete({
+      where: { id },
+    });
   }
 }

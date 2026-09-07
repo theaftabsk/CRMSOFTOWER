@@ -1,22 +1,45 @@
-import { Controller, Get, Post, Body, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Body } from '@nestjs/common';
 import { LeadsService } from './leads.service';
+import { CreateLeadDto } from './dto/create-lead.dto';
+import { ConvertLeadDto } from './dto/convert-lead.dto';
+import { TenantOrg } from '../common/decorators/tenant.decorator';
 
-@Controller('api/leads')
+@Controller('leads')
 export class LeadsController {
-  constructor(private readonly leadsService: LeadsService) {}
+  constructor(private leadsService: LeadsService) {}
 
   @Get()
-  async getLeads(@Headers('x-org-id') orgId?: string) {
-    return this.leadsService.findAll(orgId || 'ORG001');
+  findAll(@TenantOrg() orgId: string) {
+    return this.leadsService.findAll(orgId);
   }
 
   @Post()
-  async createLead(@Body() body: any, @Headers('x-org-id') orgId?: string) {
-    return this.leadsService.create(body, orgId || 'ORG001');
+  create(@TenantOrg() orgId: string, @Body() dto: CreateLeadDto) {
+    return this.leadsService.create(orgId, dto);
   }
 
   @Post('convert')
-  async convertLead(@Body() body: any, @Headers('x-org-id') orgId?: string) {
-    return this.leadsService.convertLead(body, orgId || 'ORG001');
+  convert(@TenantOrg() orgId: string, @Body() dto: ConvertLeadDto) {
+    return this.leadsService.convert(orgId, dto);
+  }
+
+  @Get(':id')
+  findOne(@TenantOrg() orgId: string, @Param('id') id: string) {
+    return this.leadsService.findOne(orgId, id);
+  }
+
+  @Put(':id')
+  updatePut(@TenantOrg() orgId: string, @Param('id') id: string, @Body() body: any) {
+    return this.leadsService.update(orgId, id, body);
+  }
+
+  @Patch(':id')
+  updatePatch(@TenantOrg() orgId: string, @Param('id') id: string, @Body() body: any) {
+    return this.leadsService.update(orgId, id, body);
+  }
+
+  @Delete(':id')
+  remove(@TenantOrg() orgId: string, @Param('id') id: string) {
+    return this.leadsService.remove(orgId, id);
   }
 }

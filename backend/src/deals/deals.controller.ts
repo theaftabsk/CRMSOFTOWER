@@ -1,22 +1,44 @@
-import { Controller, Get, Post, Patch, Param, Body, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Body } from '@nestjs/common';
 import { DealsService } from './deals.service';
+import { CreateDealDto } from './dto/create-deal.dto';
+import { TenantOrg } from '../common/decorators/tenant.decorator';
 
-@Controller('api/deals')
+@Controller('deals')
 export class DealsController {
-  constructor(private readonly dealsService: DealsService) {}
+  constructor(private dealsService: DealsService) {}
 
   @Get()
-  async getDeals(@Headers('x-org-id') orgId?: string) {
-    return this.dealsService.findAll(orgId || 'ORG001');
+  findAll(@TenantOrg() orgId: string) {
+    return this.dealsService.findAll(orgId);
   }
 
   @Post()
-  async createDeal(@Body() body: any, @Headers('x-org-id') orgId?: string) {
-    return this.dealsService.create(body, orgId || 'ORG001');
+  create(@TenantOrg() orgId: string, @Body() dto: CreateDealDto) {
+    return this.dealsService.create(orgId, dto);
   }
 
   @Patch(':id/stage')
-  async updateStage(@Param('id') id: string, @Body('stage') stage: string, @Headers('x-org-id') orgId?: string) {
-    return this.dealsService.updateStage(id, stage, orgId || 'ORG001');
+  updateStage(@TenantOrg() orgId: string, @Param('id') id: string, @Body('stage') stage: string) {
+    return this.dealsService.updateStage(orgId, id, stage);
+  }
+
+  @Get(':id')
+  findOne(@TenantOrg() orgId: string, @Param('id') id: string) {
+    return this.dealsService.findOne(orgId, id);
+  }
+
+  @Put(':id')
+  updatePut(@TenantOrg() orgId: string, @Param('id') id: string, @Body() body: any) {
+    return this.dealsService.update(orgId, id, body);
+  }
+
+  @Patch(':id')
+  updatePatch(@TenantOrg() orgId: string, @Param('id') id: string, @Body() body: any) {
+    return this.dealsService.update(orgId, id, body);
+  }
+
+  @Delete(':id')
+  remove(@TenantOrg() orgId: string, @Param('id') id: string) {
+    return this.dealsService.remove(orgId, id);
   }
 }

@@ -7,13 +7,13 @@ export interface User {
   organization_id: string;
   name: string;
   email: string;
-  phone: string;
-  role: RoleName;
-  department: string;
-  profile_photo: string;
-  status: UserStatus;
-  created_date: string;
-  last_login: string;
+  phone?: string;
+  role: RoleName | string;
+  department?: string;
+  profile_photo?: string;
+  status: UserStatus | string;
+  created_date?: string;
+  last_login?: string;
 }
 
 export interface Organization {
@@ -22,8 +22,8 @@ export interface Organization {
   logo_url?: string;
   currency: string;
   timezone: string;
-  address: string;
-  created_at: string;
+  address?: string;
+  created_at?: string;
 }
 
 export type LeadSource = 
@@ -36,7 +36,8 @@ export type LeadSource =
   | 'Phone'
   | 'Import'
   | 'Manual'
-  | 'API';
+  | 'API'
+  | string;
 
 export type LeadStatus = 
   | 'New'
@@ -53,25 +54,27 @@ export type Rating = 'Hot' | 'Warm' | 'Cold';
 export interface Lead {
   id: string;
   organization_id: string;
-  first_name: string;
-  last_name: string;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
   phone: string;
   email: string;
   company: string;
-  website: string;
-  industry: string;
+  website?: string;
+  industry?: string;
   source: LeadSource;
   status: LeadStatus;
-  rating: Rating;
-  owner_id: string;
-  owner_name: string;
+  rating?: Rating;
+  owner_id?: string;
+  owner_name?: string;
+  assigned_to?: string;
   expected_value: number;
-  location: string;
-  tags: string[];
-  notes: string;
-  next_followup_date: string;
-  created_date: string;
-  updated_date: string;
+  location?: string;
+  tags?: string[];
+  notes?: string;
+  next_followup_date?: string;
+  created_date?: string;
+  updated_date?: string;
 }
 
 export interface Contact {
@@ -80,15 +83,19 @@ export interface Contact {
   name: string;
   phone: string;
   email: string;
-  account_id: string;
-  account_name: string;
-  job_title: string;
-  address: string;
-  owner_id: string;
-  owner_name: string;
-  tags: string[];
-  notes: string;
-  created_date: string;
+  company?: string;
+  designation?: string;
+  city?: string;
+  status?: string;
+  account_id?: string;
+  account_name?: string;
+  job_title?: string;
+  address?: string;
+  owner_id?: string;
+  owner_name?: string;
+  tags?: string[];
+  notes?: string;
+  created_date?: string;
 }
 
 export interface Account {
@@ -96,14 +103,15 @@ export interface Account {
   organization_id: string;
   name: string;
   industry: string;
-  phone: string;
-  email: string;
-  website: string;
+  phone?: string;
+  email?: string;
+  website?: string;
   annual_revenue: number;
   employee_count: number;
-  owner_id: string;
-  owner_name: string;
-  created_date: string;
+  billing_address?: string;
+  owner_id?: string;
+  owner_name?: string;
+  created_date?: string;
 }
 
 export type DealStage = 
@@ -113,23 +121,31 @@ export type DealStage =
   | 'Proposal'
   | 'Negotiation'
   | 'Won'
-  | 'Lost';
+  | 'Lost'
+  | 'Qualification'
+  | 'Value Proposition'
+  | 'Proposal Sent'
+  | 'Closed Won'
+  | 'Closed Lost';
 
 export interface Deal {
   id: string;
   organization_id: string;
   title: string;
-  account_id: string;
+  account_id?: string;
   account_name: string;
-  contact_id: string;
-  contact_name: string;
+  contact_id?: string;
+  contact_name?: string;
   value: number;
   stage: DealStage;
-  expected_close: string;
-  owner_id: string;
-  owner_name: string;
-  next_followup_date: string;
-  created_date: string;
+  expected_close?: string;
+  closing_date?: string;
+  owner?: string;
+  owner_id?: string;
+  owner_name?: string;
+  probability?: number;
+  next_followup_date?: string;
+  created_date?: string;
 }
 
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
@@ -139,26 +155,28 @@ export interface Task {
   id: string;
   organization_id: string;
   title: string;
-  related_entity: 'Lead' | 'Contact' | 'Deal' | 'Account';
-  related_id: string;
-  related_name: string;
+  related_entity?: 'Lead' | 'Contact' | 'Deal' | 'Account';
+  related_type?: string;
+  related_id?: string;
+  related_name?: string;
   assigned_to: string;
   due_date: string;
   priority: TaskPriority;
   status: TaskStatus;
-  created_date: string;
+  created_date?: string;
 }
 
 export interface CallLog {
   id: string;
   organization_id: string;
   customer_name: string;
-  customer_id: string;
+  customer_id?: string;
+  caller_user?: string;
   date_time: string;
   duration: string;
-  result: 'Interested' | 'Not Interested' | 'No Answer' | 'Busy' | 'Follow-up Required';
-  notes: string;
-  logged_by: string;
+  result: string;
+  notes?: string;
+  logged_by?: string;
 }
 
 export interface Meeting {
@@ -166,36 +184,30 @@ export interface Meeting {
   organization_id: string;
   title: string;
   date_time: string;
-  location: string;
+  location?: string;
   participants: string[];
   status: 'Scheduled' | 'Completed' | 'Cancelled' | 'Rescheduled';
-  notes: string;
-}
-
-export interface CRMNote {
-  id: string;
-  organization_id: string;
-  entity_type: 'Lead' | 'Contact' | 'Account' | 'Deal';
-  entity_id: string;
-  content: string;
-  created_by: string;
-  created_at: string;
+  notes?: string;
 }
 
 export interface Product {
   id: string;
   organization_id: string;
+  code?: string;
+  sku?: string;
   name: string;
-  sku: string;
   category: string;
-  price: number;
-  description: string;
-  tax_percent: number;
-  status: 'Active' | 'Inactive';
+  price?: number;
+  unit_price?: number;
+  stock?: number;
+  description?: string;
+  tax_percent?: number;
+  gst_rate_percent?: number;
+  status?: 'Active' | 'Inactive';
 }
 
 export interface QuoteItem {
-  product_id: string;
+  product_id?: string;
   product_name: string;
   qty: number;
   unit_price: number;
@@ -206,53 +218,57 @@ export interface Quote {
   id: string;
   organization_id: string;
   quote_number: string;
-  account_id: string;
+  account_id?: string;
   account_name: string;
-  contact_id: string;
-  items: QuoteItem[];
+  contact_id?: string;
+  items?: QuoteItem[];
   subtotal: number;
   tax: number;
   total: number;
-  valid_until: string;
+  valid_until?: string;
   status: 'Draft' | 'Sent' | 'Accepted' | 'Rejected';
-  created_date: string;
+  created_date?: string;
 }
 
 export interface SalesOrder {
   id: string;
   organization_id: string;
   order_number: string;
-  quote_id: string;
-  account_id: string;
+  quote_id?: string;
+  account_id?: string;
   account_name: string;
   total_amount: number;
   status: 'Pending' | 'Confirmed' | 'Processing' | 'Completed' | 'Cancelled';
-  created_date: string;
+  created_date?: string;
 }
 
 export interface Invoice {
   id: string;
   organization_id: string;
   invoice_number: string;
-  order_id: string;
-  account_id: string;
+  order_id?: string;
+  account_id?: string;
   account_name: string;
   total_amount: number;
   paid_amount: number;
   due_amount: number;
   due_date: string;
-  status: 'Draft' | 'Sent' | 'Paid' | 'Partially Paid' | 'Overdue' | 'Cancelled';
-  created_date: string;
+  status: 'Draft' | 'Sent' | 'Paid' | 'Partially Paid' | 'Overdue' | 'Cancelled' | 'Unpaid' | 'Partial';
+  created_date?: string;
+  issue_date?: string;
 }
 
 export interface Payment {
   id: string;
   organization_id: string;
-  invoice_number: string;
+  invoice_id?: string;
+  invoice_number?: string;
+  payment_number?: string;
   amount: number;
-  method: 'Cash' | 'Bank' | 'UPI' | 'Card' | 'Online Gateway';
-  transaction_date: string;
-  notes: string;
+  method: 'Cash' | 'Bank' | 'UPI' | 'Card' | 'Online Gateway' | string;
+  transaction_date?: string;
+  payment_date?: string;
+  notes?: string;
 }
 
 export interface CustomField {
@@ -262,6 +278,7 @@ export interface CustomField {
   field_name: string;
   field_type: 'Text' | 'Number' | 'Dropdown' | 'Date' | 'Currency';
   options?: string[];
+  created_at?: string;
 }
 
 export interface AuditLog {
@@ -271,8 +288,8 @@ export interface AuditLog {
   action: string;
   entity_type: string;
   entity_id: string;
-  previous_value: string;
-  new_value: string;
+  previous_value?: string;
+  new_value?: string;
   timestamp: string;
 }
 

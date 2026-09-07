@@ -9,11 +9,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useCRM();
 
   return (
-    <div className={`flex h-screen w-screen overflow-hidden font-sans transition-colors duration-300 ${
-      theme === 'light' 
-        ? 'bg-slate-50 text-slate-900' 
-        : 'bg-slate-950 text-slate-100 dark'
-    }`}>
+    <div className="flex h-screen w-screen overflow-hidden font-sans bg-[#F8F8F8] text-[#111111]">
       {/* Sidebar */}
       <Sidebar />
 

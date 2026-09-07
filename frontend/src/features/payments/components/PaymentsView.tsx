@@ -1,28 +1,48 @@
 'use client';
 
 import React from 'react';
+import { useCRM } from '../../../context/CRMContext';
 import { PageHeader } from '../../../components/layout/PageHeader';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../components/ui/card';
+import { CreditCard } from 'lucide-react';
 
 export const PaymentsView: React.FC = () => {
+  const { payments } = useCRM();
+
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Payments Log & Transaction Audit" 
-        subtitle="Recorded Customer Payments & Payment Methods" 
+        title="Payment Transactions Log" 
+        subtitle="Complete ledger of client payments, transaction hashes, and payment channels."
       />
-      <Card>
-        <CardHeader>
-          <CardTitle>Payments Log & Transaction Audit</CardTitle>
-          <CardDescription>Feature Module Domain Component [payments]</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-6 bg-slate-950/80 rounded-xl border border-slate-800/80 text-xs text-slate-300">
-            <p>Active Domain Feature: <strong className="text-indigo-400 font-mono">src/features/payments/components/PaymentsView.tsx</strong></p>
-            <p className="mt-2 text-slate-400">Connected to production REST API client and reactive CRM Context Provider.</p>
-          </div>
-        </CardContent>
-      </Card>
+
+      <div className="shadcn-card overflow-hidden">
+        <table className="crm-table">
+          <thead>
+            <tr>
+              <th>Receipt #</th>
+              <th>Invoice ID</th>
+              <th>Amount Received</th>
+              <th>Payment Method</th>
+              <th>Date</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {payments.map(p => (
+              <tr key={p.id}>
+                <td className="font-mono font-semibold text-xs text-[#111111]">{p.payment_number}</td>
+                <td className="font-mono text-xs text-[#666666]">{p.invoice_id}</td>
+                <td className="font-mono font-bold text-[#16A34A]">₹{p.amount.toLocaleString()}</td>
+                <td>
+                  <span className="shadcn-badge shadcn-badge-default">{p.method}</span>
+                </td>
+                <td className="text-xs text-[#666666]">{p.payment_date}</td>
+                <td className="text-xs text-[#888888]">{p.notes || 'Direct payment'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

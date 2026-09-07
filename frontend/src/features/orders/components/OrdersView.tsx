@@ -2,27 +2,47 @@
 
 import React from 'react';
 import { PageHeader } from '../../../components/layout/PageHeader';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../components/ui/card';
+import { ShoppingBag } from 'lucide-react';
 
 export const OrdersView: React.FC = () => {
+  const orders = [
+    { id: 'ORD-001', order_number: 'ORD-2026-001', account_name: 'Apex Health Systems', total: 141600, status: 'Confirmed', date: '2026-09-02' },
+    { id: 'ORD-002', order_number: 'ORD-2026-002', account_name: 'Delhi Public School', total: 59000, status: 'Processing', date: '2026-09-05' },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Sales Orders & Fulfillment" 
-        subtitle="Confirmed Customer Orders & Order Processing" 
+        title="Sales Orders" 
+        subtitle="Manage confirmed sales orders, fulfillment, and customer contracts."
       />
-      <Card>
-        <CardHeader>
-          <CardTitle>Sales Orders & Fulfillment</CardTitle>
-          <CardDescription>Feature Module Domain Component [orders]</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-6 bg-slate-950/80 rounded-xl border border-slate-800/80 text-xs text-slate-300">
-            <p>Active Domain Feature: <strong className="text-indigo-400 font-mono">src/features/orders/components/OrdersView.tsx</strong></p>
-            <p className="mt-2 text-slate-400">Connected to production REST API client and reactive CRM Context Provider.</p>
-          </div>
-        </CardContent>
-      </Card>
+
+      <div className="shadcn-card overflow-hidden">
+        <table className="crm-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Account Name</th>
+              <th>Total Amount</th>
+              <th>Order Status</th>
+              <th>Order Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map(ord => (
+              <tr key={ord.id}>
+                <td className="font-mono font-semibold text-xs text-[#111111]">{ord.order_number}</td>
+                <td className="font-semibold text-[#111111]">{ord.account_name}</td>
+                <td className="font-mono font-bold text-[#111111]">₹{ord.total.toLocaleString()}</td>
+                <td>
+                  <span className="shadcn-badge shadcn-badge-success">{ord.status}</span>
+                </td>
+                <td className="text-xs text-[#888888]">{ord.date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

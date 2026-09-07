@@ -1,17 +1,39 @@
-import { Controller, Get, Post, Body, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Body } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
+import { CreateAccountDto } from './dto/create-account.dto';
+import { TenantOrg } from '../common/decorators/tenant.decorator';
 
-@Controller('api/accounts')
+@Controller('accounts')
 export class AccountsController {
-  constructor(private readonly accountsService: AccountsService) {}
+  constructor(private accountsService: AccountsService) {}
 
   @Get()
-  async getAccounts(@Headers('x-org-id') orgId?: string) {
-    return this.accountsService.findAll(orgId || 'ORG001');
+  findAll(@TenantOrg() orgId: string) {
+    return this.accountsService.findAll(orgId);
   }
 
   @Post()
-  async createAccount(@Body() body: any, @Headers('x-org-id') orgId?: string) {
-    return this.accountsService.create(body, orgId || 'ORG001');
+  create(@TenantOrg() orgId: string, @Body() dto: CreateAccountDto) {
+    return this.accountsService.create(orgId, dto);
+  }
+
+  @Get(':id')
+  findOne(@TenantOrg() orgId: string, @Param('id') id: string) {
+    return this.accountsService.findOne(orgId, id);
+  }
+
+  @Put(':id')
+  updatePut(@TenantOrg() orgId: string, @Param('id') id: string, @Body() body: any) {
+    return this.accountsService.update(orgId, id, body);
+  }
+
+  @Patch(':id')
+  updatePatch(@TenantOrg() orgId: string, @Param('id') id: string, @Body() body: any) {
+    return this.accountsService.update(orgId, id, body);
+  }
+
+  @Delete(':id')
+  remove(@TenantOrg() orgId: string, @Param('id') id: string) {
+    return this.accountsService.remove(orgId, id);
   }
 }

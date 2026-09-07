@@ -3,9 +3,9 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding CRM PostgreSQL database...');
+  console.log('Seeding Enterprise CRM PostgreSQL database...');
 
-  // 1. Create Organization
+  // 1. Organization
   const org = await prisma.organization.upsert({
     where: { id: 'ORG001' },
     update: {},
@@ -19,36 +19,97 @@ async function main() {
     },
   });
 
-  // 2. Create Users
-  await prisma.user.createMany({
-    skipDuplicates: true,
-    data: [
-      {
-        id: 'USR001',
-        organization_id: org.id,
-        name: 'Aftab Admin',
-        email: 'admin@abctechnologies.com',
-        phone: '+91 9876543210',
-        role: 'Admin',
-        department: 'Executive Management',
-        profile_photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop',
-        status: 'Active',
-      },
-      {
-        id: 'USR002',
-        organization_id: org.id,
-        name: 'Vikram Sales Manager',
-        email: 'vikram@abctechnologies.com',
-        phone: '+91 9876543211',
-        role: 'Manager',
-        department: 'Sales & Growth',
-        profile_photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
-        status: 'Active',
-      },
-    ],
+  // 2. Roles & Permissions
+  const permissionsData = [
+    { id: 'perm-leads-view', slug: 'leads:view', module: 'leads', description: 'View leads list and details' },
+    { id: 'perm-leads-create', slug: 'leads:create', module: 'leads', description: 'Create new leads' },
+    { id: 'perm-leads-edit', slug: 'leads:edit', module: 'leads', description: 'Edit existing leads' },
+    { id: 'perm-leads-delete', slug: 'leads:delete', module: 'leads', description: 'Delete leads' },
+    { id: 'perm-deals-view', slug: 'deals:view', module: 'deals', description: 'View deals pipeline' },
+    { id: 'perm-deals-edit', slug: 'deals:edit', module: 'deals', description: 'Update deal stage and value' },
+    { id: 'perm-invoices-create', slug: 'invoices:create', module: 'invoices', description: 'Generate customer invoices' },
+    { id: 'perm-reports-view', slug: 'reports:view', module: 'reports', description: 'View revenue & performance reports' },
+    { id: 'perm-settings-manage', slug: 'settings:manage', module: 'settings', description: 'Manage organization settings' },
+  ];
+
+  for (const p of permissionsData) {
+    await prisma.permission.upsert({
+      where: { slug: p.slug },
+      update: {},
+      create: p,
+    });
+  }
+
+  const adminRole = await prisma.role.upsert({
+    where: { id: 'role-admin' },
+    update: {},
+    create: {
+      id: 'role-admin',
+      organization_id: org.id,
+      name: 'Admin',
+      description: 'Full organizational administrative privileges',
+      is_system: true,
+    },
   });
 
-  // 3. Create Leads
+  const managerRole = await prisma.role.upsert({
+    where: { id: 'role-manager' },
+    update: {},
+    create: {
+      id: 'role-manager',
+      organization_id: org.id,
+      name: 'Manager',
+      description: 'Sales and team pipeline manager',
+      is_system: true,
+    },
+  });
+
+  // 3. Users
+  const user1 = await prisma.user.upsert({
+    where: { email: 'admin@abctechnologies.com' },
+    update: {},
+    create: {
+      id: 'USR001',
+      organization_id: org.id,
+      name: 'Aftab Admin',
+      email: 'admin@abctechnologies.com',
+      phone: '+91 9876543210',
+      role: 'Admin',
+      department: 'Executive Management',
+      profile_photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop',
+      status: 'Active',
+    },
+  });
+
+  const user2 = await prisma.user.upsert({
+    where: { email: 'vikram@abctechnologies.com' },
+    update: {},
+    create: {
+      id: 'USR002',
+      organization_id: org.id,
+      name: 'Vikram Sales Manager',
+      email: 'vikram@abctechnologies.com',
+      phone: '+91 9876543211',
+      role: 'Manager',
+      department: 'Sales & Growth',
+      profile_photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
+      status: 'Active',
+    },
+  });
+
+  await prisma.userRole.upsert({
+    where: { user_id_role_id: { user_id: user1.id, role_id: adminRole.id } },
+    update: {},
+    create: { user_id: user1.id, role_id: adminRole.id },
+  });
+
+  await prisma.userRole.upsert({
+    where: { user_id_role_id: { user_id: user2.id, role_id: managerRole.id } },
+    update: {},
+    create: { user_id: user2.id, role_id: managerRole.id },
+  });
+
+  // 4. Leads
   await prisma.lead.createMany({
     skipDuplicates: true,
     data: [
@@ -81,7 +142,7 @@ async function main() {
     ],
   });
 
-  // 4. Create Accounts
+  // 5. Accounts
   const account1 = await prisma.account.upsert({
     where: { id: 'ACC001' },
     update: {},
@@ -97,7 +158,7 @@ async function main() {
     },
   });
 
-  // 5. Create Contacts
+  // 6. Contacts
   await prisma.contact.upsert({
     where: { id: 'CNT001' },
     update: {},
@@ -115,7 +176,7 @@ async function main() {
     },
   });
 
-  // 6. Create Deals
+  // 7. Deals
   await prisma.deal.upsert({
     where: { id: 'DL001' },
     update: {},
@@ -133,7 +194,7 @@ async function main() {
     },
   });
 
-  // 7. Create Tasks
+  // 8. Tasks
   await prisma.task.upsert({
     where: { id: 'TSK001' },
     update: {},
@@ -150,7 +211,7 @@ async function main() {
     },
   });
 
-  // 8. Create Call Logs
+  // 9. Call Logs
   await prisma.callLog.upsert({
     where: { id: 'CL001' },
     update: {},
@@ -166,7 +227,7 @@ async function main() {
     },
   });
 
-  // 9. Create Meetings
+  // 10. Meetings
   await prisma.meeting.upsert({
     where: { id: 'MTG001' },
     update: {},
@@ -181,12 +242,13 @@ async function main() {
     },
   });
 
-  // 10. Create Products
+  // 11. Products
   await prisma.product.upsert({
     where: { id: 'PRD001' },
     update: {},
     create: {
       id: 'PRD001',
+      organization_id: org.id,
       code: 'PRD-WEB-01',
       name: 'Custom SaaS Portal Development',
       category: 'Software Services',
@@ -196,7 +258,40 @@ async function main() {
     },
   });
 
-  // 11. Create SaaS Plans
+  // 12. Invoices & Payments
+  const invoice1 = await prisma.invoice.upsert({
+    where: { invoice_number: 'INV-2026-001' },
+    update: {},
+    create: {
+      id: 'INV001',
+      organization_id: org.id,
+      account_id: account1.id,
+      invoice_number: 'INV-2026-001',
+      account_name: 'Apex Health Systems',
+      total_amount: 141600,
+      paid_amount: 50000,
+      due_amount: 91600,
+      status: 'Partial',
+      issue_date: '2026-09-01',
+      due_date: '2026-09-15',
+    },
+  });
+
+  await prisma.payment.upsert({
+    where: { payment_number: 'PAY-2026-001' },
+    update: {},
+    create: {
+      id: 'PAY001',
+      invoice_id: invoice1.id,
+      payment_number: 'PAY-2026-001',
+      amount: 50000,
+      payment_date: '2026-09-02',
+      method: 'Bank Transfer',
+      notes: 'Initial 35% advance deposit received',
+    },
+  });
+
+  // 13. SaaS Plans
   await prisma.saaSPlan.createMany({
     skipDuplicates: true,
     data: [
@@ -207,7 +302,21 @@ async function main() {
     ],
   });
 
-  console.log('Seeding finished successfully.');
+  // 14. Workflows & Webhooks Demo
+  await prisma.workflow.upsert({
+    where: { id: 'wf-lead-qualified' },
+    update: {},
+    create: {
+      id: 'wf-lead-qualified',
+      organization_id: org.id,
+      name: 'Auto-Task on Lead Qualification',
+      description: 'Automatically creates a follow-up task and alerts sales reps when a lead is qualified.',
+      trigger_event: 'lead.qualified',
+      is_active: true,
+    },
+  });
+
+  console.log('Enterprise CRM Seeding finished successfully.');
 }
 
 main()

@@ -1,42 +1,43 @@
-import { Controller, Get, Post, Patch, Param, Body, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body } from '@nestjs/common';
 import { ActivitiesService } from './activities.service';
+import { TenantOrg } from '../common/decorators/tenant.decorator';
 
-@Controller('api/activities')
+@Controller('activities')
 export class ActivitiesController {
-  constructor(private readonly activitiesService: ActivitiesService) {}
+  constructor(private activitiesService: ActivitiesService) {}
 
   @Get('tasks')
-  async getTasks(@Headers('x-org-id') orgId?: string) {
-    return this.activitiesService.findTasks(orgId || 'ORG001');
+  getTasks(@TenantOrg() orgId: string) {
+    return this.activitiesService.getTasks(orgId);
   }
 
   @Post('tasks')
-  async createTask(@Body() body: any, @Headers('x-org-id') orgId?: string) {
-    return this.activitiesService.createTask(body, orgId || 'ORG001');
+  createTask(@TenantOrg() orgId: string, @Body() body: any) {
+    return this.activitiesService.createTask(orgId, body);
   }
 
   @Patch('tasks/:id/status')
-  async toggleTaskStatus(@Param('id') id: string) {
-    return this.activitiesService.toggleTaskStatus(id);
+  toggleTaskStatus(@TenantOrg() orgId: string, @Param('id') id: string) {
+    return this.activitiesService.toggleTaskStatus(orgId, id);
   }
 
   @Get('calls')
-  async getCalls(@Headers('x-org-id') orgId?: string) {
-    return this.activitiesService.findCalls(orgId || 'ORG001');
+  getCalls(@TenantOrg() orgId: string) {
+    return this.activitiesService.getCalls(orgId);
   }
 
   @Post('calls')
-  async createCall(@Body() body: any, @Headers('x-org-id') orgId?: string) {
-    return this.activitiesService.createCall(body, orgId || 'ORG001');
+  createCall(@TenantOrg() orgId: string, @Body() body: any) {
+    return this.activitiesService.createCall(orgId, body);
   }
 
   @Get('meetings')
-  async getMeetings(@Headers('x-org-id') orgId?: string) {
-    return this.activitiesService.findMeetings(orgId || 'ORG001');
+  getMeetings(@TenantOrg() orgId: string) {
+    return this.activitiesService.getMeetings(orgId);
   }
 
   @Post('meetings')
-  async createMeeting(@Body() body: any, @Headers('x-org-id') orgId?: string) {
-    return this.activitiesService.createMeeting(body, orgId || 'ORG001');
+  createMeeting(@TenantOrg() orgId: string, @Body() body: any) {
+    return this.activitiesService.createMeeting(orgId, body);
   }
 }

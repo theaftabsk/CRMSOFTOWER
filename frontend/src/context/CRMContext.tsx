@@ -74,6 +74,10 @@ interface CRMContextType {
   setSearchQuery: (query: string) => void;
   activeModule: string;
   setActiveModule: (module: string) => void;
+
+  refreshData: () => Promise<void>;
+  isSyncing: boolean;
+  reportsData: any;
 }
 
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
@@ -103,31 +107,45 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModule, setActiveModule] = useState<string>('dashboard');
 
-  useEffect(() => {
-    // Fetch live CRM data from NestJS REST API Engine
-    async function syncDataWithBackend() {
-      try {
-        const [apiLeads, apiContacts, apiAccounts, apiDeals, apiTasks, apiInvoices, apiCustomFields] = await Promise.all([
-          api.getLeads(),
-          api.getContacts(),
-          api.getAccounts(),
-          api.getDeals(),
-          api.getTasks(),
-          api.getInvoices(),
-          api.getCustomFields(),
-        ]);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [reportsData, setReportsData] = useState<any>(null);
 
-        if (apiLeads && Array.isArray(apiLeads) && apiLeads.length > 0) setLeads(apiLeads);
-        if (apiContacts && Array.isArray(apiContacts) && apiContacts.length > 0) setContacts(apiContacts);
-        if (apiAccounts && Array.isArray(apiAccounts) && apiAccounts.length > 0) setAccounts(apiAccounts);
-        if (apiDeals && Array.isArray(apiDeals) && apiDeals.length > 0) setDeals(apiDeals);
-        if (apiTasks && Array.isArray(apiTasks) && apiTasks.length > 0) setTasks(apiTasks);
-        if (apiInvoices && Array.isArray(apiInvoices) && apiInvoices.length > 0) setInvoices(apiInvoices);
-        if (apiCustomFields && Array.isArray(apiCustomFields) && apiCustomFields.length > 0) setCustomFields(apiCustomFields);
-      } catch (err) {
-        console.log('Backend API sync notice: Using pre-seeded client state');
-      }
+  const syncDataWithBackend = async () => {
+    setIsSyncing(true);
+    try {
+      const [
+        apiLeads, apiContacts, apiAccounts, apiDeals, 
+        apiTasks, apiInvoices, apiProducts, apiCustomFields,
+        apiReports
+      ] = await Promise.all([
+        api.getLeads(),
+        api.getContacts(),
+        api.getAccounts(),
+        api.getDeals(),
+        api.getTasks(),
+        api.getInvoices(),
+        api.getProducts(),
+        api.getCustomFields(),
+        api.getDashboardReports(),
+      ]);
+
+      if (apiLeads && Array.isArray(apiLeads) && apiLeads.length > 0) setLeads(apiLeads);
+      if (apiContacts && Array.isArray(apiContacts) && apiContacts.length > 0) setContacts(apiContacts);
+      if (apiAccounts && Array.isArray(apiAccounts) && apiAccounts.length > 0) setAccounts(apiAccounts);
+      if (apiDeals && Array.isArray(apiDeals) && apiDeals.length > 0) setDeals(apiDeals);
+      if (apiTasks && Array.isArray(apiTasks) && apiTasks.length > 0) setTasks(apiTasks);
+      if (apiInvoices && Array.isArray(apiInvoices) && apiInvoices.length > 0) setInvoices(apiInvoices);
+      if (apiProducts && Array.isArray(apiProducts) && apiProducts.length > 0) setProducts(apiProducts);
+      if (apiCustomFields && Array.isArray(apiCustomFields) && apiCustomFields.length > 0) setCustomFields(apiCustomFields);
+      if (apiReports) setReportsData(apiReports);
+    } catch (err) {
+      console.warn('Backend API sync notice: Using state', err);
+    } finally {
+      setIsSyncing(false);
     }
+  };
+
+  useEffect(() => {
     syncDataWithBackend();
   }, []);
 
@@ -428,7 +446,10 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       customFields, addCustomField,
       auditLogs, logAction,
       searchQuery, setSearchQuery,
-      activeModule, setActiveModule
+      activeModule, setActiveModule,
+      refreshData: syncDataWithBackend,
+      isSyncing,
+      reportsData
     }}>
       {children}
     </CRMContext.Provider>

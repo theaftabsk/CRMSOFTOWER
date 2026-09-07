@@ -4,9 +4,13 @@ import { CustomValidationPipe } from './common/pipes/validation.pipe';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Global Cookie Parser
+  app.use(cookieParser());
 
   // Global API Prefix /api/v1
   app.setGlobalPrefix('api/v1');

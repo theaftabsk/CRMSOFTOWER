@@ -2,20 +2,29 @@
 
 import React, { useState } from 'react';
 import { useCRM } from '../context/CRMContext';
+import { useAuth } from '../context/AuthContext';
 import { 
-  Search, Bell, Plus, Target, Users, Building2, TrendingUp, CheckSquare, Receipt
+  Search, Bell, Plus, Target, Users, Building2, TrendingUp, Receipt, 
+  LogOut, Settings, Shield, ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
   const { 
-    currentUser, searchQuery, setSearchQuery, 
-    leads, tasks, setActiveModule 
+    searchQuery, setSearchQuery, 
+    tasks, setActiveModule 
   } = useCRM();
+  const { user, logout } = useAuth();
 
   const [showQuickDropdown, setShowQuickDropdown] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const pendingTasksCount = tasks.filter(t => t.status === 'Pending').length;
+
+  const displayName = user?.name || 'Aftab Admin';
+  const displayRole = user?.role || 'Admin';
+  const displayOrg = user?.organizationName || 'ABC Technologies';
+  const initial = displayName.charAt(0).toUpperCase();
 
   return (
     <header className="h-16 border-b border-[#E5E5E5] bg-white px-6 flex items-center justify-between sticky top-0 z-20">
@@ -35,7 +44,10 @@ export const Navbar: React.FC = () => {
         {/* "+ Create" Quick Action Menu (Primary Black Button) */}
         <div className="relative">
           <button 
-            onClick={() => setShowQuickDropdown(!showQuickDropdown)}
+            onClick={() => {
+              setShowQuickDropdown(!showQuickDropdown);
+              if (showUserMenu) setShowUserMenu(false);
+            }}
             className="flex items-center space-x-1.5 px-3.5 py-2 bg-[#111111] hover:bg-[#262626] text-white text-xs font-medium rounded-lg transition shadow-sm"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -92,7 +104,7 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Right: Notifications & Current User Avatar */}
+      {/* Right: Notifications & Current User Profile with Real Logout */}
       <div className="flex items-center space-x-4">
         <button 
           title="Notifications"
@@ -104,19 +116,76 @@ export const Navbar: React.FC = () => {
           )}
         </button>
 
-        {/* User Pill */}
-        <div className="flex items-center space-x-2.5 pl-2 border-l border-[#E5E5E5]">
-          <div className="w-8 h-8 rounded-full bg-[#111111] text-white flex items-center justify-center font-semibold text-xs">
-            {currentUser?.name ? currentUser.name.charAt(0) : 'A'}
-          </div>
-          <div className="text-left hidden sm:block">
-            <span className="text-xs font-medium text-[#111111] block leading-tight">
-              {currentUser?.name || 'Aftab Admin'}
-            </span>
-            <span className="text-[10px] text-[#888888] font-mono">
-              {currentUser?.role || 'Admin'}
-            </span>
-          </div>
+        {/* User Pill & Interactive Dropdown Menu */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setShowUserMenu(!showUserMenu);
+              if (showQuickDropdown) setShowQuickDropdown(false);
+            }}
+            className="flex items-center space-x-2.5 pl-2 border-l border-[#E5E5E5] hover:opacity-80 transition cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#111111] text-white flex items-center justify-center font-semibold text-xs shadow-sm">
+              {initial}
+            </div>
+            <div className="text-left hidden sm:block">
+              <span className="text-xs font-medium text-[#111111] block leading-tight">
+                {displayName}
+              </span>
+              <span className="text-[10px] text-[#888888] font-mono">
+                {displayRole}
+              </span>
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-[#888888]" />
+          </button>
+
+          {showUserMenu && (
+            <div className="absolute right-0 mt-2 w-60 border border-[#E5E5E5] rounded-xl shadow-lg bg-white p-2 z-50 animate-in fade-in">
+              <div className="px-2.5 py-2 border-b border-[#E5E5E5] mb-1">
+                <p className="text-xs font-semibold text-[#111111]">{displayName}</p>
+                <p className="text-[11px] text-[#666666] truncate">{user?.email || 'admin@abctechnologies.com'}</p>
+                <div className="flex items-center space-x-1.5 mt-1.5">
+                  <span className="shadcn-badge shadcn-badge-default font-mono text-[9px]">
+                    {displayOrg}
+                  </span>
+                  <span className="text-[10px] text-[#888888] font-mono">
+                    {displayRole}
+                  </span>
+                </div>
+              </div>
+
+              <Link
+                href="/settings"
+                onClick={() => setShowUserMenu(false)}
+                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+              >
+                <Settings className="w-3.5 h-3.5 text-[#666666]" />
+                <span>Organization Settings</span>
+              </Link>
+
+              <Link
+                href="/settings/security"
+                onClick={() => setShowUserMenu(false)}
+                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+              >
+                <Shield className="w-3.5 h-3.5 text-[#666666]" />
+                <span>Security & Roles</span>
+              </Link>
+
+              <div className="border-t border-[#E5E5E5] my-1" />
+
+              <button
+                onClick={async () => {
+                  setShowUserMenu(false);
+                  await logout();
+                }}
+                className="w-full flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#DC2626] hover:bg-red-50 transition text-left"
+              >
+                <LogOut className="w-3.5 h-3.5 text-[#DC2626]" />
+                <span className="font-medium">Sign Out</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

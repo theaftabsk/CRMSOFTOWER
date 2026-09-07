@@ -4,6 +4,7 @@ import React from 'react';
 import { useCRM } from '../../../context/CRMContext';
 import { PageHeader } from '../../../components/layout/PageHeader';
 import { CreditCard } from 'lucide-react';
+import { formatNumber } from '../../../lib/utils';
 
 export const PaymentsView: React.FC = () => {
   const { payments } = useCRM();
@@ -32,7 +33,7 @@ export const PaymentsView: React.FC = () => {
               <tr key={p.id}>
                 <td className="font-mono font-semibold text-xs text-[#111111]">{p.payment_number}</td>
                 <td className="font-mono text-xs text-[#666666]">{p.invoice_id}</td>
-                <td className="font-mono font-bold text-[#16A34A]">₹{p.amount.toLocaleString()}</td>
+                <td suppressHydrationWarning className="font-mono font-bold text-[#16A34A]">₹{formatNumber(p.amount)}</td>
                 <td>
                   <span className="shadcn-badge shadcn-badge-default">{p.method}</span>
                 </td>

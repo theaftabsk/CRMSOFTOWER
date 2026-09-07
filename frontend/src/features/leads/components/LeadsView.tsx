@@ -6,6 +6,7 @@ import { PageHeader } from '../../../components/layout/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
 import { Target, Plus, Search, Filter, ArrowRightLeft, Mail, Phone, Building2, CheckCircle2, X } from 'lucide-react';
 import { Lead } from '../../../types/crm';
+import { formatNumber } from '../../../lib/utils';
 
 export const LeadsView: React.FC = () => {
   const { leads, addLead, convertLead } = useCRM();
@@ -197,8 +198,8 @@ export const LeadsView: React.FC = () => {
                         {lead.status}
                       </span>
                     </td>
-                    <td className="font-mono font-medium text-[#111111]">
-                      ₹{Number(lead.expected_value || 0).toLocaleString()}
+                    <td suppressHydrationWarning className="font-mono font-medium text-[#111111]">
+                      ₹{formatNumber(lead.expected_value)}
                     </td>
                     <td className="text-[#444444] text-xs">
                       {lead.assigned_to || lead.owner_name || 'Sales Team'}

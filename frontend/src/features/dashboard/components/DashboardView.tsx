@@ -11,6 +11,7 @@ import {
   BarChart, Bar, CartesianGrid 
 } from 'recharts';
 import Link from 'next/link';
+import { formatNumber } from '../../../lib/utils';
 
 export const DashboardView: React.FC = () => {
   const { leads, deals, tasks, invoices, organization } = useCRM();
@@ -231,8 +232,8 @@ export const DashboardView: React.FC = () => {
                   }`}>
                     {lead.status}
                   </span>
-                  <span className="font-mono text-xs font-semibold text-[#111111] block mt-1">
-                    ₹{Number(lead.expected_value || 0).toLocaleString()}
+                  <span suppressHydrationWarning className="font-mono text-xs font-semibold text-[#111111] block mt-1">
+                    ₹{formatNumber(lead.expected_value)}
                   </span>
                 </div>
               </div>

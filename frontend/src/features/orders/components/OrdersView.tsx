@@ -3,6 +3,7 @@
 import React from 'react';
 import { PageHeader } from '../../../components/layout/PageHeader';
 import { ShoppingBag } from 'lucide-react';
+import { formatNumber } from '../../../lib/utils';
 
 export const OrdersView: React.FC = () => {
   const orders = [
@@ -33,7 +34,7 @@ export const OrdersView: React.FC = () => {
               <tr key={ord.id}>
                 <td className="font-mono font-semibold text-xs text-[#111111]">{ord.order_number}</td>
                 <td className="font-semibold text-[#111111]">{ord.account_name}</td>
-                <td className="font-mono font-bold text-[#111111]">₹{ord.total.toLocaleString()}</td>
+                <td suppressHydrationWarning className="font-mono font-bold text-[#111111]">₹{formatNumber(ord.total)}</td>
                 <td>
                   <span className="shadcn-badge shadcn-badge-success">{ord.status}</span>
                 </td>

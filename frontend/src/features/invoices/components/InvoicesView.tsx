@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useCRM } from '../../../context/CRMContext';
 import { PageHeader } from '../../../components/layout/PageHeader';
 import { Receipt, Plus, CreditCard, X } from 'lucide-react';
+import { formatNumber } from '../../../lib/utils';
 
 export const InvoicesView: React.FC = () => {
   const { invoices, addPayment } = useCRM();
@@ -34,15 +35,15 @@ export const InvoicesView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="shadcn-card p-4">
           <span className="text-xs text-[#666666] font-medium uppercase tracking-wider block">Total Invoiced</span>
-          <span className="text-2xl font-bold font-mono text-[#111111] mt-1 block">₹{totalInvoiced.toLocaleString()}</span>
+          <span suppressHydrationWarning className="text-2xl font-bold font-mono text-[#111111] mt-1 block">₹{formatNumber(totalInvoiced)}</span>
         </div>
         <div className="shadcn-card p-4">
           <span className="text-xs text-[#666666] font-medium uppercase tracking-wider block">Collected Revenue</span>
-          <span className="text-2xl font-bold font-mono text-[#16A34A] mt-1 block">₹{totalCollected.toLocaleString()}</span>
+          <span suppressHydrationWarning className="text-2xl font-bold font-mono text-[#16A34A] mt-1 block">₹{formatNumber(totalCollected)}</span>
         </div>
         <div className="shadcn-card p-4">
           <span className="text-xs text-[#666666] font-medium uppercase tracking-wider block">Outstanding Due</span>
-          <span className="text-2xl font-bold font-mono text-[#DC2626] mt-1 block">₹{totalOutstanding.toLocaleString()}</span>
+          <span suppressHydrationWarning className="text-2xl font-bold font-mono text-[#DC2626] mt-1 block">₹{formatNumber(totalOutstanding)}</span>
         </div>
       </div>
 
@@ -66,9 +67,9 @@ export const InvoicesView: React.FC = () => {
               <tr key={inv.id}>
                 <td className="font-mono font-semibold text-xs text-[#111111]">{inv.invoice_number}</td>
                 <td className="font-semibold text-[#111111]">{inv.account_name}</td>
-                <td className="font-mono font-bold text-[#111111]">₹{inv.total_amount.toLocaleString()}</td>
-                <td className="font-mono text-[#16A34A]">₹{inv.paid_amount.toLocaleString()}</td>
-                <td className="font-mono text-[#DC2626] font-bold">₹{inv.due_amount.toLocaleString()}</td>
+                <td suppressHydrationWarning className="font-mono font-bold text-[#111111]">₹{formatNumber(inv.total_amount)}</td>
+                <td suppressHydrationWarning className="font-mono text-[#16A34A]">₹{formatNumber(inv.paid_amount)}</td>
+                <td suppressHydrationWarning className="font-mono text-[#DC2626] font-bold">₹{formatNumber(inv.due_amount)}</td>
                 <td>
                   <span className={`shadcn-badge ${
                     inv.status === 'Paid' ? 'shadcn-badge-success' :

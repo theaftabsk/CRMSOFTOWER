@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useCRM } from '../../../context/CRMContext';
 import { PageHeader } from '../../../components/layout/PageHeader';
 import { Package, Plus, Search } from 'lucide-react';
+import { formatNumber } from '../../../lib/utils';
 
 export const ProductsView: React.FC = () => {
   const { products, addProduct } = useCRM();
@@ -59,7 +60,7 @@ export const ProductsView: React.FC = () => {
                 <td className="font-mono text-xs font-semibold text-[#111111]">{p.code}</td>
                 <td className="font-semibold text-[#111111]">{p.name}</td>
                 <td className="text-xs text-[#666666]">{p.category}</td>
-                <td className="font-mono font-bold text-[#111111]">₹{Number(p.unit_price).toLocaleString()}</td>
+                <td suppressHydrationWarning className="font-mono font-bold text-[#111111]">₹{formatNumber(p.unit_price)}</td>
                 <td className="text-xs text-[#444444]">{p.stock} units</td>
                 <td className="text-xs text-[#666666]">{p.gst_rate_percent}%</td>
               </tr>

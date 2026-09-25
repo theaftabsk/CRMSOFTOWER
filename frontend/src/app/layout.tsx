@@ -13,6 +13,14 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Zyvo | Enterprise Cloud CRM & Revenue OS",
   description: "Zyvo Enterprise Multi-Tenant Cloud CRM Platform (zyvocrm.in)",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" }
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

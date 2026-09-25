@@ -126,7 +126,7 @@ export const ReportsView: React.FC = () => {
   // Export Executive CSV
   const handleExportCSV = () => {
     const csvRows = [
-      ['CRMSOFTOWER Executive Analytics Report'],
+      ['Zyvo CRM Executive Analytics Report'],
       ['Generated On', new Date().toISOString()],
       [''],
       ['Key Performance Indicators', 'Value'],
@@ -150,7 +150,7 @@ export const ReportsView: React.FC = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `CRMSOFTOWER_Executive_Reports_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Zyvo_CRM_Executive_Reports_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

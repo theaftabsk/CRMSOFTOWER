@@ -10,7 +10,7 @@ import {
   Receipt, CreditCard, BarChart3, Settings, ChevronLeft, ChevronRight,
   ShieldCheck, Globe, Code2, Blocks, Sparkles
 } from 'lucide-react';
-import ZyvoLogo from './ZyvoLogo';
+import { ZyvoLogo, ZyvoIcon } from './ZyvoLogo';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -104,9 +104,10 @@ export const Sidebar: React.FC = () => {
           ) : (
             <Link 
               href="/dashboard"
-              className="mx-auto flex items-center justify-center font-bold text-lg text-[#111111] hover:opacity-80 transition font-mono"
+              className="mx-auto flex items-center justify-center hover:opacity-85 transition"
+              title="Zyvo CRM Dashboard"
             >
-              Z
+              <ZyvoIcon size={30} />
             </Link>
           )}
 

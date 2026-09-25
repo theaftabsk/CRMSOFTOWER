@@ -12,6 +12,7 @@ import {
 import { api } from '../../../lib/api';
 import { formatNumber } from '../../../lib/utils';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ZyvoLogo } from '../../../components/ZyvoLogo';
 
 interface OrderItem {
   id?: string;
@@ -1048,7 +1049,8 @@ export const OrdersView: React.FC = () => {
             <div className="mt-6 space-y-6">
               <div className="flex justify-between items-start gap-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-[#111111]">CRMSOFTOWER LOGISTICS</h2>
+                  <ZyvoLogo height={24} className="text-[#111111] mb-2" />
+                  <h2 className="text-xl font-bold tracking-tight text-[#111111]">ZYVO LOGISTICS</h2>
                   <p className="text-xs text-[#666666] mt-0.5">Enterprise Delivery & Cloud Provisioning Center</p>
                   <p className="text-[11px] text-[#888888] mt-1">Hub: Bengaluru Tech Park, Zone 4, KA</p>
                 </div>

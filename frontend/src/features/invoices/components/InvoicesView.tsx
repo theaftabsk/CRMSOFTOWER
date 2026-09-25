@@ -12,6 +12,7 @@ import {
 import { api } from '../../../lib/api';
 import { formatNumber } from '../../../lib/utils';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ZyvoLogo } from '../../../components/ZyvoLogo';
 
 interface InvoicePayment {
   id: string;
@@ -1255,8 +1256,9 @@ export const InvoicesView: React.FC = () => {
               {/* Header */}
               <div className="flex justify-between items-start gap-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-[#111111]">CRMSOFTOWER SYSTEMS PVT LTD</h2>
-                  <p className="text-xs text-[#666666] mt-0.5">Enterprise Cloud Architecture & CRM Solutions</p>
+                  <ZyvoLogo height={24} className="text-[#111111] mb-2" />
+                  <h2 className="text-xl font-bold tracking-tight text-[#111111]">ZYVO TECHNOLOGIES PVT LTD</h2>
+                  <p className="text-xs text-[#666666] mt-0.5">Enterprise Cloud Architecture & Revenue Operating System</p>
                   <p className="text-[11px] text-[#888888] mt-1">100 Cyber City, Sector 4, Bengaluru, KA 560100</p>
                   <p className="text-[11px] text-[#888888]">GSTIN: 29AABCT1330P1Z6 | HSN/SAC: 998313</p>
                 </div>
@@ -1366,14 +1368,14 @@ export const InvoicesView: React.FC = () => {
                 <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5]">
                   <div className="font-bold text-[#111111] mb-1">Bank Remittance Details:</div>
                   <p>Bank: HDFC Bank Limited (Commercial Tech Branch)</p>
-                  <p>A/C Name: CRMSOFTOWER Systems Pvt Ltd</p>
+                  <p>A/C Name: Zyvo Technologies Pvt Ltd</p>
                   <p>A/C Number: 50200088992211</p>
-                  <p>IFSC Code: HDFC0001234 | UPI: crmsoftower@hdfcbank</p>
+                  <p>IFSC Code: HDFC0001234 | UPI: zyvocrm@hdfcbank</p>
                 </div>
                 <div className="text-right flex flex-col justify-end">
                   <div className="inline-block border-b border-[#CCCCCC] w-48 ml-auto pb-1 mb-1" />
                   <div className="font-semibold text-[#111111]">Authorized Finance Controller</div>
-                  <div className="text-[10px] text-[#888888]">CRMSOFTOWER Systems Private Limited</div>
+                  <div className="text-[10px] text-[#888888]">Zyvo Technologies Private Limited</div>
                 </div>
               </div>
             </div>

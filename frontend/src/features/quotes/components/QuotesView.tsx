@@ -12,6 +12,7 @@ import {
 import { api } from '../../../lib/api';
 import { formatNumber } from '../../../lib/utils';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ZyvoLogo } from '../../../components/ZyvoLogo';
 
 interface QuoteItem {
   id?: string;
@@ -1064,7 +1065,8 @@ export const QuotesView: React.FC = () => {
               {/* Company & Client Details */}
               <div className="flex justify-between items-start gap-4">
                 <div>
-                  <h2 className="text-xl font-bold tracking-tight text-[#111111]">CRMSOFTOWER ENTERPRISE</h2>
+                  <ZyvoLogo height={24} className="text-[#111111] mb-2" />
+                  <h2 className="text-xl font-bold tracking-tight text-[#111111]">ZYVO ENTERPRISE</h2>
                   <p className="text-xs text-[#666666] mt-0.5">Cloud Enterprise CRM & Architecture Systems</p>
                   <p className="text-[11px] text-[#888888] mt-1">100 Cyber City, Level 5, Bengaluru, KA 560100</p>
                   <p className="text-[11px] text-[#888888]">GSTIN: 29AABCT1330P1Z6 | CIN: U72200KA2024PTC001234</p>
@@ -1168,7 +1170,7 @@ export const QuotesView: React.FC = () => {
                 <div className="text-right flex flex-col justify-end">
                   <div className="inline-block border-b border-[#CCCCCC] w-48 ml-auto pb-1 mb-1" />
                   <div className="font-semibold text-[#111111]">Authorized Commercial Signatory</div>
-                  <div className="text-[10px] text-[#888888]">CRMSOFTOWER Systems Private Limited</div>
+                  <div className="text-[10px] text-[#888888]">Zyvo Technologies Private Limited</div>
                 </div>
               </div>
             </div>

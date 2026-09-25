@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kaspro | Enterprise Cloud CRM & Revenue OS",
-  description: "Kaspro Enterprise Multi-Tenant Cloud CRM Platform",
+  title: "Zyvo | Enterprise Cloud CRM & Revenue OS",
+  description: "Zyvo Enterprise Multi-Tenant Cloud CRM Platform (zyvocrm.in)",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

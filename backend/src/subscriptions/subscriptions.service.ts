@@ -268,7 +268,7 @@ export class SubscriptionsService implements OnModuleInit {
     const baseAmount = pricePerUnit * seats;
     const taxAmount = Math.round(baseAmount * 0.18); // 18% GST
     const totalAmount = baseAmount + taxAmount;
-    const orderId = `kp_cf_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const orderId = `zyvo_cf_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
     const cfOrder = await this.cashfreeService.createOrder({
       orderId,
@@ -276,12 +276,12 @@ export class SubscriptionsService implements OnModuleInit {
       currency: 'INR',
       customer: {
         id: orgId,
-        email: data.customerEmail || 'billing@kaspro.online',
+        email: data.customerEmail || 'billing@zyvocrm.in',
         phone: data.customerPhone || '9876543210',
-        name: data.customerName || 'Kaspro Subscriber',
+        name: data.customerName || 'Zyvo Subscriber',
       },
       returnUrl: data.returnUrl || `http://localhost:3000/billing?cf_order_id={order_id}`,
-      note: `Kaspro CRM ${targetPlan.name} Subscription (${seats} seats)`,
+      note: `Zyvo CRM ${targetPlan.name} Subscription (${seats} seats)`,
     });
 
     return {
@@ -370,7 +370,7 @@ export class SubscriptionsService implements OnModuleInit {
 
     // Record billing invoice receipt
     if (totalAmount > 0) {
-      const invoiceNumber = `INV-KP-${Date.now().toString().slice(-6)}`;
+      const invoiceNumber = `INV-ZY-${Date.now().toString().slice(-6)}`;
       await this.prisma.subscriptionInvoice.create({
         data: {
           subscription_id: updatedSub.id,

@@ -927,7 +927,7 @@ export default function BillingPage() {
                 <span>Subscription Invoices & Payment Receipts</span>
               </h3>
               <p className="text-xs text-[#666666]">
-                GST compliant tax invoices for your Kaspro CRM cloud subscription.
+                GST compliant tax invoices for your Zyvo CRM cloud subscription.
               </p>
             </div>
             {subscriptionData?.subscription?.status === 'ACTIVE' && (
@@ -1012,7 +1012,7 @@ export default function BillingPage() {
                     : `Upgrade to ${selectedPlanForUpgrade.name}`}
                 </h3>
                 <p className="text-xs text-[#666666]">
-                  Instant activation for your Kaspro organization workspace.
+                  Instant activation for your Zyvo organization workspace.
                 </p>
               </div>
               <button

@@ -85,9 +85,9 @@ export class CashfreeService {
           order_currency: payload.currency || 'INR',
           customer_details: {
             customer_id: payload.customer.id,
-            customer_email: payload.customer.email || 'billing@kaspro.online',
+            customer_email: payload.customer.email || 'billing@zyvocrm.in',
             customer_phone: payload.customer.phone || '9876543210',
-            customer_name: payload.customer.name || 'Kaspro Subscriber',
+            customer_name: payload.customer.name || 'Zyvo Subscriber',
           },
           order_meta: {
             return_url:
@@ -95,7 +95,7 @@ export class CashfreeService {
               `http://localhost:3000/billing?cf_order_id={order_id}`,
             notify_url: payload.notifyUrl,
           },
-          order_note: payload.note || 'Kaspro CRM Subscription Payment',
+          order_note: payload.note || 'Zyvo CRM Subscription Payment',
         };
 
         const response = await fetch(`${baseUrl}/orders`, {

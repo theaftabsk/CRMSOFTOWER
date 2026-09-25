@@ -99,7 +99,7 @@ export const Sidebar: React.FC = () => {
               className="flex items-center group cursor-pointer"
             >
               <span className="font-bold text-lg tracking-tight text-[#111111] group-hover:opacity-80 transition">
-                Kaspro
+                Zyvo
               </span>
             </Link>
           ) : (
@@ -107,7 +107,7 @@ export const Sidebar: React.FC = () => {
               href="/dashboard"
               className="mx-auto flex items-center justify-center font-bold text-lg text-[#111111] hover:opacity-80 transition font-mono"
             >
-              K
+              Z
             </Link>
           )}
 
@@ -236,11 +236,11 @@ export const Sidebar: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 min-w-0">
                 <div className="w-7 h-7 rounded-lg bg-[#111111] text-white flex items-center justify-center font-bold text-[11px] font-mono flex-shrink-0">
-                  {organization?.name ? organization.name.charAt(0).toUpperCase() : 'K'}
+                  {organization?.name ? organization.name.charAt(0).toUpperCase() : 'Z'}
                 </div>
                 <div className="min-w-0 truncate">
                   <p className="text-xs font-semibold text-[#111111] truncate leading-tight">
-                    {organization?.name || 'Kaspro Online'}
+                    {organization?.name || 'Zyvo CRM'}
                   </p>
                   <div className="flex items-center space-x-1.5 mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] pulse-subtle" />
@@ -261,10 +261,10 @@ export const Sidebar: React.FC = () => {
           ) : (
             <div className="flex justify-center group relative cursor-pointer">
               <div className="w-8 h-8 rounded-lg bg-[#111111] text-white flex items-center justify-center font-bold text-xs font-mono">
-                {organization?.name ? organization.name.charAt(0).toUpperCase() : 'K'}
+                {organization?.name ? organization.name.charAt(0).toUpperCase() : 'Z'}
               </div>
               <div className="absolute left-full ml-3 bottom-0 px-2.5 py-1.5 bg-[#111111] text-white text-xs font-medium rounded-lg shadow-xl whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-150 z-50 border border-white/10">
-                <div className="font-semibold">{organization?.name || 'Kaspro Online'}</div>
+                <div className="font-semibold">{organization?.name || 'Zyvo CRM'}</div>
                 <div className="text-[10px] text-emerald-400 font-mono flex items-center space-x-1 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-subtle" />
                   <span>Cloud Synced</span>

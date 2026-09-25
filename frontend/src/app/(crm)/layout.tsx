@@ -53,10 +53,10 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
         
         <div className="relative liquid-glass-modal p-8 flex flex-col items-center space-y-4 max-w-xs w-full text-center border border-white/80 shadow-2xl">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-[#222222] to-[#111111] text-white flex items-center justify-center font-bold text-sm shadow-[0_8px_16px_rgba(0,0,0,0.18)] border border-white/20 font-mono">
-            KP
+            ZY
           </div>
           <div className="space-y-1">
-            <h2 className="text-sm font-semibold tracking-tight text-[#111111]">Kaspro</h2>
+            <h2 className="text-sm font-semibold tracking-tight text-[#111111]">Zyvo</h2>
             <p className="text-[11px] text-[#666666] font-mono flex items-center justify-center space-x-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#111111] animate-ping inline-block" />
               <span>Verifying enterprise session...</span>

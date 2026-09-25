@@ -239,7 +239,7 @@ export const CalendarView: React.FC = () => {
 
   // Copy Public Booking Link
   const handleCopyBookingLink = () => {
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/book` : 'https://kaspro.online/book';
+    const url = typeof window !== 'undefined' ? `${window.location.origin}/book` : 'https://zyvocrm.in/book';
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
@@ -350,7 +350,7 @@ export const CalendarView: React.FC = () => {
         title: newMeeting.title,
         date_time: fullDateTime,
         location: newMeeting.provider === 'ZOOM' ? 'Zoom Meeting' : newMeeting.provider === 'GOOGLE_MEET' ? 'Google Meet' : 'Custom',
-        participants: participantList.length > 0 ? participantList : ['sales@kaspro.online'],
+        participants: participantList.length > 0 ? participantList : ['sales@zyvocrm.in'],
         status: 'Scheduled',
         meeting_type: newMeeting.meeting_type,
         duration_minutes: Number(newMeeting.duration_minutes) || 30,

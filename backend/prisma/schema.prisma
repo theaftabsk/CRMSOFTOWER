@@ -810,7 +810,7 @@ model SubscriptionInvoice {
   id                 String   @id @default(cuid())
   subscription_id    String
   organization_id    String
-  invoice_number     String   @unique // e.g. INV-KP-2026-0001
+  invoice_number     String   @unique // e.g. INV-ZY-2026-0001
   amount             Float
   tax_amount         Float    @default(0) // 18% GST
   currency           String   @default("₹")

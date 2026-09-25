@@ -1,4 +1,15 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+const API_BASE_URL = {
+  toString() {
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      if (host.includes('zyvocrm.in')) {
+        return `${window.location.protocol}//api.zyvocrm.in/api/v1`;
+      }
+    }
+    return 'http://localhost:4000/api/v1';
+  },
+};
 
 export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
   try {

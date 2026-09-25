@@ -10,6 +10,7 @@ import {
   Receipt, CreditCard, BarChart3, Settings, ChevronLeft, ChevronRight,
   ShieldCheck, Globe, Code2, Blocks, Sparkles
 } from 'lucide-react';
+import ZyvoLogo from './ZyvoLogo';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -98,9 +99,7 @@ export const Sidebar: React.FC = () => {
               href="/dashboard" 
               className="flex items-center group cursor-pointer"
             >
-              <span className="font-bold text-lg tracking-tight text-[#111111] group-hover:opacity-80 transition">
-                Zyvo
-              </span>
+              <ZyvoLogo height={26} className="text-[#111111] group-hover:opacity-80 transition" />
             </Link>
           ) : (
             <Link 

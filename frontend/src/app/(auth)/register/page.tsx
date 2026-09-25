@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { ShieldCheck, AlertCircle, ArrowRight } from 'lucide-react';
+import ZyvoLogo from '../../../components/ZyvoLogo';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -41,9 +42,7 @@ export default function RegisterPage() {
       <div className="bg-white border border-[#E5E5E5] rounded-xl max-w-sm w-full p-6 space-y-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
         {/* Brand Header */}
         <div className="text-center space-y-1">
-          <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-[#111111] text-white font-bold text-sm mb-2 shadow-sm">
-            CRM
-          </div>
+          <ZyvoLogo height={32} className="text-[#111111] mx-auto mb-2" />
           <h1 className="text-xl font-bold text-[#111111] tracking-tight">Create Workspace</h1>
           <p className="text-xs text-[#666666]">Deploy your Dedicated SaaS Organization</p>
         </div>

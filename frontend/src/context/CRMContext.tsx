@@ -75,6 +75,9 @@ interface CRMContextType {
   activeModule: string;
   setActiveModule: (module: string) => void;
 
+  mobileMenuOpen: boolean;
+  setMobileMenuOpen: (open: boolean) => void;
+
   refreshData: () => Promise<void>;
   isSyncing: boolean;
   reportsData: any;
@@ -106,6 +109,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModule, setActiveModule] = useState<string>('dashboard');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [reportsData, setReportsData] = useState<any>(null);
@@ -460,6 +464,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       auditLogs, logAction,
       searchQuery, setSearchQuery,
       activeModule, setActiveModule,
+      mobileMenuOpen, setMobileMenuOpen,
       refreshData: syncDataWithBackend,
       isSyncing,
       reportsData

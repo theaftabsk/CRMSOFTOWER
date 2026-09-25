@@ -5,14 +5,15 @@ import { useCRM } from '../context/CRMContext';
 import { useAuth } from '../context/AuthContext';
 import { 
   Search, Bell, Plus, Target, Users, Building2, TrendingUp, Receipt, 
-  LogOut, Settings, Shield, ChevronDown, Command
+  LogOut, Settings, Shield, ChevronDown, Command, Menu
 } from 'lucide-react';
 import Link from 'next/link';
 
 export const Navbar: React.FC = () => {
   const { 
     searchQuery, setSearchQuery, 
-    tasks, setActiveModule 
+    tasks, setActiveModule,
+    mobileMenuOpen, setMobileMenuOpen
   } = useCRM();
   const { user, logout } = useAuth();
 
@@ -27,35 +28,43 @@ export const Navbar: React.FC = () => {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="h-16 liquid-glass-nav px-6 flex items-center justify-between sticky top-0 z-20 select-none">
-      {/* Left: Spotlight Search Input & Quick Action */}
-      <div className="flex items-center space-x-3.5">
-        <div className="relative w-84 group">
+    <header className="h-16 liquid-glass-nav px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 select-none">
+      {/* Left: Mobile Hamburger, Spotlight Search Input & Quick Action */}
+      <div className="flex items-center space-x-2 sm:space-x-3.5 flex-1 min-w-0 pr-2">
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle navigation menu"
+          className="md:hidden p-2 rounded-xl text-[#444444] hover:text-[#111111] hover:bg-black/[0.05] transition shrink-0"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <div className="relative w-full max-w-[190px] sm:max-w-xs md:w-84 group">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888] transition group-focus-within:text-[#111111]" />
           <input 
             type="text" 
-            placeholder="Search leads, contacts, deals, invoices..."
+            placeholder="Search leads, deals..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs rounded-xl pl-9 pr-14 py-2 bg-black/[0.035] hover:bg-black/[0.05] focus:bg-white text-[#111111] placeholder-[#888888] border border-black/[0.06] focus:border-black/30 focus:shadow-[0_2px_10px_rgba(0,0,0,0.06)] transition-all duration-200 outline-none"
+            className="w-full text-xs rounded-xl pl-9 pr-8 sm:pr-14 py-2 bg-black/[0.035] hover:bg-black/[0.05] focus:bg-white text-[#111111] placeholder-[#888888] border border-black/[0.06] focus:border-black/30 focus:shadow-[0_2px_10px_rgba(0,0,0,0.06)] transition-all duration-200 outline-none"
           />
-          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center space-x-0.5 px-1.5 py-0.5 rounded-md bg-black/[0.05] text-[10px] text-[#777777] font-mono pointer-events-none border border-black/[0.04]">
+          <div className="hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 items-center space-x-0.5 px-1.5 py-0.5 rounded-md bg-black/[0.05] text-[10px] text-[#777777] font-mono pointer-events-none border border-black/[0.04]">
             <Command className="w-2.5 h-2.5 mr-0.5" />
             <span>K</span>
           </div>
         </div>
 
         {/* "+ Create" Action Menu */}
-        <div className="relative">
+        <div className="relative shrink-0">
           <button 
             onClick={() => {
               setShowQuickDropdown(!showQuickDropdown);
               if (showUserMenu) setShowUserMenu(false);
             }}
-            className="flex items-center space-x-1.5 px-3.5 py-2 bg-gradient-to-b from-[#1c1c1e] to-[#000000] hover:from-[#000000] hover:to-[#111111] text-white text-xs font-semibold rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.16)] btn-liquid transition cursor-pointer"
+            className="flex items-center space-x-1.5 px-3 py-2 bg-gradient-to-b from-[#1c1c1e] to-[#000000] hover:from-[#000000] hover:to-[#111111] text-white text-xs font-semibold rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.16)] btn-liquid transition cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Create</span>
+            <span className="hidden sm:inline">Create</span>
           </button>
 
           {showQuickDropdown && (

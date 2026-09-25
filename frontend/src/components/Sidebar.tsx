@@ -8,13 +8,17 @@ import {
   LayoutDashboard, Target, Users, Building2, TrendingUp, 
   CheckSquare, Calendar, Package, FileText, ShoppingBag, 
   Receipt, CreditCard, BarChart3, Settings, ChevronLeft, ChevronRight,
-  ShieldCheck, Globe, Code2, Blocks, Sparkles
+  ShieldCheck, Globe, Code2, Blocks, Sparkles, X
 } from 'lucide-react';
 import { ZyvoLogo, ZyvoIcon } from './ZyvoLogo';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const { activeModule, setActiveModule, organization, leads, tasks, invoices } = useCRM();
+  const { 
+    activeModule, setActiveModule, 
+    organization, leads, tasks, invoices,
+    mobileMenuOpen, setMobileMenuOpen
+  } = useCRM();
   const [collapsed, setCollapsed] = useState(false);
 
   // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar
@@ -86,54 +90,77 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside 
-      className={`liquid-glass-sidebar flex flex-col justify-between h-screen sticky top-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-30 select-none border-r border-[#E5E5E5] bg-white/80 backdrop-blur-xl ${
-        collapsed ? 'w-[72px]' : 'w-64'
-      }`}
-    >
-      <div className="flex flex-col h-full overflow-hidden">
-        {/* Brand Header: Clean Minimalist Typography */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-[#E5E5E5] flex-shrink-0">
-          {!collapsed ? (
-            <Link 
-              href="/dashboard" 
-              className="flex items-center group cursor-pointer"
-            >
-              <ZyvoLogo height={26} className="text-[#111111] group-hover:opacity-80 transition" />
-            </Link>
-          ) : (
-            <Link 
-              href="/dashboard"
-              className="mx-auto flex items-center justify-center hover:opacity-85 transition"
-              title="Zyvo CRM Dashboard"
-            >
-              <ZyvoIcon size={30} />
-            </Link>
-          )}
+    <>
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 md:hidden transition-opacity"
+        />
+      )}
 
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            title={collapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
-            className={`p-1.5 rounded-lg text-[#666666] hover:text-[#111111] hover:bg-black/[0.05] transition cursor-pointer ${
-              collapsed ? 'hidden' : 'block'
-            }`}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-        </div>
+      <aside 
+        className={`liquid-glass-sidebar flex flex-col justify-between h-screen transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none border-r border-[#E5E5E5] bg-white/95 md:bg-white/80 backdrop-blur-xl
+          md:sticky md:top-0 md:z-30 ${collapsed ? 'md:w-[72px]' : 'md:w-64'}
+          fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] shadow-2xl md:shadow-none
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+      >
+        <div className="flex flex-col h-full overflow-hidden">
+          {/* Brand Header: Clean Minimalist Typography */}
+          <div className="h-16 px-4 flex items-center justify-between border-b border-[#E5E5E5] flex-shrink-0">
+            {!collapsed ? (
+              <Link 
+                href="/dashboard" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center group cursor-pointer"
+              >
+                <ZyvoLogo height={26} className="text-[#111111] group-hover:opacity-80 transition" />
+              </Link>
+            ) : (
+              <Link 
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mx-auto flex items-center justify-center hover:opacity-85 transition"
+                title="Zyvo CRM Dashboard"
+              >
+                <ZyvoIcon size={30} />
+              </Link>
+            )}
 
-        {/* Collapsed Expand Quick Action Pill */}
-        {collapsed && (
-          <div className="pt-2 px-3 flex justify-center">
+            {/* Mobile Close Button */}
             <button
-              onClick={() => setCollapsed(false)}
-              title="Expand Sidebar (Ctrl+B)"
-              className="p-1 rounded-md text-[#888888] hover:text-[#111111] hover:bg-black/[0.05] transition"
+              onClick={() => setMobileMenuOpen(false)}
+              className="md:hidden p-1.5 rounded-lg text-[#666666] hover:text-[#111111] hover:bg-black/[0.05] transition"
+              title="Close Menu"
             >
-              <ChevronRight className="w-4 h-4" />
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Desktop Collapse/Expand Button */}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              title={collapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+              className={`hidden md:block p-1.5 rounded-lg text-[#666666] hover:text-[#111111] hover:bg-black/[0.05] transition cursor-pointer ${
+                collapsed ? 'hidden' : 'block'
+              }`}
+            >
+              <ChevronLeft className="w-4 h-4" />
             </button>
           </div>
-        )}
+
+          {/* Collapsed Expand Quick Action Pill */}
+          {collapsed && (
+            <div className="hidden md:flex pt-2 px-3 justify-center">
+              <button
+                onClick={() => setCollapsed(false)}
+                title="Expand Sidebar (Ctrl+B)"
+                className="p-1 rounded-md text-[#888888] hover:text-[#111111] hover:bg-black/[0.05] transition"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
         {/* Navigation Item Tree */}
         <nav className="p-2.5 space-y-3.5 overflow-y-auto flex-1 custom-scrollbar">
@@ -159,7 +186,10 @@ export const Sidebar: React.FC = () => {
                   <div key={item.id} className="relative group">
                     <Link
                       href={item.href}
-                      onClick={() => setActiveModule(item.id)}
+                      onClick={() => {
+                        setActiveModule(item.id);
+                        setMobileMenuOpen(false);
+                      }}
                       className={`w-full flex items-center ${
                         collapsed ? 'justify-center p-2.5' : 'px-3 py-2 space-x-2.5'
                       } rounded-xl text-xs font-medium transition-all duration-150 cursor-pointer ${
@@ -275,5 +305,6 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
     </aside>
+    </>
   );
 };

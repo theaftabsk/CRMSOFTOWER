@@ -103,7 +103,7 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
           />
         )}
 
-        <main className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col min-h-0 bg-[#F4F5F8]">
+        <main className="p-3 sm:p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col min-h-0 bg-[#F4F5F8]">
           <div key={pathname} className="page-enter-animation flex-1 flex flex-col min-h-full">
             {children}
           </div>

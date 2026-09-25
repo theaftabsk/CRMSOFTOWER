@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zyvo CRM | Modern All-in-One Cloud CRM & Revenue Operating System</title>
+  <meta name="description" content="Close more deals, automate sales pipelines, generate GST tax invoices, and scale your business with Zyvo CRM. Start your 14-day free trial today.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Announcement Bar -->
+  <aside class="top-announcement" aria-label="Announcement">
+    <div class="announcement-content">
+      <span class="badge-accent">New</span>
+      <span>Experience Zyvo 2.0 with Cashfree Instant Checkout & GST Automation</span>
+      <a href="https://app.zyvocrm.in/register" class="announcement-link">
+        Claim 14-Day Free Trial <i data-lucide="arrow-right"></i>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Navigation Header -->
+  <header class="site-header">
+    <nav class="nav-container">
+      <a href="/" class="brand-logo">
+        <div class="logo-mark">ZY</div>
+        <span class="logo-text">Zyvo</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pipeline">Sales Pipeline</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="https://app.zyvocrm.in/login" class="btn-ghost">Sign In</a>
+        <a href="https://app.zyvocrm.in/register" class="btn-primary">
+          <span>Start Free Trial</span>
+          <i data-lucide="arrow-right" class="icon-sm"></i>
+        </a>
+      </div>
+
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Menu">
+        <i data-lucide="menu"></i>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <ul class="mobile-nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pipeline">Sales Pipeline</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="mobile-actions">
+      <a href="https://app.zyvocrm.in/login" class="btn-ghost w-full">Sign In</a>
+      <a href="https://app.zyvocrm.in/register" class="btn-primary w-full">Start 14-Day Free Trial</a>
+    </div>
+  </div>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="ambient-glow glow-1"></div>
+      <div class="ambient-glow glow-2"></div>
+      
+      <div class="container hero-container">
+        <div class="hero-badge">
+          <i data-lucide="sparkles" class="icon-amber"></i>
+          <span>Built for High-Growth Indian & Global Enterprises</span>
+        </div>
+
+        <h1 class="hero-headline">
+          The Clean, Modern CRM That <br class="hidden-sm">
+          <span class="gradient-text">Scales Your Revenue Engine</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Manage leads, visualize multi-stage Kanban deals, generate GST tax invoices, and automate sales workflows with unified elegance. Zero clutter, 100% focus.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="https://app.zyvocrm.in/register" class="btn-primary btn-lg">
+            <span>Get Started Free — 14 Days</span>
+            <i data-lucide="arrow-right"></i>
+          </a>
+          <a href="https://app.zyvocrm.in/login" class="btn-secondary btn-lg">
+            <i data-lucide="play-circle"></i>
+            <span>Live Workspace Demo</span>
+          </a>
+        </div>
+
+        <div class="hero-social-proof">
+          <div class="avatars-cluster">
+            <div class="avatar av-1">AS</div>
+            <div class="avatar av-2">RK</div>
+            <div class="avatar av-3">MP</div>
+            <div class="avatar av-4">SD</div>
+          </div>
+          <div class="proof-text">
+            <strong>4.9 / 5.0 Rating</strong> by 1,200+ sales leaders & fast-moving teams
+          </div>
+        </div>
+
+        <!-- CRM Product Dashboard Preview Mockup -->
+        <div class="hero-preview-frame">
+          <div class="frame-bar">
+            <div class="window-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="browser-address">
+              <i data-lucide="lock" class="icon-xs"></i>
+              <span>app.zyvocrm.in/dashboard</span>
+            </div>
+            <div class="frame-tag">Live Preview</div>
+          </div>
+
+          <div class="preview-content">
+            <!-- Mock Sidebar -->
+            <div class="mock-sidebar">
+              <div class="mock-brand">
+                <div class="mock-logo">ZY</div>
+                <span>Zyvo CRM</span>
+              </div>
+              <div class="mock-menu">
+                <div class="mock-item active"><i data-lucide="layout-dashboard"></i> Dashboard</div>
+                <div class="mock-item"><i data-lucide="users"></i> Leads</div>
+                <div class="mock-item"><i data-lucide="kanban"></i> Deals Pipeline</div>
+                <div class="mock-item"><i data-lucide="calendar"></i> Calendar</div>
+                <div class="mock-item"><i data-lucide="receipt"></i> GST Invoices</div>
+                <div class="mock-item"><i data-lucide="credit-card"></i> Billing</div>
+              </div>
+            </div>
+
+            <!-- Mock Main Viewport -->
+            <div class="mock-main">
+              <div class="mock-topbar">
+                <div class="mock-search">
+                  <i data-lucide="search" class="icon-xs"></i> Search deals, leads, contacts...
+                </div>
+                <div class="mock-user">
+                  <div class="mock-avatar">A</div>
+                  <span>Aftab Admin</span>
+                </div>
+              </div>
+
+              <!-- Metrics Grid -->
+              <div class="mock-kpis">
+                <div class="mock-card">
+                  <span class="kpi-label">Active Pipeline</span>
+                  <span class="kpi-val font-mono">₹48,20,000</span>
+                  <span class="kpi-trend text-green">+24.8% vs last mo</span>
+                </div>
+                <div class="mock-card">
+                  <span class="kpi-label">Total Inbound Leads</span>
+                  <span class="kpi-val font-mono">1,842</span>
+                  <span class="kpi-trend text-green">+18.2% conversion</span>
+                </div>
+                <div class="mock-card">
+                  <span class="kpi-label">Closed Revenue</span>
+                  <span class="kpi-val font-mono">₹14,90,500</span>
+                  <span class="kpi-trend text-green">100% on target</span>
+                </div>
+                <div class="mock-card">
+                  <span class="kpi-label">Team Members</span>
+                  <span class="kpi-val font-mono">12 Seats</span>
+                  <span class="kpi-trend text-blue">98% utilization</span>
+                </div>
+              </div>
+
+              <!-- Mock Kanban Columns -->
+              <div class="mock-kanban">
+                <div class="mock-col">
+                  <div class="col-head"><span>Lead In</span> <span class="badge">4</span></div>
+                  <div class="mock-ticket">
+                    <strong>TechNova Inc.</strong>
+                    <span>₹2,40,000 · Enterprise Pilot</span>
+                  </div>
+                  <div class="mock-ticket">
+                    <strong>BlueSky Logistics</strong>
+                    <span>₹1,20,000 · 15 Seats</span>
+                  </div>
+                </div>
+                <div class="mock-col">
+                  <div class="col-head"><span>Qualified / Demo</span> <span class="badge">3</span></div>
+                  <div class="mock-ticket active-ticket">
+                    <strong>Apex Healthcare</strong>
+                    <span>₹6,80,000 · Custom API</span>
+                  </div>
+                  <div class="mock-ticket">
+                    <strong>Zephyr Retail</strong>
+                    <span>₹3,50,000 · GST Sync</span>
+                  </div>
+                </div>
+                <div class="mock-col">
+                  <div class="col-head"><span>Won & Closed</span> <span class="badge won">5</span></div>
+                  <div class="mock-ticket won-ticket">
+                    <strong>Zenith Financial</strong>
+                    <span>₹12,50,000 · Cashfree Paid</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TRUSTED LOGOS STRIP -->
+    <section class="trust-strip">
+      <div class="container">
+        <p class="trust-title">TRUSTED BY FAST-GROWING SALES TEAMS, AGENCIES & CORPORATES</p>
+        <div class="trust-logos">
+          <span class="logo-item">TechMatrix</span>
+          <span class="logo-item">Kolkata Ventures</span>
+          <span class="logo-item">Nexus Retail</span>
+          <span class="logo-item">CloudShift</span>
+          <span class="logo-item">Veloce Finance</span>
+          <span class="logo-item">Zenith Media</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CORE FEATURES SECTION -->
+    <section id="features" class="features-section">
+      <div class="container">
+        <div class="section-badge">Platform Capabilities</div>
+        <h2 class="section-title">Everything Your Sales Team Needs to Win</h2>
+        <p class="section-subtitle">
+          Engineered with a minimalist monochrome aesthetic. Fast, responsive, and completely free of enterprise bloat.
+        </p>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="icon-box"><i data-lucide="kanban"></i></div>
+            <h3>Kanban Deals Pipeline</h3>
+            <p>Visual drag-and-drop sales stages. Track deal velocity, forecast revenue, and never let high-value deals slip through the cracks.</p>
+            <ul class="feature-checklist">
+              <li><i data-lucide="check"></i> Multi-stage visual funnels</li>
+              <li><i data-lucide="check"></i> Weighted win probability</li>
+              <li><i data-lucide="check"></i> Real-time deal forecasting</li>
+            </ul>
+          </div>
+
+          <div class="feature-card highlighted">
+            <div class="icon-box"><i data-lucide="receipt"></i></div>
+            <h3>GST Compliant Invoicing</h3>
+            <p>Generate professional GST tax invoices, export print-ready PDFs, record partial payments, and manage ledgers effortlessly.</p>
+            <ul class="feature-checklist">
+              <li><i data-lucide="check"></i> 18% GST auto-calculation</li>
+              <li><i data-lucide="check"></i> Official printable tax PDF receipts</li>
+              <li><i data-lucide="check"></i> Instant payment status tracking</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon-box"><i data-lucide="credit-card"></i></div>
+            <h3>Cashfree Payment Gateway</h3>
+            <p>Seamless 1-click subscription checkout, dynamic team seat allocations, UPI, debit/credit cards, and automated renewal.</p>
+            <ul class="feature-checklist">
+              <li><i data-lucide="check"></i> Instant UPI, Card & NetBanking</li>
+              <li><i data-lucide="check"></i> Dynamic seat upgrade counter</li>
+              <li><i data-lucide="check"></i> Automated billing receipts</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon-box"><i data-lucide="globe"></i></div>
+            <h3>Web Forms & Lead Capture</h3>
+            <p>Embed beautiful responsive lead capture forms on your website or landing pages. Automatically route new submissions into CRM leads.</p>
+            <ul class="feature-checklist">
+              <li><i data-lucide="check"></i> Shareable direct form URLs</li>
+              <li><i data-lucide="check"></i> 1-click iframe web embed</li>
+              <li><i data-lucide="check"></i> Real-time lead notifications</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon-box"><i data-lucide="video"></i></div>
+            <h3>Google Meet & Zoom Integration</h3>
+            <p>Schedule client demos and strategy sessions directly within the CRM calendar. Auto-generate conference meeting links.</p>
+            <ul class="feature-checklist">
+              <li><i data-lucide="check"></i> Direct Google Meet creation</li>
+              <li><i data-lucide="check"></i> Zoom Cloud OAuth sync</li>
+              <li><i data-lucide="check"></i> Client booking landing page</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon-box"><i data-lucide="code-2"></i></div>
+            <h3>Developer API & Webhooks</h3>
+            <p>Full REST API engine with scoped API keys, real-time webhook deliveries, audit logs, and developer documentation.</p>
+            <ul class="feature-checklist">
+              <li><i data-lucide="check"></i> Dedicated Developer Hub</li>
+              <li><i data-lucide="check"></i> Webhooks event dispatcher</li>
+              <li><i data-lucide="check"></i> Idempotent request protection</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING SECTION -->
+    <section id="pricing" class="pricing-section">
+      <div class="container">
+        <div class="section-badge">Transparent Pricing</div>
+        <h2 class="section-title">Simple, Predictable Plans For Any Team</h2>
+        <p class="section-subtitle">
+          Start with our full 14-day free trial. No credit card required. Upgrade anytime with Cashfree.
+        </p>
+
+        <!-- Billing Cadence Toggle -->
+        <div class="billing-switch-wrapper">
+          <span class="switch-label">Monthly</span>
+          <button class="switch-toggle" id="cadenceToggle" aria-label="Toggle Annual Billing">
+            <span class="toggle-knob"></span>
+          </button>
+          <span class="switch-label">
+            Annual <span class="discount-badge">Save 20%</span>
+          </span>
+        </div>
+
+        <div class="pricing-grid">
+          <!-- Starter Plan -->
+          <div class="pricing-card">
+            <div class="plan-header">
+              <span class="plan-badge">Entry Level</span>
+              <h3 class="plan-name">Starter</h3>
+              <p class="plan-desc">Basic CRM & pipeline management for solo founders and small sales teams.</p>
+            </div>
+            
+            <div class="price-wrap">
+              <div class="price-val font-mono">
+                <span class="curr">₹</span><span class="amount" data-monthly="399" data-annual="319">399</span>
+              </div>
+              <span class="period">/ user / month</span>
+            </div>
+            <div class="annual-note" data-annual-note="Billed annually (₹3,828/yr)">Billed monthly</div>
+
+            <ul class="plan-features">
+              <li><i data-lucide="check"></i> Full Basic CRM (Leads, Contacts)</li>
+              <li><i data-lucide="check"></i> Kanban Deals Pipeline</li>
+              <li><i data-lucide="check"></i> Calendar & Tasks Follow-ups</li>
+              <li><i data-lucide="check"></i> 500 Leads / user</li>
+              <li><i data-lucide="check"></i> 1 GB Storage / user</li>
+            </ul>
+
+            <a href="https://app.zyvocrm.in/register" class="btn-secondary w-full">
+              <span>Start 14-Day Trial</span>
+            </a>
+          </div>
+
+          <!-- Professional Plan (Popular) -->
+          <div class="pricing-card popular">
+            <div class="popular-ribbon">Most Popular 🔥</div>
+            <div class="plan-header">
+              <span class="plan-badge accent">Growing Teams</span>
+              <h3 class="plan-name">Professional</h3>
+              <p class="plan-desc">For sales teams requiring commercial invoicing, web forms & automation.</p>
+            </div>
+            
+            <div class="price-wrap">
+              <div class="price-val font-mono">
+                <span class="curr">₹</span><span class="amount" data-monthly="699" data-annual="559">699</span>
+              </div>
+              <span class="period">/ user / month</span>
+            </div>
+            <div class="annual-note" data-annual-note="Billed annually (₹6,708/yr)">Billed monthly</div>
+
+            <ul class="plan-features">
+              <li><i data-lucide="check"></i> Everything in Starter</li>
+              <li><i data-lucide="check"></i> GST Tax Invoices & Ledger</li>
+              <li><i data-lucide="check"></i> Sales Orders & Quotations</li>
+              <li><i data-lucide="check"></i> Web Capture Forms Studio</li>
+              <li><i data-lucide="check"></i> WhatsApp Integration</li>
+              <li><i data-lucide="check"></i> 5,000 Leads & 5 GB Storage</li>
+            </ul>
+
+            <a href="https://app.zyvocrm.in/register" class="btn-primary w-full">
+              <span>Get Started with Pro</span>
+              <i data-lucide="arrow-right"></i>
+            </a>
+          </div>
+
+          <!-- Enterprise Scale Plan -->
+          <div class="pricing-card">
+            <div class="plan-header">
+              <span class="plan-badge">Enterprise Scale</span>
+              <h3 class="plan-name">Enterprise</h3>
+              <p class="plan-desc">Unlimited leads, dedicated Developer API, custom workflows and priority SLA.</p>
+            </div>
+            
+            <div class="price-wrap">
+              <div class="price-val font-mono">
+                <span class="curr">₹</span><span class="amount" data-monthly="1299" data-annual="1039">1,299</span>
+              </div>
+              <span class="period">/ user / month</span>
+            </div>
+            <div class="annual-note" data-annual-note="Billed annually (₹12,468/yr)">Billed monthly</div>
+
+            <ul class="plan-features">
+              <li><i data-lucide="check"></i> Everything in Professional</li>
+              <li><i data-lucide="check"></i> Unlimited Leads & Contacts</li>
+              <li><i data-lucide="check"></i> Full Developer API & Webhooks Hub</li>
+              <li><i data-lucide="check"></i> Advanced Sales Automation</li>
+              <li><i data-lucide="check"></i> 20 GB Storage & Priority SLA</li>
+            </ul>
+
+            <a href="https://app.zyvocrm.in/register" class="btn-secondary w-full">
+              <span>Choose Enterprise</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FREQUENTLY ASKED QUESTIONS -->
+    <section id="faq" class="faq-section">
+      <div class="container faq-container">
+        <div class="section-badge">Got Questions?</div>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+
+        <div class="faq-accordion">
+          <div class="faq-item">
+            <button class="faq-question">
+              <span>How does the 14-day free trial work?</span>
+              <i data-lucide="chevron-down" class="faq-icon"></i>
+            </button>
+            <div class="faq-answer">
+              <p>Every new account immediately receives 14 days of full, unrestricted access to all Zyvo CRM enterprise features. No credit card is needed to begin. If you decide to subscribe, you can do so anytime via our official Cashfree Payment Gateway.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span>What payment methods are supported?</span>
+              <i data-lucide="chevron-down" class="faq-icon"></i>
+            </button>
+            <div class="faq-answer">
+              <p>We support all major Indian and international payment options via Cashfree Payments: UPI (Google Pay, PhonePe, Paytm, BHIM), Debit & Credit Cards (Visa, MasterCard, RuPay), NetBanking from 50+ banks, and Corporate Corporate Accounts.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span>Can we dynamically add or remove user seats?</span>
+              <i data-lucide="chevron-down" class="faq-icon"></i>
+            </button>
+            <div class="faq-answer">
+              <p>Yes! In the Zyvo Billing & Subscription dashboard, you can use our live seat counter (+ / -) to allocate or release team seats at any time. Billing automatically pro-rates according to your active seats.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span>Are GST tax invoices generated automatically?</span>
+              <i data-lucide="chevron-down" class="faq-icon"></i>
+            </button>
+            <div class="faq-answer">
+              <p>Yes. Every subscription transaction produces an official, 18% GST-compliant tax invoice with your company details and GSTIN. You can download PDF receipts directly from the billing tab.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALL TO ACTION BANNER -->
+    <section class="cta-banner">
+      <div class="container">
+        <div class="cta-box">
+          <h2 class="cta-title">Ready to Elevate Your Sales Pipeline?</h2>
+          <p class="cta-text">
+            Join hundreds of modern businesses using Zyvo CRM to manage deals, teams, and revenue. Get full access in under 60 seconds.
+          </p>
+          <div class="cta-actions">
+            <a href="https://app.zyvocrm.in/register" class="btn-primary btn-lg">
+              <span>Start Your 14-Day Free Trial</span>
+              <i data-lucide="arrow-right"></i>
+            </a>
+            <a href="https://app.zyvocrm.in/login" class="btn-ghost-white btn-lg">
+              <span>Existing User? Sign In</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <div class="brand-logo">
+          <div class="logo-mark">ZY</div>
+          <span class="logo-text">Zyvo CRM</span>
+        </div>
+        <p class="footer-desc">
+          Modern All-in-One Cloud CRM, Kanban Pipeline & Revenue Operating System. Built with precision for growing organizations.
+        </p>
+        <div class="copyright">
+          © 2026 Zyvo CRM (zyvocrm.in). All rights reserved.
+        </div>
+      </div>
+
+      <div class="footer-links-grid">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pipeline">Kanban Pipeline</a></li>
+            <li><a href="#pricing">Pricing Plans</a></li>
+            <li><a href="https://app.zyvocrm.in/developers">API & Webhooks</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Portal</h4>
+          <ul>
+            <li><a href="https://app.zyvocrm.in/login">Sign In</a></li>
+            <li><a href="https://app.zyvocrm.in/register">Create Account</a></li>
+            <li><a href="https://app.zyvocrm.in/billing">Subscription</a></li>
+            <li><a href="https://api.zyvocrm.in/api/v1/health">API Status</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact & Support</h4>
+          <ul>
+            <li><a href="mailto:sales@zyvocrm.in">sales@zyvocrm.in</a></li>
+            <li><a href="mailto:billing@zyvocrm.in">billing@zyvocrm.in</a></li>
+            <li><a href="https://zyvocrm.in/book">Book a Demo</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

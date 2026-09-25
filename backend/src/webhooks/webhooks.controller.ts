@@ -1,18 +1,53 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Patch,
+  Body,
+  Param,
+  Headers,
+} from '@nestjs/common';
 import { WebhooksService } from './webhooks.service';
-import { TenantOrg } from '../common/decorators/tenant.decorator';
 
 @Controller('webhooks')
 export class WebhooksController {
-  constructor(private webhooksService: WebhooksService) {}
+  constructor(private readonly webhooksService: WebhooksService) {}
 
   @Get()
-  findAll(@TenantOrg() orgId: string) {
+  findAll(@Headers('x-org-id') orgId: string = 'ORG001') {
     return this.webhooksService.findAll(orgId);
   }
 
   @Post()
-  create(@TenantOrg() orgId: string, @Body() body: any) {
+  create(
+    @Headers('x-org-id') orgId: string = 'ORG001',
+    @Body() body: any,
+  ) {
     return this.webhooksService.create(orgId, body);
+  }
+
+  @Patch(':id/toggle')
+  toggle(
+    @Headers('x-org-id') orgId: string = 'ORG001',
+    @Param('id') id: string,
+  ) {
+    return this.webhooksService.toggleActive(orgId, id);
+  }
+
+  @Post(':id/test')
+  testPing(
+    @Headers('x-org-id') orgId: string = 'ORG001',
+    @Param('id') id: string,
+  ) {
+    return this.webhooksService.testPing(orgId, id);
+  }
+
+  @Delete(':id')
+  delete(
+    @Headers('x-org-id') orgId: string = 'ORG001',
+    @Param('id') id: string,
+  ) {
+    return this.webhooksService.delete(orgId, id);
   }
 }

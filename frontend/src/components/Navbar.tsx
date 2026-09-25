@@ -5,7 +5,7 @@ import { useCRM } from '../context/CRMContext';
 import { useAuth } from '../context/AuthContext';
 import { 
   Search, Bell, Plus, Target, Users, Building2, TrendingUp, Receipt, 
-  LogOut, Settings, Shield, ChevronDown
+  LogOut, Settings, Shield, ChevronDown, Command
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -27,92 +27,96 @@ export const Navbar: React.FC = () => {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="h-16 border-b border-[#E5E5E5] bg-white px-6 flex items-center justify-between sticky top-0 z-20">
-      {/* Left: Global Search Input */}
-      <div className="flex items-center space-x-3">
-        <div className="relative w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999999]" />
+    <header className="h-16 liquid-glass-nav px-6 flex items-center justify-between sticky top-0 z-20 select-none">
+      {/* Left: Spotlight Search Input & Quick Action */}
+      <div className="flex items-center space-x-3.5">
+        <div className="relative w-84 group">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888] transition group-focus-within:text-[#111111]" />
           <input 
             type="text" 
             placeholder="Search leads, contacts, deals, invoices..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs rounded-lg pl-9 pr-4 py-2 border border-[#E5E5E5] bg-white text-[#111111] placeholder-[#999999] transition focus:outline-none focus:border-[#111111] focus:ring-1 focus:ring-[#111111]"
+            className="w-full text-xs rounded-xl pl-9 pr-14 py-2 bg-black/[0.035] hover:bg-black/[0.05] focus:bg-white text-[#111111] placeholder-[#888888] border border-black/[0.06] focus:border-black/30 focus:shadow-[0_2px_10px_rgba(0,0,0,0.06)] transition-all duration-200 outline-none"
           />
+          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center space-x-0.5 px-1.5 py-0.5 rounded-md bg-black/[0.05] text-[10px] text-[#777777] font-mono pointer-events-none border border-black/[0.04]">
+            <Command className="w-2.5 h-2.5 mr-0.5" />
+            <span>K</span>
+          </div>
         </div>
 
-        {/* "+ Create" Quick Action Menu (Primary Black Button) */}
+        {/* "+ Create" Action Menu */}
         <div className="relative">
           <button 
             onClick={() => {
               setShowQuickDropdown(!showQuickDropdown);
               if (showUserMenu) setShowUserMenu(false);
             }}
-            className="flex items-center space-x-1.5 px-3.5 py-2 bg-[#111111] hover:bg-[#262626] text-white text-xs font-medium rounded-lg transition shadow-sm"
+            className="flex items-center space-x-1.5 px-3.5 py-2 bg-gradient-to-b from-[#1c1c1e] to-[#000000] hover:from-[#000000] hover:to-[#111111] text-white text-xs font-semibold rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.16)] btn-liquid transition cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Create</span>
           </button>
 
           {showQuickDropdown && (
-            <div className="absolute left-0 mt-2 w-52 border border-[#E5E5E5] rounded-xl shadow-lg bg-white p-1.5 z-50 animate-in fade-in">
-              <div className="px-2.5 py-1.5 text-[10px] font-semibold text-[#888888] uppercase tracking-wider">
+            <div className="absolute left-0 mt-2 w-56 liquid-glass-dropdown p-1.5 z-50 liquid-animate-in border border-white/80">
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-[#888888] uppercase tracking-wider">
                 Quick Record Creation
               </div>
               <Link
                 href="/leads"
                 onClick={() => { setActiveModule('leads'); setShowQuickDropdown(false); }}
-                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+                className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-[#222222] hover:bg-black/[0.05] btn-liquid transition"
               >
                 <Target className="w-4 h-4 text-[#111111]" />
-                <span>New Lead</span>
+                <span className="font-medium">New Lead</span>
               </Link>
               <Link
                 href="/contacts"
                 onClick={() => { setActiveModule('contacts'); setShowQuickDropdown(false); }}
-                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+                className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-[#222222] hover:bg-black/[0.05] btn-liquid transition"
               >
                 <Users className="w-4 h-4 text-[#111111]" />
-                <span>New Contact</span>
+                <span className="font-medium">New Contact</span>
               </Link>
               <Link
                 href="/accounts"
                 onClick={() => { setActiveModule('accounts'); setShowQuickDropdown(false); }}
-                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+                className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-[#222222] hover:bg-black/[0.05] btn-liquid transition"
               >
                 <Building2 className="w-4 h-4 text-[#111111]" />
-                <span>New Account</span>
+                <span className="font-medium">New Account</span>
               </Link>
               <Link
                 href="/deals"
                 onClick={() => { setActiveModule('deals'); setShowQuickDropdown(false); }}
-                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+                className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-[#222222] hover:bg-black/[0.05] btn-liquid transition"
               >
                 <TrendingUp className="w-4 h-4 text-[#111111]" />
-                <span>New Deal</span>
+                <span className="font-medium">New Deal</span>
               </Link>
               <Link
                 href="/invoices"
                 onClick={() => { setActiveModule('invoices'); setShowQuickDropdown(false); }}
-                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+                className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-[#222222] hover:bg-black/[0.05] btn-liquid transition"
               >
                 <Receipt className="w-4 h-4 text-[#111111]" />
-                <span>New Invoice</span>
+                <span className="font-medium">New Invoice</span>
               </Link>
             </div>
           )}
         </div>
       </div>
 
-      {/* Right: Notifications & Current User Profile with Real Logout */}
-      <div className="flex items-center space-x-4">
+      {/* Right: Notifications & Current User Profile with Frosted Glass Menu */}
+      <div className="flex items-center space-x-3.5">
         <button 
           title="Notifications"
-          className="relative p-2 rounded-lg text-[#666666] hover:text-[#111111] hover:bg-[#F8F8F8] transition border border-[#E5E5E5]"
+          className="relative p-2 rounded-xl text-[#555555] hover:text-[#111111] hover:bg-black/[0.04] border border-black/[0.06] bg-white/50 backdrop-blur-md btn-liquid transition cursor-pointer"
         >
           <Bell className="w-4 h-4" />
           {pendingTasksCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#DC2626] rounded-full" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#DC2626] rounded-full ring-2 ring-white" />
           )}
         </button>
 
@@ -123,16 +127,16 @@ export const Navbar: React.FC = () => {
               setShowUserMenu(!showUserMenu);
               if (showQuickDropdown) setShowQuickDropdown(false);
             }}
-            className="flex items-center space-x-2.5 pl-2 border-l border-[#E5E5E5] hover:opacity-80 transition cursor-pointer"
+            className="flex items-center space-x-2.5 px-2.5 py-1.5 rounded-xl border border-black/[0.06] bg-white/50 hover:bg-white/80 backdrop-blur-md btn-liquid transition cursor-pointer shadow-sm"
           >
-            <div className="w-8 h-8 rounded-full bg-[#111111] text-white flex items-center justify-center font-semibold text-xs shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-b from-[#222222] to-[#111111] text-white flex items-center justify-center font-bold text-xs shadow-sm">
               {initial}
             </div>
             <div className="text-left hidden sm:block">
-              <span className="text-xs font-medium text-[#111111] block leading-tight">
+              <span className="text-xs font-semibold text-[#111111] block leading-tight">
                 {displayName}
               </span>
-              <span className="text-[10px] text-[#888888] font-mono">
+              <span className="text-[10px] text-[#777777] font-mono leading-none">
                 {displayRole}
               </span>
             </div>
@@ -140,15 +144,15 @@ export const Navbar: React.FC = () => {
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-60 border border-[#E5E5E5] rounded-xl shadow-lg bg-white p-2 z-50 animate-in fade-in">
-              <div className="px-2.5 py-2 border-b border-[#E5E5E5] mb-1">
-                <p className="text-xs font-semibold text-[#111111]">{displayName}</p>
+            <div className="absolute right-0 mt-2 w-64 liquid-glass-dropdown p-2 z-50 liquid-animate-in border border-white/80">
+              <div className="px-3 py-2.5 border-b border-black/[0.06] mb-1">
+                <p className="text-xs font-bold text-[#111111]">{displayName}</p>
                 <p className="text-[11px] text-[#666666] truncate">{user?.email || 'admin@abctechnologies.com'}</p>
-                <div className="flex items-center space-x-1.5 mt-1.5">
-                  <span className="shadcn-badge shadcn-badge-default font-mono text-[9px]">
+                <div className="flex items-center space-x-1.5 mt-2">
+                  <span className="px-2 py-0.5 rounded-md bg-black/[0.05] border border-black/[0.05] font-mono text-[9px] text-[#111111] font-semibold">
                     {displayOrg}
                   </span>
-                  <span className="text-[10px] text-[#888888] font-mono">
+                  <span className="text-[10px] text-[#777777] font-mono">
                     {displayRole}
                   </span>
                 </div>
@@ -157,32 +161,32 @@ export const Navbar: React.FC = () => {
               <Link
                 href="/settings"
                 onClick={() => setShowUserMenu(false)}
-                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+                className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-[#222222] hover:bg-black/[0.05] btn-liquid transition"
               >
                 <Settings className="w-3.5 h-3.5 text-[#666666]" />
-                <span>Organization Settings</span>
+                <span className="font-medium">Organization Settings</span>
               </Link>
 
               <Link
                 href="/settings/security"
                 onClick={() => setShowUserMenu(false)}
-                className="flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#222222] hover:bg-[#F8F8F8] transition"
+                className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-[#222222] hover:bg-black/[0.05] btn-liquid transition"
               >
                 <Shield className="w-3.5 h-3.5 text-[#666666]" />
-                <span>Security & Roles</span>
+                <span className="font-medium">Security & Roles</span>
               </Link>
 
-              <div className="border-t border-[#E5E5E5] my-1" />
+              <div className="border-t border-black/[0.06] my-1" />
 
               <button
                 onClick={async () => {
                   setShowUserMenu(false);
                   await logout();
                 }}
-                className="w-full flex items-center space-x-2 px-2.5 py-2 rounded-lg text-xs text-[#DC2626] hover:bg-red-50 transition text-left"
+                className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-[#DC2626] hover:bg-red-50/80 btn-liquid transition text-left cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5 text-[#DC2626]" />
-                <span className="font-medium">Sign Out</span>
+                <span className="font-semibold">Sign Out</span>
               </button>
             </div>
           )}

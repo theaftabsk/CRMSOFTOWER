@@ -261,7 +261,13 @@ async function main() {
   // 12. Invoices & Payments
   const invoice1 = await prisma.invoice.upsert({
     where: { invoice_number: 'INV-2026-001' },
-    update: {},
+    update: {
+      payment_token: 'pay_token_apex_demo_2026',
+      items: [
+        { name: 'Enterprise Cloud ERP Suite', qty: 1, unit_price: 120000, total: 120000 },
+        { name: 'Implementation & Training Support', qty: 1, unit_price: 21600, total: 21600 },
+      ],
+    },
     create: {
       id: 'INV001',
       organization_id: org.id,
@@ -274,6 +280,11 @@ async function main() {
       status: 'Partial',
       issue_date: '2026-09-01',
       due_date: '2026-09-15',
+      payment_token: 'pay_token_apex_demo_2026',
+      items: [
+        { name: 'Enterprise Cloud ERP Suite', qty: 1, unit_price: 120000, total: 120000 },
+        { name: 'Implementation & Training Support', qty: 1, unit_price: 21600, total: 21600 },
+      ],
     },
   });
 
@@ -291,7 +302,52 @@ async function main() {
     },
   });
 
-  // 13. SaaS Plans
+  // 13. Demo Web Form
+  await prisma.webForm.upsert({
+    where: { id: 'form-website-inquiry' },
+    update: {},
+    create: {
+      id: 'form-website-inquiry',
+      organization_id: org.id,
+      title: 'Website Product Inquiry Form',
+      description: 'Request a free enterprise demonstration and customized quotation.',
+      fields: [
+        { name: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'e.g. Rahul Sharma' },
+        { name: 'email', label: 'Business Email', type: 'email', required: true, placeholder: 'e.g. rahul@company.com' },
+        { name: 'phone', label: 'Contact Phone', type: 'tel', required: true, placeholder: 'e.g. +91 98765 43210' },
+        { name: 'company', label: 'Company / Organization', type: 'text', required: false, placeholder: 'e.g. Acme Tech Solutions' },
+        { name: 'message', label: 'Tell us about your project requirements', type: 'textarea', required: false, placeholder: 'How can we help your team succeed?' },
+      ],
+      submit_btn_text: 'Request Demo',
+      success_message: 'Thank you! Our sales specialist will contact you within 2 hours.',
+      is_active: true,
+      submissions_count: 12,
+    },
+  });
+
+  // 14. Demo Partner API Key
+  // raw key: "crm_live_demo_key_super_secure_123"
+  // SHA-256 hash:
+  const demoKeyRaw = 'crm_live_demo_key_super_secure_123';
+  const cryptoModule = await import('crypto');
+  const demoKeyHash = cryptoModule.createHash('sha256').update(demoKeyRaw).digest('hex');
+
+  await prisma.apiKey.upsert({
+    where: { api_key_hash: demoKeyHash },
+    update: {},
+    create: {
+      id: 'key-partner-demo',
+      organization_id: org.id,
+      key_name: 'Production Partner Mobile App',
+      key_prefix: 'crm_live_demo...',
+      api_key_hash: demoKeyHash,
+      permissions: ['leads:read', 'leads:write', 'deals:read', 'deals:write', 'invoices:read', 'invoices:write'],
+      rate_limit_per_min: 150,
+      is_revoked: false,
+    },
+  });
+
+  // 15. SaaS Plans
   await prisma.saaSPlan.createMany({
     skipDuplicates: true,
     data: [

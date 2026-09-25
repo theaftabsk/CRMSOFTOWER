@@ -41,7 +41,7 @@ interface CRMContextType {
 
   deals: Deal[];
   addDeal: (deal: Omit<Deal, 'id' | 'organization_id' | 'created_date'>) => void;
-  updateDealStage: (dealId: string, newStage: Deal['stage']) => void;
+  updateDealStage: (dealId: string, newStage: Deal['stage'], lostReason?: string) => void;
   updateDeal: (id: string, updates: Partial<Deal>) => void;
 
   tasks: Task[];
@@ -324,16 +324,29 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAction('Created Deal', 'Deal', id, '', data.title);
   };
 
-  const updateDealStage = (dealId: string, newStage: Deal['stage']) => {
+  const updateDealStage = (dealId: string, newStage: Deal['stage'], lostReason?: string) => {
     setDeals(prev => prev.map(d => {
       if (d.id === dealId) {
         logAction('Changed Deal Stage', 'Deal', dealId, d.stage, newStage);
-        return { ...d, stage: newStage };
+        let prob = d.probability;
+        if (newStage === 'Closed Won') prob = 100;
+        else if (newStage === 'Closed Lost') prob = 0;
+        else if (newStage === 'Qualification') prob = 20;
+        else if (newStage === 'Value Proposition') prob = 40;
+        else if (newStage === 'Proposal Sent') prob = 60;
+        else if (newStage === 'Negotiation') prob = 80;
+
+        return {
+          ...d,
+          stage: newStage,
+          probability: prob,
+          lost_reason: newStage === 'Closed Lost' ? (lostReason || d.lost_reason) : undefined,
+        };
       }
       return d;
     }));
     // Sync with NestJS REST API
-    api.updateDealStage(dealId, newStage);
+    api.updateDealStage(dealId, newStage, lostReason);
   };
 
   const updateDeal = (id: string, updates: Partial<Deal>) => {

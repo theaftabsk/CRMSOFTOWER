@@ -12,8 +12,13 @@ export class AccountsController {
     return this.accountsService.findAll(orgId);
   }
 
+  @Get('stats/summary')
+  getStats(@TenantOrg() orgId: string) {
+    return this.accountsService.getStats(orgId);
+  }
+
   @Post()
-  create(@TenantOrg() orgId: string, @Body() dto: CreateAccountDto) {
+  create(@TenantOrg() orgId: string, @Body() dto: any) {
     return this.accountsService.create(orgId, dto);
   }
 

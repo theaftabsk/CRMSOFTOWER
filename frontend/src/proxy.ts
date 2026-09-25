@@ -16,6 +16,8 @@ const PROTECTED_ROUTES = [
   '/reports',
   '/calendar',
   '/settings',
+  '/developers',
+  '/integrations',
 ];
 
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password'];
@@ -24,7 +26,15 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('crm_access_token')?.value;
 
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) => 
+  // Public embed routes (standalone forms, invoice checkout, and meeting self-booking)
+  if (pathname.startsWith('/forms/') || pathname.startsWith('/pay/') || pathname.startsWith('/book')) {
+    return NextResponse.next();
+  }
+
+  // Exact /forms management page requires login
+  const isFormsDashboard = pathname === '/forms';
+
+  const isProtectedRoute = isFormsDashboard || PROTECTED_ROUTES.some((route) => 
     pathname === route || pathname.startsWith(`${route}/`)
   );
 

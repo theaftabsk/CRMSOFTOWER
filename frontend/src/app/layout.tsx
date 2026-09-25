@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Enterprise Multi-Tenant SaaS CRM Platform",
-  description: "Production-level Next.js + NestJS SaaS CRM Core System",
+  title: "Kaspro | Enterprise Cloud CRM & Revenue OS",
+  description: "Kaspro Enterprise Multi-Tenant Cloud CRM Platform",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

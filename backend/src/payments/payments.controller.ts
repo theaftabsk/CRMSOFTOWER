@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { TenantOrg } from '../common/decorators/tenant.decorator';
 
@@ -9,6 +9,19 @@ export class PaymentsController {
   @Get()
   findAll(@TenantOrg() orgId: string) {
     return this.paymentsService.findAll(orgId);
+  }
+
+  @Get('stats')
+  getPaymentStats(@TenantOrg() orgId: string) {
+    return this.paymentsService.getPaymentStats(orgId);
+  }
+
+  @Get(':id/receipt')
+  getReceipt(
+    @TenantOrg() orgId: string,
+    @Param('id') id: string,
+  ) {
+    return this.paymentsService.getReceipt(orgId, id);
   }
 
   @Post()

@@ -36,6 +36,16 @@ model Organization {
   apiKeys      ApiKey[]
   files        FileRecord[]
   tags         Tag[]
+  webForms     WebForm[]
+  communicationLogs CommunicationLog[]
+  idempotencyRecords IdempotencyRecord[]
+  partnerRequests    PartnerAccessRequest[]
+  calendarIntegrations CalendarIntegration[]
+  appIntegrations    AppIntegration[]
+  lead_activities    LeadActivity[]
+  contact_activities ContactActivity[]
+  subscription        OrganizationSubscription?
+  subscriptionInvoices SubscriptionInvoice[]
 }
 
 model User {
@@ -101,37 +111,132 @@ model UserRole {
 }
 
 model Lead {
+  id                   String    @id @default(cuid())
+  organization_id      String
+  name                 String
+  company              String
+  email                String
+  phone                String
+  job_title            String?
+  industry             String?
+  city                 String?
+  state                String?
+  country              String?
+  website              String?
+  linkedin_url         String?
+  status               String    @default("New") // Legacy / display status
+  lifecycle_stage      String    @default("NEW") // NEW, WORKING, QUALIFIED, CONVERTED, UNQUALIFIED
+  activity_status      String    @default("NOT_CONTACTED") // NOT_CONTACTED, ATTEMPTED, CONTACTED, MEETING_SCHEDULED, MEETING_COMPLETED
+  qualification_status String    @default("UNQUALIFIED") // UNQUALIFIED, MQL, SQL, OPPORTUNITY_READY
+  fit_score            Int       @default(0)
+  engagement_score     Int       @default(0)
+  lead_score           Int       @default(0)
+  score_tier           String    @default("COLD") // HOT, WARM, COLD
+  lead_health          String    @default("GOOD") // EXCELLENT, GOOD, AT_RISK, CRITICAL
+  source               String    @default("Website")
+  first_touch_source   String?
+  latest_touch_source  String?
+  assigned_to          String
+  expected_value       Float     @default(0)
+  budget               Float?
+  budget_verified      Boolean   @default(false)
+  authority_level      String?   // DECISION_MAKER, INFLUENCER, EVALUATOR, GATEKEEPER
+  authority_verified   Boolean   @default(false)
+  need                 String?
+  timeline             String?   // IMMEDIATE, 1_3_MONTHS, 3_6_MONTHS, EXPLORING
+  ai_summary           String?
+  next_best_action     String?
+  next_action_priority String?   @default("MEDIUM")
+  last_activity_at     DateTime?
+  next_follow_up_date  DateTime?
+  next_follow_up_type  String?
+  cadence_id           String?
+  cadence_step         Int       @default(0)
+  converted_at         DateTime?
+  converted_account_id String?
+  converted_contact_id String?
+  converted_deal_id    String?
+  utm_source           String?
+  utm_medium           String?
+  utm_campaign         String?
+  utm_content          String?
+  utm_term             String?
+  landing_page         String?
+  referrer_url         String?
+  unqualified_reason   String?
+  tags                 String[]  @default([])
+  notes                String?
+  created_date         DateTime  @default(now())
+  updated_at           DateTime  @default(now()) @updatedAt
+
+  organization Organization   @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  activities   LeadActivity[]
+  meetings     Meeting[]
+}
+
+model LeadActivity {
   id              String   @id @default(cuid())
   organization_id String
-  name            String
-  company         String
-  email           String
-  phone           String
-  status          String   @default("New") // New, Contacted, Qualified, Converted, Unqualified
-  source          String   @default("Website")
-  assigned_to     String
-  expected_value  Float    @default(0)
-  created_date    DateTime @default(now())
-  notes           String?
+  lead_id         String
+  type            String   // CALL, EMAIL, WHATSAPP, MEETING, NOTE, TASK, STAGE_CHANGE, STATUS_CHANGE
+  title           String
+  description     String?
+  source          String   @default("MANUAL") // MANUAL, GOOGLE, WHATSAPP, EMAIL, SYSTEM, API
+  direction       String?  @default("OUTBOUND") // INBOUND, OUTBOUND
+  status          String?  @default("COMPLETED") // COMPLETED, DELIVERED, READ, REPLIED, SCHEDULED, MISSED
+  metadata        Json?
+  created_at      DateTime @default(now())
+  created_by      String   @default("Sales Rep")
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  lead         Lead         @relation(fields: [lead_id], references: [id], onDelete: Cascade)
 }
 
 model Contact {
+  id                      String    @id @default(cuid())
+  organization_id         String
+  account_id              String?
+  name                    String
+  email                   String
+  phone                   String
+  designation             String?
+  company                 String
+  city                    String?
+  department              String?   @default("EXECUTIVE") // EXECUTIVE, ENGINEERING, SALES, MARKETING, FINANCE, OPERATIONS, LEGAL, PROCUREMENT
+  buying_role             String?   @default("INFLUENCER") // DECISION_MAKER, CHAMPION, ECONOMIC_BUYER, INFLUENCER, EVALUATOR, GATEKEEPER, BLOCKER
+  status                  String    @default("Active") // Active, Inactive, Bounced, Do Not Contact
+  lifecycle_stage         String?   @default("CUSTOMER") // LEAD, MARKETING_QUALIFIED, SALES_QUALIFIED, OPPORTUNITY, CUSTOMER, EVANGELIST
+  preferred_contact_method String?   @default("EMAIL") // EMAIL, PHONE, WHATSAPP
+  linkedin_url            String?
+  twitter_url             String?
+  last_contacted_at       DateTime?
+  next_follow_up_date     DateTime?
+  avatar_url              String?
+  notes                   String?
+  tags                    String[]  @default([])
+  created_date            DateTime  @default(now())
+  updated_at              DateTime  @default(now()) @updatedAt
+
+  organization Organization      @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  account      Account?          @relation(fields: [account_id], references: [id], onDelete: SetNull)
+  deals        Deal[]
+  activities   ContactActivity[]
+  meetings     Meeting[]
+}
+
+model ContactActivity {
   id              String   @id @default(cuid())
   organization_id String
-  account_id      String?
-  name            String
-  email           String
-  phone           String
-  designation     String?
-  company         String
-  city            String?
-  status          String   @default("Active")
-  created_date    DateTime @default(now())
+  contact_id      String
+  type            String   // CALL, EMAIL, MEETING, WHATSAPP, NOTE, TASK
+  title           String
+  description     String?
+  status          String?  @default("COMPLETED") // COMPLETED, SCHEDULED, MISSED
+  created_at      DateTime @default(now())
+  created_by      String   @default("Sales Rep")
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  account      Account?     @relation(fields: [account_id], references: [id], onDelete: SetNull)
+  contact      Contact      @relation(fields: [contact_id], references: [id], onDelete: Cascade)
 }
 
 model Account {
@@ -140,10 +245,19 @@ model Account {
   name            String
   industry        String
   website         String?
+  phone           String?
+  city            String?
+  country         String?  @default("India")
+  tier            String?  @default("TIER_2_GROWTH") // TIER_1_ENTERPRISE, TIER_2_GROWTH, TIER_3_SMB
+  type            String?  @default("CUSTOMER") // CUSTOMER, PROSPECT, PARTNER, VENDOR
   annual_revenue  Float    @default(0)
   employee_count  Int      @default(0)
   billing_address String?
+  owner_name      String?  @default("Senior Account Executive")
+  health_score    Int?     @default(88)
+  notes           String?
   created_date    DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   contacts     Contact[]
@@ -157,6 +271,7 @@ model Deal {
   id              String   @id @default(cuid())
   organization_id String
   account_id      String?
+  contact_id      String?
   title           String
   account_name    String
   stage           String   @default("Qualification") // Qualification, Value Proposition, Proposal Sent, Negotiation, Closed Won, Closed Lost
@@ -164,10 +279,15 @@ model Deal {
   closing_date    String
   owner           String
   probability     Int      @default(50)
+  pipeline_name   String   @default("Standard Enterprise Pipeline")
+  lost_reason     String?
+  notes           String?
   created_date    DateTime @default(now())
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   account      Account?     @relation(fields: [account_id], references: [id], onDelete: SetNull)
+  contact      Contact?     @relation(fields: [contact_id], references: [id], onDelete: SetNull)
+  meetings     Meeting[]
 }
 
 model Task {
@@ -200,16 +320,89 @@ model CallLog {
 }
 
 model Meeting {
-  id              String   @id @default(cuid())
-  organization_id String
-  title           String
-  date_time       String
-  participants    String[]
-  status          String   @default("Scheduled") // Scheduled, Completed, Cancelled
-  location        String?
-  created_at      DateTime @default(now())
+  id                String   @id @default(cuid())
+  organization_id   String
+  owner_id          String?
+  lead_id           String?
+  contact_id        String?
+  deal_id           String?
+  title             String
+  description       String?
+  date_time         String
+  start_at          String?
+  end_at            String?
+  timezone          String   @default("Asia/Kolkata")
+  participants      String[]
+  status            String   @default("Scheduled") // Scheduled, Completed, Cancelled
+  location          String?  @default("Google Meet")
+  meeting_type      String   @default("Product Demo")
+  duration_minutes  Int      @default(30)
+  meet_link         String?  @default("https://meet.google.com/crm-demo-call")
+  account_name      String?
+  contact_email     String?
+  contact_phone     String?
+  notes             String?
+  provider          String   @default("GOOGLE_MEET") // GOOGLE_MEET, ZOOM, CUSTOM, OFFLINE
+  google_space_name String?  // spaces/{spaceId}
+  google_meet_url   String?  // https://meet.google.com/xxx-yyyy-zzz
+  access_type       String?  @default("OPEN") // OPEN, TRUSTED, RESTRICTED
+  external_event_id String?  // Google Calendar Event ID or Zoom Meeting ID
+  meeting_url       String?
+  calendar_id       String?  @default("primary")
+  organizer_email   String?
+  conference_records Json?
+  transcript_text   String?
+  ai_summary        String?
+  action_items      Json?
+  sync_status       String   @default("SYNCED") // SYNCED, LOCAL_ONLY, FAILED
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now()) @updatedAt
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  lead         Lead?        @relation(fields: [lead_id], references: [id], onDelete: SetNull)
+  contact      Contact?     @relation(fields: [contact_id], references: [id], onDelete: SetNull)
+  deal         Deal?        @relation(fields: [deal_id], references: [id], onDelete: SetNull)
+}
+
+model CalendarIntegration {
+  id                      String    @id @default(cuid())
+  organization_id         String
+  user_id                 String    @default("USR001")
+  provider                String    // GOOGLE, ZOOM, MICROSOFT
+  account_email           String
+  google_email            String?
+  access_token_encrypted  String?
+  refresh_token_encrypted String?
+  token_expires_at        DateTime?
+  calendar_id             String    @default("primary")
+  status                  String    @default("CONNECTED") // CONNECTED, DISCONNECTED
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, provider])
+}
+
+model AppIntegration {
+  id                 String    @id @default(cuid())
+  organization_id    String
+  app_id             String    // google_calendar, zoom, whatsapp_cloud, slack, stripe, razorpay, smtp, zapier, google_drive
+  name               String
+  category           String    // CALENDAR, MESSAGING, PAYMENTS, STORAGE, AUTOMATION
+  status             String    @default("DISCONNECTED") // CONNECTED, DISCONNECTED, ERROR
+  config             Json?     // Stored non-secret parameters (client_id, webhook_url, phone_id, etc.)
+  encrypted_secrets  Json?     // Stored tokens, API keys, secrets
+  account_identifier String?   // Connected email, channel, or workspace
+  health_status      String    @default("UNCONFIGURED") // HEALTHY, ERROR, UNCONFIGURED
+  last_tested_at     DateTime?
+  error_message      String?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, app_id])
 }
 
 model Product {
@@ -292,6 +485,8 @@ model Invoice {
   status          String   @default("Unpaid") // Unpaid, Partial, Paid
   issue_date      String
   due_date        String
+  payment_token   String?  @unique
+  items           Json?
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   account      Account?     @relation(fields: [account_id], references: [id], onDelete: SetNull)
@@ -396,27 +591,111 @@ model Webhook {
 }
 
 model WebhookLog {
-  id          String   @id @default(cuid())
-  webhook_id  String
-  event       String
-  status_code Int
-  payload     Json
-  response    String?
-  executed_at DateTime @default(now())
+  id            String   @id @default(cuid())
+  webhook_id    String
+  event         String
+  status_code   Int
+  payload       Json
+  response      String?
+  attempt       Int      @default(1)
+  max_attempts  Int      @default(3)
+  error_message String?
+  executed_at   DateTime @default(now())
 
   webhook Webhook @relation(fields: [webhook_id], references: [id], onDelete: Cascade)
 }
 
 model ApiKey {
-  id              String    @id @default(cuid())
-  organization_id String
-  key_name        String
-  api_key_hash    String    @unique
-  permissions     String[]
-  expires_at      DateTime?
-  created_at      DateTime  @default(now())
+  id                 String    @id @default(cuid())
+  organization_id    String
+  key_name           String
+  key_prefix         String    @default("crm_live_")
+  api_key_hash       String    @unique
+  permissions        String[]  // granular scopes: leads:read, leads:write, contacts:read, deals:read, deals:write, invoices:read, invoices:write, webhooks:manage
+  expires_at         DateTime?
+  last_used_at       DateTime?
+  rate_limit_per_min Int       @default(120)
+  allowed_domains    String[]  @default([])
+  is_revoked         Boolean   @default(false)
+  created_at         DateTime  @default(now())
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+}
+
+model WebForm {
+  id                String   @id @default(cuid())
+  organization_id   String
+  title             String
+  description       String?
+  layout            String   @default("classic") // classic, conversational, multi_step
+  status            String   @default("PUBLISHED") // DRAFT, PUBLISHED, PAUSED, ARCHIVED
+  version           Int      @default(1)
+  fields            Json     // Array of FieldConfig
+  steps             Json?    // Multi-step pages definition
+  logic             Json?    // Conditional logic rules (IF-THEN)
+  theme             Json?    // Design tokens: layout, colors, typography, radius, presets
+  settings          Json?    // Routing, Lead scoring, Notifications, Anti-spam, Redirect
+  submit_btn_text   String   @default("Submit")
+  success_message   String   @default("Thank you! Our sales team will get back to you shortly.")
+  redirect_url      String?
+  is_active         Boolean  @default(true)
+  views_count       Int      @default(0)
+  starts_count      Int      @default(0)
+  submissions_count Int      @default(0)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  organization      Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  submissions       WebFormSubmission[]
+}
+
+model WebFormSubmission {
+  id               String   @id @default(cuid())
+  form_id          String
+  lead_id          String?
+  payload          Json
+  utm_source       String?
+  utm_medium       String?
+  utm_campaign     String?
+  utm_term         String?
+  utm_content      String?
+  referrer         String?
+  ip_address       String?
+  user_agent       String?
+  duration_seconds Int?     @default(0)
+  created_at       DateTime @default(now())
+
+  form             WebForm  @relation(fields: [form_id], references: [id], onDelete: Cascade)
+}
+
+model CommunicationLog {
+  id              String   @id @default(cuid())
+  organization_id String
+  entity_type     String   // Lead, Contact, Deal
+  entity_id       String
+  channel         String   // WhatsApp, Email, SMS, Call
+  recipient       String
+  subject         String?
+  message_body    String
+  status          String   @default("Sent") // Sent, Delivered, Failed
+  created_at      DateTime @default(now())
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+}
+
+model IdempotencyRecord {
+  id              String   @id @default(cuid())
+  organization_id String
+  key             String
+  method          String
+  path            String
+  status_code     Int
+  response_body   Json
+  created_at      DateTime @default(now())
+
+  organization    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, key])
 }
 
 model FileRecord {
@@ -453,3 +732,97 @@ model SaaSPlan {
   features             String[]
   is_active            Boolean  @default(true)
 }
+
+model PartnerAccessRequest {
+  id               String   @id @default(cuid())
+  organization_id  String   @default("ORG001")
+  developer_name   String
+  company_name     String
+  email            String
+  purpose          String
+  requested_scopes String[] // e.g. leads:write, invoices:write, pay:access
+  status           String   @default("Pending") // Pending, Approved, Rejected
+  approved_key_id  String?
+  created_at       DateTime @default(now())
+
+  organization     Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+}
+
+model SubscriptionPlan {
+  id              String   @id @default(cuid())
+  slug            String   @unique // 'starter', 'pro', 'enterprise'
+  name            String   // "Starter (Free Trial)", "Professional (Pro)", "Enterprise Scale"
+  badge           String?  // "14 Days Free Trial", "Most Popular", "All-Inclusive"
+  description     String?
+  price_monthly   Float    @default(0)
+  price_yearly    Float    @default(0)
+  currency        String   @default("₹")
+  trial_days      Int      @default(0) // 14 for Starter
+  
+  // Quotas & Limits
+  max_users       Int      @default(3)      // 3 for Starter, 15 for Pro, -1 for Enterprise
+  max_leads       Int      @default(500)    // 500 for Starter, 10000 for Pro, -1 for Enterprise
+  max_deals       Int      @default(100)    // 100 for Starter, 2000 for Pro, -1 for Enterprise
+  max_forms       Int      @default(2)      // 1 for Starter, 10 for Pro, -1 for Enterprise
+  max_storage_mb  Int      @default(512)    // MB
+  
+  // Feature Gates
+  has_api_access      Boolean  @default(false)
+  has_webhooks        Boolean  @default(false)
+  has_custom_domain   Boolean  @default(false)
+  has_quotes_invoices Boolean  @default(true)
+  has_automation      Boolean  @default(false)
+  
+  features        String[] // Display points for pricing cards
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  subscriptions   OrganizationSubscription[]
+}
+
+model OrganizationSubscription {
+  id                      String   @id @default(cuid())
+  organization_id         String   @unique
+  plan_id                 String
+  status                  String   @default("TRIALING") // TRIALING, ACTIVE, PAST_DUE, CANCELED, EXPIRED
+  billing_cycle           String   @default("MONTHLY")  // MONTHLY, YEARLY
+  
+  current_period_start    DateTime @default(now())
+  current_period_end      DateTime
+  trial_ends_at           DateTime?
+  canceled_at             DateTime?
+  cancel_at_period_end    Boolean  @default(false)
+  
+  payment_provider        String   @default("RAZORPAY") // RAZORPAY, STRIPE, MANUAL_INVOICE, UPI
+  gateway_customer_id     String?
+  gateway_subscription_id String?
+  
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  organization            Organization     @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  plan                    SubscriptionPlan @relation(fields: [plan_id], references: [id])
+  invoices                SubscriptionInvoice[]
+}
+
+model SubscriptionInvoice {
+  id                 String   @id @default(cuid())
+  subscription_id    String
+  organization_id    String
+  invoice_number     String   @unique // e.g. INV-KP-2026-0001
+  amount             Float
+  tax_amount         Float    @default(0) // 18% GST
+  currency           String   @default("₹")
+  status             String   @default("PAID") // PAID, PENDING, FAILED
+  payment_method     String?  @default("UPI / NetBanking")
+  gateway_payment_id String?
+  billing_period     String?  // e.g. "Sep 2026 - Oct 2026"
+  pdf_url            String?
+  paid_at            DateTime?
+  created_at         DateTime @default(now())
+
+  organization       Organization             @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  subscription       OrganizationSubscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+}
+

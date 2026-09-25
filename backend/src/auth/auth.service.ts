@@ -64,6 +64,27 @@ export class AuthService {
         },
       });
       orgId = newOrg.id;
+
+      // Automatically initialize 14-day free trial for the new organization
+      const starterPlan = await this.prisma.subscriptionPlan.findUnique({
+        where: { slug: 'starter' },
+      });
+      if (starterPlan) {
+        const startDate = new Date();
+        const trialEnd = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+        await this.prisma.organizationSubscription.create({
+          data: {
+            organization_id: newOrg.id,
+            plan_id: starterPlan.id,
+            status: 'TRIALING',
+            billing_cycle: 'MONTHLY',
+            current_period_start: startDate,
+            current_period_end: trialEnd,
+            trial_ends_at: trialEnd,
+            payment_provider: 'CASHFREE',
+          },
+        });
+      }
     }
 
     const user = await this.prisma.user.create({

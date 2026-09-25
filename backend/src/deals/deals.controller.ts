@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Body, Query } from '@nestjs/common';
 import { DealsService } from './deals.service';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { TenantOrg } from '../common/decorators/tenant.decorator';
@@ -8,8 +8,8 @@ export class DealsController {
   constructor(private dealsService: DealsService) {}
 
   @Get()
-  findAll(@TenantOrg() orgId: string) {
-    return this.dealsService.findAll(orgId);
+  findAll(@TenantOrg() orgId: string, @Query('pipeline') pipeline?: string) {
+    return this.dealsService.findAll(orgId, pipeline);
   }
 
   @Post()
@@ -18,8 +18,18 @@ export class DealsController {
   }
 
   @Patch(':id/stage')
-  updateStage(@TenantOrg() orgId: string, @Param('id') id: string, @Body('stage') stage: string) {
-    return this.dealsService.updateStage(orgId, id, stage);
+  updateStage(
+    @TenantOrg() orgId: string,
+    @Param('id') id: string,
+    @Body('stage') stage: string,
+    @Body('lost_reason') lostReason?: string,
+  ) {
+    return this.dealsService.updateStage(orgId, id, stage, lostReason);
+  }
+
+  @Post(':id/convert-to-invoice')
+  convertToInvoice(@TenantOrg() orgId: string, @Param('id') id: string) {
+    return this.dealsService.convertToInvoice(orgId, id);
   }
 
   @Get(':id')

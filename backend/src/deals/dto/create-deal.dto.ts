@@ -25,4 +25,13 @@ export class CreateDealDto {
   @IsOptional()
   @IsNumber()
   probability?: number;
+
+  @IsOptional()
+  pipeline_name?: string;
+
+  @IsOptional()
+  lost_reason?: string;
+
+  @IsOptional()
+  notes?: string;
 }

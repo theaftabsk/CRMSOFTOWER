@@ -31,6 +31,11 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { HealthModule } from './health/health.module';
+import { ApiKeysModule } from './api-keys/api-keys.module';
+import { ExternalApiModule } from './external-api/external-api.module';
+import { PublicApiModule } from './public-api/public-api.module';
+import { FormsModule } from './forms/forms.module';
+import { CommunicationsModule } from './communications/communications.module';
 
 @Module({
   imports: [
@@ -64,6 +69,11 @@ import { HealthModule } from './health/health.module';
     IntegrationsModule,
     SubscriptionsModule,
     HealthModule,
+    ApiKeysModule,
+    ExternalApiModule,
+    PublicApiModule,
+    FormsModule,
+    CommunicationsModule,
   ],
 })
 export class AppModule {}

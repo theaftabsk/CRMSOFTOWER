@@ -1,7 +1,5 @@
-import { Controller, Get, Post, Put, Patch, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Body, Query } from '@nestjs/common';
 import { LeadsService } from './leads.service';
-import { CreateLeadDto } from './dto/create-lead.dto';
-import { ConvertLeadDto } from './dto/convert-lead.dto';
 import { TenantOrg } from '../common/decorators/tenant.decorator';
 
 @Controller('leads')
@@ -9,18 +7,59 @@ export class LeadsController {
   constructor(private leadsService: LeadsService) {}
 
   @Get()
-  findAll(@TenantOrg() orgId: string) {
-    return this.leadsService.findAll(orgId);
+  findAll(
+    @TenantOrg() orgId: string,
+    @Query('saved_view') savedView?: string,
+    @Query('owner') owner?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.leadsService.findAll(orgId, { saved_view: savedView, owner, status, search });
+  }
+
+  @Post('check-duplicate')
+  checkDuplicate(@TenantOrg() orgId: string, @Body() body: any) {
+    return this.leadsService.checkDuplicates(orgId, body);
+  }
+
+  @Post('merge')
+  mergeLeads(@TenantOrg() orgId: string, @Body() body: any) {
+    return this.leadsService.mergeLeads(orgId, body);
   }
 
   @Post()
-  create(@TenantOrg() orgId: string, @Body() dto: CreateLeadDto) {
+  create(@TenantOrg() orgId: string, @Body() dto: any) {
     return this.leadsService.create(orgId, dto);
   }
 
+  @Post(':id/activity')
+  logActivity(
+    @TenantOrg() orgId: string,
+    @Param('id') id: string,
+    @Body() body: any,
+  ) {
+    return this.leadsService.logActivity(orgId, id, body);
+  }
+
+  @Post(':id/convert-enterprise')
+  convertEnterprise(
+    @TenantOrg() orgId: string,
+    @Param('id') id: string,
+    @Body() body: any,
+  ) {
+    return this.leadsService.convertEnterprise(orgId, id, body);
+  }
+
+  // Legacy convert support
   @Post('convert')
-  convert(@TenantOrg() orgId: string, @Body() dto: ConvertLeadDto) {
-    return this.leadsService.convert(orgId, dto);
+  convert(@TenantOrg() orgId: string, @Body() dto: any) {
+    return this.leadsService.convertEnterprise(orgId, dto.leadId, {
+      accountMode: 'CREATE_NEW',
+      contactMode: 'CREATE_NEW',
+      createDeal: true,
+      dealTitle: dto.dealTitle,
+      dealValue: dto.dealValue,
+    });
   }
 
   @Get(':id')

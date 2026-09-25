@@ -6,7 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { 
   Target, TrendingUp, Users, CreditCard,
   ArrowUpRight, ArrowRight, CheckCircle2, RotateCw, Database,
-  Activity, ShieldCheck
+  Activity, ShieldCheck, Sparkles
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, 
@@ -51,7 +51,7 @@ export const DashboardView: React.FC = () => {
     count: deals.filter(d => d.stage === s.key).length,
   }));
 
-  // Real Revenue & Pipeline History (computed dynamically from backend data)
+  // Real Revenue & Pipeline History
   const baseRevenue = reportsData?.kpis?.revenueCollected || totalCollectedRevenue;
   const revenueData = reportsData?.salesTrend?.length > 0 
     ? reportsData.salesTrend.map((st: any) => ({
@@ -75,42 +75,45 @@ export const DashboardView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12 antialiased">
-      {/* Executive Monochrome Live Banner */}
-      <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      {/* Liquid Glass Executive Banner */}
+      <div className="liquid-glass rounded-2xl p-6 border border-white/80 shadow-md relative overflow-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <div className="flex items-center space-x-2">
-              <span className="shadcn-badge shadcn-badge-default font-mono text-[10px]">
+            <div className="flex items-center space-x-2.5">
+              <span className="px-2.5 py-1 rounded-lg bg-black/[0.05] border border-black/[0.05] font-mono text-[10px] font-semibold text-[#111111]">
                 {organization?.name || user?.organizationName || 'ABC Technologies'}
               </span>
-              <span className="flex items-center space-x-1 text-xs text-[#16A34A] font-mono">
-                <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
+              <span className="flex items-center space-x-1.5 text-xs text-[#16A34A] font-mono">
+                <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse inline-block" />
                 <span>PostgreSQL Live Sync</span>
               </span>
               <span className="text-xs text-[#888888] font-mono">
                 Tenant: {organization?.id || user?.organizationId || 'ORG001'}
               </span>
             </div>
-            <h1 className="text-xl font-bold text-[#111111] mt-2 tracking-tight">
+            <h1 className="text-2xl font-bold text-[#111111] mt-2 tracking-tight">
               Executive CRM Dashboard
             </h1>
-            <p className="text-xs text-[#666666] mt-0.5">
-              Production Multi-Tenant SaaS Engine. Authenticated as <strong className="text-[#111111]">{user?.name || 'Aftab Admin'}</strong> ({user?.role || 'Admin'}).
+            <p className="text-xs text-[#555555] mt-0.5">
+              Enterprise Cloud SaaS Platform • Authenticated as <strong className="text-[#111111]">{user?.name || 'Aftab Admin'}</strong> ({user?.role || 'Admin'})
             </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2.5">
             <button
               onClick={() => refreshData()}
               disabled={isSyncing}
-              className="px-3 py-2 bg-white hover:bg-[#F8F8F8] border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#111111] transition flex items-center space-x-1.5 shadow-sm disabled:opacity-50"
+              className="px-3.5 py-2 bg-white/70 hover:bg-white border border-black/10 rounded-xl text-xs font-medium text-[#111111] btn-liquid transition flex items-center space-x-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
               title="Fetch fresh data from PostgreSQL database"
             >
               <RotateCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
               <span>{isSyncing ? 'Syncing...' : 'Sync Database'}</span>
             </button>
-            <Link href="/leads" className="btn-primary space-x-1">
+            <Link 
+              href="/leads" 
+              className="px-4 py-2 bg-gradient-to-b from-[#1c1c1e] to-[#000000] hover:from-[#000000] hover:to-[#111111] text-white rounded-xl text-xs font-semibold shadow-md btn-liquid transition inline-flex items-center space-x-1.5 cursor-pointer"
+            >
               <span>View Leads</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -118,61 +121,69 @@ export const DashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4 Crisp KPI Cards: Border > Shadow */}
+      {/* 4 Liquid Glass KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Leads */}
-        <div className="shadcn-card p-4">
+        <div className="liquid-glass-card p-5">
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-[#666666] uppercase tracking-wider">Total Leads</span>
-            <Target className="w-4 h-4 text-[#111111]" />
+            <div className="w-8 h-8 rounded-xl bg-black/[0.04] flex items-center justify-center">
+              <Target className="w-4 h-4 text-[#111111]" />
+            </div>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-bold text-[#111111]">{totalLeads}</span>
-            <div className="flex items-center space-x-1 mt-1 text-[11px] text-[#16A34A] font-medium">
-              <ArrowUpRight className="w-3 h-3" />
+            <span className="text-3xl font-bold text-[#111111] tracking-tight">{totalLeads}</span>
+            <div className="flex items-center space-x-1 mt-1 text-[11px] text-[#16A34A] font-semibold">
+              <ArrowUpRight className="w-3.5 h-3.5" />
               <span>+{newLeads} new status</span>
             </div>
           </div>
         </div>
 
         {/* Qualified Leads */}
-        <div className="shadcn-card p-4">
+        <div className="liquid-glass-card p-5">
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-[#666666] uppercase tracking-wider">Qualified Leads</span>
-            <Users className="w-4 h-4 text-[#111111]" />
+            <div className="w-8 h-8 rounded-xl bg-black/[0.04] flex items-center justify-center">
+              <Users className="w-4 h-4 text-[#111111]" />
+            </div>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-bold text-[#111111]">{qualifiedLeads}</span>
-            <div className="text-[11px] text-[#666666] mt-1 font-medium">
+            <span className="text-3xl font-bold text-[#111111] tracking-tight">{qualifiedLeads}</span>
+            <div className="text-[11px] text-[#555555] mt-1 font-medium">
               Ready for deal conversion
             </div>
           </div>
         </div>
 
         {/* Pipeline Value */}
-        <div className="shadcn-card p-4">
+        <div className="liquid-glass-card p-5">
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-[#666666] uppercase tracking-wider">Pipeline Value</span>
-            <TrendingUp className="w-4 h-4 text-[#111111]" />
+            <div className="w-8 h-8 rounded-xl bg-black/[0.04] flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-[#111111]" />
+            </div>
           </div>
           <div className="mt-3">
-            <span suppressHydrationWarning className="text-2xl font-bold font-mono text-[#111111]">
+            <span suppressHydrationWarning className="text-3xl font-bold font-mono text-[#111111] tracking-tight">
               ₹{formatCompact(totalPipelineValue)}
             </span>
-            <div className="text-[11px] text-[#16A34A] mt-1 font-medium" suppressHydrationWarning>
+            <div className="text-[11px] text-[#16A34A] mt-1 font-semibold" suppressHydrationWarning>
               ₹{formatCompact(wonDealsValue)} won closed
             </div>
           </div>
         </div>
 
         {/* Realized Revenue */}
-        <div className="shadcn-card p-4">
+        <div className="liquid-glass-card p-5">
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-[#666666] uppercase tracking-wider">Realized Revenue</span>
-            <CreditCard className="w-4 h-4 text-[#111111]" />
+            <div className="w-8 h-8 rounded-xl bg-black/[0.04] flex items-center justify-center">
+              <CreditCard className="w-4 h-4 text-[#111111]" />
+            </div>
           </div>
           <div className="mt-3">
-            <span suppressHydrationWarning className="text-2xl font-bold font-mono text-[#16A34A]">
+            <span suppressHydrationWarning className="text-3xl font-bold font-mono text-[#16A34A] tracking-tight">
               ₹{formatCompact(totalCollectedRevenue)}
             </span>
             <div className="text-[11px] text-[#666666] mt-1 font-medium" suppressHydrationWarning>
@@ -182,17 +193,17 @@ export const DashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* Analytics Charts Section */}
+      {/* Analytics Charts Section in Frosted Glass */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Growth Chart */}
-        <div className="lg:col-span-2 shadcn-card p-5">
+        <div className="lg:col-span-2 liquid-glass rounded-2xl p-6 border border-white/80 shadow-md">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="text-sm font-semibold text-[#111111]">Revenue & Pipeline Velocity</h3>
+              <h3 className="text-sm font-bold text-[#111111] tracking-tight">Revenue & Pipeline Velocity</h3>
               <p className="text-xs text-[#666666]">Live financial metrics from PostgreSQL ledger</p>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="shadcn-badge shadcn-badge-default font-mono text-[10px]">
+              <span className="px-2 py-0.5 rounded-md bg-black/[0.05] font-mono text-[10px] text-[#111111] font-medium border border-black/[0.05]">
                 Real Database
               </span>
             </div>
@@ -201,63 +212,67 @@ export const DashboardView: React.FC = () => {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                 <XAxis dataKey="month" stroke="#888888" fontSize={11} />
                 <YAxis stroke="#888888" fontSize={11} tickFormatter={(v) => `₹${v/1000}k`} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#ffffff', 
-                    borderColor: '#E5E5E5',
-                    borderRadius: '8px',
-                    fontSize: '12px'
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                    backdropFilter: 'blur(16px)',
+                    borderColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
                   }} 
                 />
-                <Area type="monotone" dataKey="pipeline" stroke="#666666" fill="#F4F4F5" strokeWidth={1.5} name="Pipeline Value" />
-                <Area type="monotone" dataKey="revenue" stroke="#111111" fill="#E5E5E5" strokeWidth={2} name="Collected Revenue" />
+                <Area type="monotone" dataKey="pipeline" stroke="#666666" fill="rgba(0,0,0,0.04)" strokeWidth={1.5} name="Pipeline Value" />
+                <Area type="monotone" dataKey="revenue" stroke="#111111" fill="rgba(0,0,0,0.08)" strokeWidth={2} name="Collected Revenue" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Pipeline Stages Bar Distribution */}
-        <div className="shadcn-card p-5">
+        <div className="liquid-glass rounded-2xl p-6 border border-white/80 shadow-md">
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-[#111111]">Pipeline Distribution</h3>
+            <h3 className="text-sm font-bold text-[#111111] tracking-tight">Pipeline Distribution</h3>
             <p className="text-xs text-[#666666]">Active deals by stage</p>
           </div>
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stageData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
                 <XAxis dataKey="stage" stroke="#888888" fontSize={10} />
                 <YAxis stroke="#888888" fontSize={11} allowDecimals={false} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#ffffff', 
-                    borderColor: '#E5E5E5',
-                    borderRadius: '8px',
-                    fontSize: '12px'
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                    backdropFilter: 'blur(16px)',
+                    borderColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
                   }} 
                 />
-                <Bar dataKey="count" fill="#111111" radius={[4, 4, 0, 0]} name="Deals Count" />
+                <Bar dataKey="count" fill="#111111" radius={[6, 6, 0, 0]} name="Deals Count" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Recent Leads & Due Follow-up Actions */}
+      {/* Recent Leads & Due Follow-up Actions in Frosted Glass Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Leads */}
-        <div className="shadcn-card p-5">
-          <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#E5E5E5]">
-            <h3 className="text-sm font-semibold text-[#111111]">Recent Leads</h3>
-            <Link href="/leads" className="text-xs text-[#111111] hover:underline font-medium">View All ({leads.length}) →</Link>
+        <div className="liquid-glass rounded-2xl p-6 border border-white/80 shadow-md">
+          <div className="flex justify-between items-center mb-3 pb-3 border-b border-black/[0.06]">
+            <h3 className="text-sm font-bold text-[#111111]">Recent Leads</h3>
+            <Link href="/leads" className="text-xs text-[#111111] hover:underline font-medium btn-liquid">View All ({leads.length}) →</Link>
           </div>
-          <div className="divide-y divide-[#F0F0F0]">
+          <div className="divide-y divide-black/[0.04]">
             {leads.slice(0, 5).map(lead => (
-              <div key={lead.id} className="py-2.5 flex justify-between items-center text-xs">
+              <div key={lead.id} className="py-2.5 flex justify-between items-center text-xs hover:bg-black/[0.02] px-1.5 rounded-lg transition">
                 <div>
                   <h4 className="font-semibold text-[#111111]">{lead.name}</h4>
                   <p className="text-[11px] text-[#666666]">{lead.company} • {lead.source}</p>
@@ -280,21 +295,21 @@ export const DashboardView: React.FC = () => {
         </div>
 
         {/* Pending Follow-Up Actions */}
-        <div className="shadcn-card p-5">
-          <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#E5E5E5]">
+        <div className="liquid-glass rounded-2xl p-6 border border-white/80 shadow-md">
+          <div className="flex justify-between items-center mb-3 pb-3 border-b border-black/[0.06]">
             <div className="flex items-center space-x-2">
-              <h3 className="text-sm font-semibold text-[#111111]">Pending Action Items</h3>
+              <h3 className="text-sm font-bold text-[#111111]">Pending Action Items</h3>
               {urgentTasks > 0 && (
                 <span className="shadcn-badge shadcn-badge-danger text-[10px]">
                   {urgentTasks} Urgent
                 </span>
               )}
             </div>
-            <Link href="/activities" className="text-xs text-[#111111] hover:underline font-medium">All Activities ({tasks.length}) →</Link>
+            <Link href="/activities" className="text-xs text-[#111111] hover:underline font-medium btn-liquid">All Activities ({tasks.length}) →</Link>
           </div>
-          <div className="divide-y divide-[#F0F0F0]">
+          <div className="divide-y divide-black/[0.04]">
             {tasks.slice(0, 5).map(task => (
-              <div key={task.id} className="py-2.5 flex justify-between items-center text-xs">
+              <div key={task.id} className="py-2.5 flex justify-between items-center text-xs hover:bg-black/[0.02] px-1.5 rounded-lg transition">
                 <div className="flex items-center space-x-2.5">
                   <CheckCircle2 className={`w-4 h-4 ${task.status === 'Completed' ? 'text-[#16A34A]' : 'text-[#D4D4D4]'}`} />
                   <div>

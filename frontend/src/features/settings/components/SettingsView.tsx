@@ -1,14 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useCRM } from '../../../context/CRMContext';
 import { PageHeader } from '../../../components/layout/PageHeader';
-import { Settings, Shield, User, Building, Database, Clock, Plus, X } from 'lucide-react';
+import { Settings, Shield, User, Building, Database, Clock, Plus, X, Code2, Calendar } from 'lucide-react';
+import { DeveloperSettingsTab } from './DeveloperSettingsTab';
+import { IntegrationsTab } from './IntegrationsTab';
 
 export const SettingsView: React.FC = () => {
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'developers' 
+    ? 'developers' 
+    : searchParams.get('tab') === 'integrations' 
+    ? 'integrations' 
+    : 'org';
   const { organization, users, customFields, auditLogs, addCustomField } = useCRM();
-  const [tab, setTab] = useState<'org' | 'users' | 'fields' | 'audit'>('org');
+  const [tab, setTab] = useState<'org' | 'integrations' | 'developers' | 'users' | 'fields' | 'audit'>(initialTab);
   const [showFieldModal, setShowFieldModal] = useState(false);
+
+  useEffect(() => {
+    const qTab = searchParams.get('tab');
+    if (qTab === 'developers') setTab('developers');
+    if (qTab === 'integrations') setTab('integrations');
+  }, [searchParams]);
 
   const [newField, setNewField] = useState({
     entity_type: 'Lead' as const,
@@ -20,12 +35,12 @@ export const SettingsView: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Settings & Audit Trail" 
-        subtitle="Manage organization parameters, team members, custom fields, and security audit logs."
+        title="Settings & Integrations" 
+        subtitle="Manage organization parameters, team members, custom fields, API keys, and partner integrations."
       />
 
       {/* Tabs */}
-      <div className="flex space-x-2 border-b border-[#E5E5E5] pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-[#E5E5E5] pb-2">
         <button
           onClick={() => setTab('org')}
           className={`px-4 py-1.5 rounded-lg text-xs font-medium transition ${
@@ -33,6 +48,24 @@ export const SettingsView: React.FC = () => {
           }`}
         >
           Organization Profile
+        </button>
+        <button
+          onClick={() => setTab('integrations')}
+          className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition ${
+            tab === 'integrations' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#E5E5E5]'
+          }`}
+        >
+          <Calendar className="w-3.5 h-3.5" />
+          <span>Calendar & Video Integrations</span>
+        </button>
+        <button
+          onClick={() => setTab('developers')}
+          className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition ${
+            tab === 'developers' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#E5E5E5]'
+          }`}
+        >
+          <Code2 className="w-3.5 h-3.5" />
+          <span>Developer & Partner API</span>
         </button>
         <button
           onClick={() => setTab('users')}
@@ -89,6 +122,11 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Third-Party Calendar & Video Integrations */}
+      {tab === 'integrations' && (
+        <IntegrationsTab />
       )}
 
       {/* Users Tab */}

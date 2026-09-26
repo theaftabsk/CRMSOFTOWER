@@ -28,9 +28,9 @@ export function getOtpEmailTemplate(
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td>
-                    <span style="font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: #111111; text-transform: uppercase;">
-                      ZYVO<span style="color: #666666; font-weight: 400;">CRM</span>
-                    </span>
+                    <a href="https://zyvocrm.in" target="_blank" style="text-decoration: none; display: inline-block;">
+                      <img src="https://app.zyvocrm.in/favicon.svg" alt="Zyvo CRM" height="30" style="height: 30px; width: auto; display: block; border: 0;" />
+                    </a>
                   </td>
                   <td align="right">
                     <span style="font-size: 11px; color: #666666; background-color: #F4F4F6; padding: 4px 8px; border-radius: 6px; font-family: monospace;">

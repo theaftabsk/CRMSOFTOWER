@@ -21,9 +21,9 @@ export function getWelcomeEmailTemplate(name: string, email: string, organizatio
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
                   <td>
-                    <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: #111111; text-transform: uppercase;">
-                      ZYVO<span style="color: #666666; font-weight: 400;">CRM</span>
-                    </span>
+                    <a href="https://zyvocrm.in" target="_blank" style="text-decoration: none; display: inline-block;">
+                      <img src="https://app.zyvocrm.in/favicon.svg" alt="Zyvo CRM" height="32" style="height: 32px; width: auto; display: block; border: 0;" />
+                    </a>
                   </td>
                   <td align="right">
                     <span style="font-size: 11px; color: #16A34A; background-color: #ECFDF5; border: 1px solid #A7F3D0; padding: 4px 8px; border-radius: 6px; font-weight: 600;">

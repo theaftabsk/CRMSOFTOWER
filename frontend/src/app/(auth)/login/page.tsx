@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { 
   Eye, EyeOff, AlertCircle, X, TrendingUp, CheckCircle2, 
-  Calendar, CreditCard, ArrowRight, ShieldCheck, Zap
+  Calendar, CreditCard, ArrowRight
 } from 'lucide-react';
 import ZyvoLogo from '../../../components/ZyvoLogo';
 
@@ -49,25 +49,25 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F7F9] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 antialiased selection:bg-[#111111] selection:text-white">
+    <div className="min-h-screen bg-[#F6F7F9] flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 antialiased selection:bg-[#111111] selection:text-white">
       
-      {/* Master Container Card */}
-      <div className="w-full max-w-6xl bg-white rounded-3xl sm:rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.05)] border border-[#E5E5E5] p-6 sm:p-10 lg:p-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+      {/* Master Container Card: 100% Mobile, Tablet & Desktop Responsive */}
+      <div className="w-full max-w-6xl bg-white rounded-2xl sm:rounded-[32px] lg:rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.05)] border border-[#E5E5E5] p-5 sm:p-8 lg:p-12 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
           {/* Left Column: Form */}
-          <div className="lg:col-span-5 flex flex-col justify-between h-full min-h-[560px]">
+          <div className="lg:col-span-5 flex flex-col justify-between w-full">
             <div>
               {/* Logo */}
-              <div className="mb-10">
+              <div className="mb-6 sm:mb-8 lg:mb-10">
                 <Link href="/" className="inline-block">
-                  <ZyvoLogo height={32} className="text-[#111111]" />
+                  <ZyvoLogo height={28} className="text-[#111111] sm:h-[32px]" />
                 </Link>
               </div>
 
               {/* Title & Subtitle */}
-              <div className="space-y-1.5 mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-[#111111] tracking-tight">
+              <div className="space-y-1.5 mb-6 sm:mb-8">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#111111] tracking-tight">
                   Welcome Back
                 </h1>
                 <p className="text-xs sm:text-sm text-[#666666]">
@@ -93,10 +93,10 @@ function LoginForm() {
               )}
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5 text-xs">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 text-xs">
                 {/* Email Address */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#111111] mb-2">
+                  <label className="block text-xs font-semibold text-[#111111] mb-1.5 sm:mb-2">
                     Email address
                   </label>
                   <input 
@@ -107,14 +107,14 @@ function LoginForm() {
                       setEmail(e.target.value);
                       if (error) setError(null);
                     }}
-                    className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
+                    className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
                     placeholder="Enter your email" 
                   />
                 </div>
 
                 {/* Password with Forgot password? right above */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                     <label className="block text-xs font-semibold text-[#111111]">
                       Password
                     </label>
@@ -134,13 +134,13 @@ function LoginForm() {
                         setPassword(e.target.value);
                         if (error) setError(null);
                       }}
-                      className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl pl-4 pr-11 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
+                      className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl pl-3.5 sm:pl-4 pr-11 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
                       placeholder="Enter your password" 
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-3.5 text-[#999999] hover:text-[#111111] transition"
+                      className="absolute right-3.5 top-3 sm:top-3.5 text-[#999999] hover:text-[#111111] transition"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -148,7 +148,7 @@ function LoginForm() {
                 </div>
 
                 {/* Remember Me */}
-                <div className="flex items-center space-x-2 pt-1">
+                <div className="flex items-center space-x-2 pt-0.5">
                   <input 
                     type="checkbox" 
                     id="rememberMe" 
@@ -161,18 +161,18 @@ function LoginForm() {
                   </label>
                 </div>
 
-                {/* Submit Button - Solid Black */}
+                {/* Submit Button */}
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full py-3.5 bg-[#111111] hover:bg-[#262626] active:scale-[0.99] disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition duration-150 shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center space-x-2"
+                  className="w-full py-3 sm:py-3.5 bg-[#111111] hover:bg-[#262626] active:scale-[0.99] disabled:opacity-50 text-white font-semibold rounded-xl text-xs sm:text-sm transition duration-150 shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center space-x-2"
                 >
                   <span>{loading ? 'Signing in...' : 'Login'}</span>
                 </button>
               </form>
 
               {/* Switch link */}
-              <div className="mt-6 text-xs text-[#666666]">
+              <div className="mt-5 sm:mt-6 text-xs text-[#666666]">
                 Don&apos;t have an account?{' '}
                 <Link href="/register" className="text-[#111111] font-bold hover:underline">
                   Sign up
@@ -181,20 +181,20 @@ function LoginForm() {
             </div>
 
             {/* Bottom Copyright */}
-            <div className="pt-8 text-xs text-[#999999]">
+            <div className="pt-6 sm:pt-8 text-[11px] text-[#999999]">
               &copy; 2026 Zyvo, All rights Reserved
             </div>
           </div>
 
           {/* Right Column: Monochrome White & Black Luxury Showcase Card */}
-          <div className="lg:col-span-7 bg-[#111111] rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.22)] border border-[#27272A] min-h-[580px]">
+          <div className="hidden md:flex lg:col-span-7 bg-[#111111] rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 text-white relative overflow-hidden flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.22)] border border-[#27272A] min-h-[500px] lg:min-h-[560px]">
             
             {/* Background subtle light beam */}
             <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header Text */}
-            <div className="space-y-2 mb-8 relative z-10 max-w-md">
-              <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight text-white">
+            <div className="space-y-2 mb-6 lg:mb-8 relative z-10 max-w-md">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight tracking-tight text-white">
                 The simplest way to manage your workforce
               </h2>
               <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed">
@@ -206,7 +206,7 @@ function LoginForm() {
             <div className="relative z-10 my-auto">
               
               {/* Main White Dashboard Card */}
-              <div className="bg-white rounded-2xl p-5 shadow-2xl text-[#111111] space-y-4 max-w-lg border border-[#E5E5E5]">
+              <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-2xl text-[#111111] space-y-3.5 lg:space-y-4 max-w-lg border border-[#E5E5E5]">
                 
                 {/* Dashboard Top bar */}
                 <div className="flex items-center justify-between pb-3 border-b border-[#F0F0F0]">
@@ -281,8 +281,8 @@ function LoginForm() {
 
               </div>
 
-              {/* Overlapping Floating Modal (Invoice / Cashfree Settlement) */}
-              <div className="hidden sm:block absolute -bottom-5 -right-3 w-56 bg-white rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.28)] border border-[#E5E5E5] p-3.5 text-[#111111] animate-in fade-in slide-in-from-bottom-3 duration-500">
+              {/* Overlapping Floating Modal */}
+              <div className="hidden lg:block absolute -bottom-5 -right-3 w-56 bg-white rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.28)] border border-[#E5E5E5] p-3.5 text-[#111111] animate-in fade-in slide-in-from-bottom-3 duration-500">
                 <div className="flex items-center justify-between pb-2 border-b border-[#F0F0F0]">
                   <div className="flex items-center space-x-1 text-[10px] font-bold text-[#111111]">
                     <CreditCard className="w-3 h-3 text-[#111111]" />
@@ -294,7 +294,7 @@ function LoginForm() {
                 </div>
                 <div className="pt-2">
                   <div className="text-sm font-bold font-mono text-[#111111]">₹45,000.00</div>
-                  <div className="text-[9px] text-[#666666] mt-0.5">Direct Cashfree Settlement</div>
+                  <div className="text-[9px] text-[#666666] mt-0.5">Instant Gateway Settlement</div>
                   <div className="flex items-center space-x-1 text-[9px] text-[#16A34A] font-semibold mt-1.5">
                     <CheckCircle2 className="w-3 h-3" />
                     <span>Auto-synced to CRM</span>
@@ -302,15 +302,6 @@ function LoginForm() {
                 </div>
               </div>
 
-            </div>
-
-            {/* Bottom Partner Trust Logos - Clean Monochrome */}
-            <div className="pt-8 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400 font-medium tracking-wide">
-              <span>Cashfree</span>
-              <span>GST Portal</span>
-              <span>Stripe</span>
-              <span>Razorpay</span>
-              <span>AWS</span>
             </div>
 
           </div>

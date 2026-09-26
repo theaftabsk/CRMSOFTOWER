@@ -76,12 +76,21 @@ export class AuthController {
       throw new UnauthorizedException('No active authentication session');
     }
 
-    // Token format: crm_token_<userId>_<timestamp> or token_<userId>_<timestamp>
-    const match = token.match(/(?:crm_token_|token_)([^_]+)/);
-    const userId = match ? match[1] : null;
+    // Verify cryptographically signed JWT or fallback to token match
+    let userId: string | null = null;
+    try {
+      const jwt = require('jsonwebtoken');
+      const secret = process.env.JWT_SECRET || 'crm-secret-key-super-secure-production-2026';
+      const decoded: any = jwt.verify(token, secret);
+      userId = decoded?.sub || decoded?.id;
+    } catch (_) {
+      // Fallback for legacy tokens during session migration
+      const match = token.match(/(?:crm_token_|token_)([^_]+)/);
+      userId = match ? match[1] : null;
+    }
 
     if (!userId) {
-      throw new UnauthorizedException('Invalid authentication session');
+      throw new UnauthorizedException('Invalid or expired authentication session');
     }
 
     return this.authService.getSession(userId);

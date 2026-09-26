@@ -2,10 +2,16 @@ import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/co
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService) {}
+
+  private getJwtSecret(): string {
+    return process.env.JWT_SECRET || 'crm-secret-key-super-secure-production-2026';
+  }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -17,12 +23,26 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Verify password: check direct match, seeded hash, or default development password
-    const isSeededDefault = user.password_hash === '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ecr5eGdpfrWwHKgCu' && dto.password === 'password123';
-    const isDirectMatch = user.password_hash === dto.password;
-    const isDevPass = dto.password === 'password123';
+    // Verify password: check bcrypt hash, seeded hash, or legacy plain-text
+    let isPasswordValid = false;
+    if (user.password_hash) {
+      if (user.password_hash.startsWith('$2a$') || user.password_hash.startsWith('$2b$')) {
+        isPasswordValid = await bcrypt.compare(dto.password, user.password_hash);
+      } else {
+        // Plain text match - upgrade hash securely on successful login
+        isPasswordValid = user.password_hash === dto.password;
+        if (isPasswordValid) {
+          const salt = await bcrypt.genSalt(10);
+          const newHash = await bcrypt.hash(dto.password, salt);
+          await this.prisma.user.update({
+            where: { id: user.id },
+            data: { password_hash: newHash },
+          });
+        }
+      }
+    }
 
-    if (!isSeededDefault && !isDirectMatch && !isDevPass) {
+    if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
@@ -32,9 +52,17 @@ export class AuthService {
       data: { last_login: new Date().toISOString() },
     });
 
-    // Return token and user session
+    // Generate cryptographically signed JWT
+    const tokenPayload = {
+      sub: user.id,
+      email: user.email,
+      orgId: user.organization_id,
+      role: user.role,
+    };
+    const accessToken = jwt.sign(tokenPayload, this.getJwtSecret(), { expiresIn: '7d' });
+
     return {
-      accessToken: `crm_token_${user.id}_${Date.now()}`,
+      accessToken,
       user: {
         id: user.id,
         name: user.name,
@@ -54,6 +82,11 @@ export class AuthService {
       throw new ConflictException('User with this email already exists');
     }
 
+    // Hash password with bcrypt (salt rounds: 10)
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(dto.password, salt);
+
+    // Create unique Organization with CUID
     let orgId = 'ORG001';
     if (dto.organizationName && dto.organizationName.trim()) {
       const newOrg = await this.prisma.organization.create({
@@ -65,7 +98,7 @@ export class AuthService {
       });
       orgId = newOrg.id;
 
-      // Automatically initialize 14-day free trial for the new organization
+      // Seed 14-day free trial on Starter plan
       const starterPlan = await this.prisma.subscriptionPlan.findUnique({
         where: { slug: 'starter' },
       });
@@ -91,7 +124,7 @@ export class AuthService {
       data: {
         name: dto.name.trim(),
         email: normalizedEmail,
-        password_hash: dto.password,
+        password_hash: passwordHash,
         organization_id: orgId,
         role: 'Admin',
         department: 'Executive Administration',
@@ -100,8 +133,16 @@ export class AuthService {
       include: { organization: true },
     });
 
+    const tokenPayload = {
+      sub: user.id,
+      email: user.email,
+      orgId: user.organization_id,
+      role: user.role,
+    };
+    const accessToken = jwt.sign(tokenPayload, this.getJwtSecret(), { expiresIn: '7d' });
+
     return {
-      accessToken: `crm_token_${user.id}_${Date.now()}`,
+      accessToken,
       user: {
         id: user.id,
         name: user.name,

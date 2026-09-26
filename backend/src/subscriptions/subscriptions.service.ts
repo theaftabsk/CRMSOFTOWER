@@ -270,52 +270,73 @@ export class SubscriptionsService implements OnModuleInit {
     const totalAmount = baseAmount + taxAmount;
     const orderId = `zyvo_cf_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
-    const cfOrder = await this.cashfreeService.createOrder({
-      orderId,
-      amount: totalAmount,
-      currency: 'INR',
-      customer: {
-        id: orgId,
-        email: data.customerEmail || 'billing@zyvocrm.in',
-        phone: data.customerPhone || '9876543210',
-        name: data.customerName || 'Zyvo Subscriber',
-      },
-      returnUrl: data.returnUrl || `http://localhost:3000/billing?cf_order_id={order_id}`,
-      note: `Zyvo CRM ${targetPlan.name} Subscription (${seats} seats)`,
-    });
+      const defaultReturnUrl = process.env.NODE_ENV === 'production'
+        ? 'https://app.zyvocrm.in/billing?cf_order_id={order_id}'
+        : 'http://localhost:3000/billing?cf_order_id={order_id}';
 
-    return {
-      ...cfOrder,
-      plan: targetPlan,
-      billing_cycle: data.billingCycle,
-      seats,
-    };
-  }
+      const cfOrder = await this.cashfreeService.createOrder({
+        orderId,
+        amount: totalAmount,
+        currency: 'INR',
+        customer: {
+          id: orgId,
+          email: data.customerEmail || 'billing@zyvocrm.in',
+          phone: data.customerPhone || '9876543210',
+          name: data.customerName || 'Zyvo Subscriber',
+        },
+        returnUrl: data.returnUrl || defaultReturnUrl,
+        note: `Zyvo CRM ${targetPlan.name} Subscription (${seats} seats)`,
+      });
 
-  async verifyCashfreeOrder(
-    orgId: string,
-    data: {
-      order_id: string;
-      planSlug: string;
-      billingCycle: 'MONTHLY' | 'YEARLY';
-      seats?: number;
-    },
-  ) {
-    const orderDetails = await this.cashfreeService.getOrder(data.order_id);
-
-    if (orderDetails.order_status !== 'PAID') {
-      throw new Error(`Cashfree order status is ${orderDetails.order_status}, not PAID.`);
+      return {
+        ...cfOrder,
+        plan: targetPlan,
+        billing_cycle: data.billingCycle,
+        seats,
+      };
     }
 
-    // Activated via Cashfree PG
-    return this.upgradePlan(orgId, {
-      planSlug: data.planSlug,
-      billingCycle: data.billingCycle,
-      seats: data.seats || 1,
-      paymentMethod: 'Cashfree PG (UPI / Cards / NetBanking)',
-      gatewayOrderId: data.order_id,
-    });
-  }
+    async verifyCashfreeOrder(
+      orgId: string,
+      data: {
+        order_id: string;
+        planSlug: string;
+        billingCycle: 'MONTHLY' | 'YEARLY';
+        seats?: number;
+      },
+    ) {
+      const orderDetails = await this.cashfreeService.getOrder(data.order_id);
+
+      if (orderDetails.order_status !== 'PAID') {
+        throw new Error(`Cashfree order status is ${orderDetails.order_status}, not PAID.`);
+      }
+
+      // Real Money Security: Verify paid amount matches expected price
+      const targetPlan = await this.prisma.subscriptionPlan.findUnique({
+        where: { slug: data.planSlug },
+      });
+      if (!targetPlan) {
+        throw new Error(`Plan with slug ${data.planSlug} not found`);
+      }
+
+      const seats = Math.max(1, data.seats || 1);
+      const pricePerUnit = data.billingCycle === 'YEARLY' ? targetPlan.price_yearly : targetPlan.price_monthly;
+      const expectedBase = pricePerUnit * seats;
+      const expectedTotal = expectedBase + Math.round(expectedBase * 0.18);
+
+      if (orderDetails.order_amount && orderDetails.order_amount < expectedTotal) {
+        throw new Error(`Payment verification failed: Expected ₹${expectedTotal}, but received ₹${orderDetails.order_amount}`);
+      }
+
+      // Activated via verified Cashfree PG
+      return this.upgradePlan(orgId, {
+        planSlug: data.planSlug,
+        billingCycle: data.billingCycle,
+        seats,
+        paymentMethod: 'Cashfree PG (UPI / Cards / NetBanking)',
+        gatewayOrderId: data.order_id,
+      });
+    }
 
   async upgradePlan(
     orgId: string,

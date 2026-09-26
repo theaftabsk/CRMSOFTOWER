@@ -108,7 +108,7 @@ function LoginForm() {
                       if (error) setError(null);
                     }}
                     className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
-                    placeholder="rafiqur51@company.com" 
+                    placeholder="Enter your email" 
                   />
                 </div>
 
@@ -135,7 +135,7 @@ function LoginForm() {
                         if (error) setError(null);
                       }}
                       className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl pl-4 pr-11 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
-                      placeholder="min 8 chars" 
+                      placeholder="Enter your password" 
                     />
                     <button
                       type="button"

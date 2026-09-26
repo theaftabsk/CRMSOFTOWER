@@ -2,12 +2,11 @@
 
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { 
-  ArrowRight, Eye, EyeOff, Mail, Lock, AlertCircle, X,
-  FileText, TrendingUp, BarChart3, Settings2, ShieldCheck, Clock,
-  Headphones, CreditCard, Sparkles, Activity
+  ArrowRight, Eye, EyeOff, Mail, Lock, AlertCircle, X, Sparkles, TrendingUp
 } from 'lucide-react';
 import ZyvoLogo from '../../../components/ZyvoLogo';
 
@@ -50,22 +49,27 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#111111] antialiased selection:bg-[#111111] selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#FFFFFF] text-[#111111] antialiased selection:bg-[#111111] selection:text-white flex flex-col justify-between relative">
       
+      {/* Smooth Subtle Ambient Atmosphere */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-neutral-200/35 via-neutral-100/20 to-transparent blur-[120px]" />
+        <div className="absolute -bottom-20 left-10 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-zinc-200/30 via-stone-100/20 to-transparent blur-[120px]" />
+        <div className="absolute inset-0 opacity-[0.025] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:24px_24px]" />
+      </div>
+
       {/* 1. TOP HEADER */}
-      <header className="w-full border-b border-[#E5E5E5] bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          {/* Left: Zyvo Logo in Black */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <ZyvoLogo height={28} className="text-[#111111]" />
+      <header className="w-full border-b border-[#E5E5E5] bg-white/95 backdrop-blur-md sticky top-0 z-50 shrink-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-15 flex items-center justify-between">
+          <Link href="/" className="flex items-center space-x-2">
+            <ZyvoLogo height={26} className="text-[#111111]" />
           </Link>
 
-          {/* Right: Create Account CTA */}
-          <div className="flex items-center space-x-3 text-xs sm:text-sm">
+          <div className="flex items-center space-x-3 text-xs">
             <span className="text-[#666666] hidden sm:inline">Don't have an account?</span>
             <Link 
               href="/register" 
-              className="inline-flex items-center space-x-1.5 px-4 py-2 border border-[#111111] text-[#111111] hover:bg-[#111111] hover:text-white rounded-lg font-medium transition duration-150"
+              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 border border-[#111111] text-[#111111] hover:bg-[#111111] hover:text-white rounded-lg font-medium transition duration-150 shadow-2xs"
             >
               <span>Create Account</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -74,27 +78,27 @@ function LoginForm() {
         </div>
       </header>
 
-      {/* 2. MAIN LOGIN LAYOUT */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+      {/* 2. MAIN LOGIN CONTENT (Single Viewport Fit on Desktop) */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex items-center z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
           
-          {/* LEFT: Sign In Form Card (~44% width on desktop) */}
-          <div className="lg:col-span-5 bg-white border border-[#E5E5E5] rounded-2xl p-6 sm:p-9 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          {/* LEFT: Clean Compact Sign In Card (~42% width) */}
+          <div className="lg:col-span-5 bg-white border border-[#E5E5E5] rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
             
             {/* Title & Subtitle */}
-            <div className="mb-6 space-y-1.5">
-              <h1 className="text-2xl sm:text-[26px] font-bold text-[#111111] tracking-tight">
+            <div className="mb-5 space-y-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight">
                 Welcome back
               </h1>
-              <p className="text-xs sm:text-sm text-[#666666]">
+              <p className="text-xs text-[#666666]">
                 Sign in to your Zyvo account to continue to your workspace.
               </p>
             </div>
 
             {/* Error Notification Alert */}
             {error && (
-              <div className="flex items-start justify-between p-3.5 mb-5 bg-[#FAFAFA] border border-[#DC2626]/40 rounded-xl text-xs text-[#DC2626] shadow-xs">
-                <div className="flex items-start space-x-2.5">
+              <div className="flex items-start justify-between p-3 mb-4 bg-[#FAFAFA] border border-[#DC2626]/40 rounded-xl text-xs text-[#DC2626] shadow-2xs">
+                <div className="flex items-start space-x-2">
                   <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-[#DC2626]" />
                   <span className="font-medium">{error}</span>
                 </div>
@@ -109,9 +113,9 @@ function LoginForm() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-medium text-[#111111] mb-1.5">Work Email</label>
+                <label className="block font-medium text-[#111111] mb-1">Work Email</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-[#888888] absolute left-3 top-2.5 pointer-events-none" />
                   <input 
@@ -122,14 +126,14 @@ function LoginForm() {
                       setEmail(e.target.value);
                       if (error) setError(null);
                     }}
-                    className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl pl-9.5 pr-3 py-2.5 text-[#111111] placeholder:text-[#999999] outline-none transition shadow-2xs" 
+                    className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl pl-9.5 pr-3 py-2 text-[#111111] placeholder:text-[#999999] outline-none transition shadow-2xs" 
                     placeholder="you@company.com" 
                   />
                 </div>
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <label className="block font-medium text-[#111111]">Password</label>
                   <Link href="/forgot-password" className="text-[11px] text-[#111111] hover:underline font-medium">
                     Forgot password?
@@ -145,7 +149,7 @@ function LoginForm() {
                       setPassword(e.target.value);
                       if (error) setError(null);
                     }}
-                    className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl pl-9.5 pr-10 py-2.5 text-[#111111] placeholder:text-[#999999] outline-none transition shadow-2xs" 
+                    className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl pl-9.5 pr-10 py-2 text-[#111111] placeholder:text-[#999999] outline-none transition shadow-2xs" 
                     placeholder="Enter your password" 
                   />
                   <button
@@ -159,7 +163,7 @@ function LoginForm() {
               </div>
 
               {/* Keep me signed in */}
-              <div className="flex items-center space-x-2.5 pt-1">
+              <div className="flex items-center space-x-2 pt-0.5">
                 <input 
                   type="checkbox" 
                   id="rememberMe" 
@@ -172,11 +176,11 @@ function LoginForm() {
                 </label>
               </div>
 
-              {/* Sign In CTA */}
+              {/* Sign In CTA Button */}
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full py-3 bg-[#000000] hover:bg-[#262626] disabled:opacity-50 text-white font-medium rounded-xl text-xs transition duration-150 flex items-center justify-center space-x-2 mt-2 group shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.16)]"
+                className="w-full py-2.5 bg-[#000000] hover:bg-[#262626] disabled:opacity-50 text-white font-medium rounded-xl text-xs transition duration-150 flex items-center justify-center space-x-1.5 mt-2 group shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
               >
                 <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
                 {!loading && <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />}
@@ -184,23 +188,23 @@ function LoginForm() {
             </form>
 
             {/* OR DIVIDER */}
-            <div className="relative my-6">
+            <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-[#E5E5E5]" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-[#888888] font-mono text-[10px] tracking-wider">
+                <span className="bg-white px-2.5 text-[#888888] font-mono text-[9px] tracking-wider">
                   OR
                 </span>
               </div>
             </div>
 
-            {/* SOCIAL AUTHENTICATION BUTTONS */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Social Buttons */}
+            <div className="grid grid-cols-2 gap-2.5">
               <button 
                 type="button" 
                 onClick={() => window.location.href = '/api/auth/sso?provider=google'}
-                className="flex items-center justify-center space-x-2 py-2.5 px-3 border border-[#E5E5E5] hover:border-[#111111] hover:bg-[#FAFAFA] rounded-xl text-xs font-medium text-[#111111] transition duration-150 shadow-2xs"
+                className="flex items-center justify-center space-x-2 py-2 px-3 border border-[#E5E5E5] hover:border-[#111111] hover:bg-[#FAFAFA] rounded-xl text-xs font-medium text-[#111111] transition duration-150 shadow-2xs"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -214,7 +218,7 @@ function LoginForm() {
               <button 
                 type="button" 
                 onClick={() => window.location.href = '/api/auth/sso?provider=microsoft'}
-                className="flex items-center justify-center space-x-2 py-2.5 px-3 border border-[#E5E5E5] hover:border-[#111111] hover:bg-[#FAFAFA] rounded-xl text-xs font-medium text-[#111111] transition duration-150 shadow-2xs"
+                className="flex items-center justify-center space-x-2 py-2 px-3 border border-[#E5E5E5] hover:border-[#111111] hover:bg-[#FAFAFA] rounded-xl text-xs font-medium text-[#111111] transition duration-150 shadow-2xs"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                   <path fill="#F25022" d="M1 1h10v10H1z"/>
@@ -226,8 +230,8 @@ function LoginForm() {
               </button>
             </div>
 
-            {/* Bottom Text */}
-            <div className="mt-8 text-center text-xs text-[#666666]">
+            {/* Bottom Link */}
+            <div className="mt-5 text-center text-xs text-[#666666]">
               Don't have an account?{' '}
               <Link href="/register" className="text-[#111111] font-bold hover:underline">
                 Create Account
@@ -236,250 +240,40 @@ function LoginForm() {
 
           </div>
 
-          {/* RIGHT: CRM Product Marketing & Product Preview (~56% width on desktop) */}
-          <div className="lg:col-span-7 flex flex-col justify-between space-y-8">
+          {/* RIGHT: Clean, Powerful Hero Presentation with 3D Laptop/Phone Mockup (~58% width) */}
+          <div className="lg:col-span-7 flex flex-col justify-center space-y-4">
             
-            {/* Top Marketing Section */}
+            {/* Header copy */}
             <div>
-              {/* Badge: Modern CRM for Growing Businesses */}
-              <div className="inline-flex items-center space-x-2 px-3 py-1 bg-white border border-[#111111] rounded-full text-xs font-medium text-[#111111] mb-5">
-                <Sparkles className="w-3.5 h-3.5 text-[#111111]" />
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-white border border-[#111111] rounded-full text-[11px] font-medium text-[#111111] mb-2.5">
+                <Sparkles className="w-3 h-3 text-[#111111]" />
                 <span>Modern CRM for Growing Businesses</span>
               </div>
 
-              {/* Main Headline */}
-              <h2 className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-[#111111] tracking-tight leading-[1.08] mb-4">
-                Close More Deals. <br />
-                Grow Faster.
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#111111] tracking-tight leading-tight mb-1.5">
+                Close More Deals. Grow Faster.
               </h2>
 
-              {/* Supporting Paragraph */}
-              <p className="text-sm sm:text-base text-[#666666] max-w-xl leading-relaxed">
-                Zyvo helps you manage leads, track sales, generate GST invoices, and automate your entire business workflow — all in one unified platform.
+              <p className="text-xs sm:text-sm text-[#666666] max-w-lg leading-relaxed">
+                Run your entire sales & billing operations from one unified command center. Real-time leads, multi-stage pipelines, GST invoices, and Cashfree payments.
               </p>
             </div>
 
-            {/* FEATURE HIGHLIGHTS */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-2 border-y border-[#E5E5E5]">
-              <div className="space-y-1">
-                <div className="text-[10px] font-mono text-[#999999]">01</div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-[#111111]">
-                  <TrendingUp className="w-3.5 h-3.5 text-[#111111]" />
-                  <span>Sales Pipeline</span>
-                </div>
-                <p className="text-[11px] text-[#666666] leading-tight">Track & convert leads</p>
-              </div>
-
-              <div className="space-y-1">
-                <div className="text-[10px] font-mono text-[#999999]">02</div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-[#111111]">
-                  <FileText className="w-3.5 h-3.5 text-[#111111]" />
-                  <span>GST Invoicing</span>
-                </div>
-                <p className="text-[11px] text-[#666666] leading-tight">Create & send invoices</p>
-              </div>
-
-              <div className="space-y-1">
-                <div className="text-[10px] font-mono text-[#999999]">03</div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-[#111111]">
-                  <BarChart3 className="w-3.5 h-3.5 text-[#111111]" />
-                  <span>Smart Analytics</span>
-                </div>
-                <p className="text-[11px] text-[#666666] leading-tight">Make data-driven decisions</p>
-              </div>
-
-              <div className="space-y-1">
-                <div className="text-[10px] font-mono text-[#999999]">04</div>
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-[#111111]">
-                  <Settings2 className="w-3.5 h-3.5 text-[#111111]" />
-                  <span>Automation</span>
-                </div>
-                <p className="text-[11px] text-[#666666] leading-tight">Save time & scale</p>
-              </div>
-            </div>
-
-            {/* PRODUCT MOCKUP: Realistic SaaS Dashboard + Overlapping Phone */}
-            <div className="relative pt-2">
-              <div className="w-full bg-[#FFFFFF] border border-[#E5E5E5] rounded-xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.06)] overflow-hidden">
-                {/* Titlebar */}
-                <div className="px-3.5 py-2.5 bg-[#FAFAFA] border-b border-[#E5E5E5] flex items-center justify-between">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#E5E5E5]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#E5E5E5]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#E5E5E5]" />
-                  </div>
-                  <div className="flex items-center space-x-1.5 text-[10px] text-[#666666] font-mono bg-white px-2.5 py-0.5 rounded border border-[#E5E5E5]">
-                    <Lock className="w-2.5 h-2.5 text-[#111111]" />
-                    <span>zyvocrm.in/dashboard</span>
-                  </div>
-                  <div className="w-8" />
-                </div>
-
-                {/* Dashboard Inner Shell */}
-                <div className="grid grid-cols-12 min-h-[300px] text-xs">
-                  {/* Dashboard Sidebar */}
-                  <div className="col-span-3 border-r border-[#E5E5E5] p-3 space-y-3 bg-[#FAFAFA]">
-                    <div className="px-1 text-[11px] font-bold text-[#111111] uppercase tracking-wider">
-                      Zyvo CRM
-                    </div>
-                    <div className="space-y-1 text-[11px]">
-                      <div className="px-2 py-1 bg-[#111111] text-white rounded font-medium">Dashboard</div>
-                      <div className="px-2 py-1 text-[#666666] hover:text-[#111111]">Leads</div>
-                      <div className="px-2 py-1 text-[#666666] hover:text-[#111111]">Deals</div>
-                      <div className="px-2 py-1 text-[#666666] hover:text-[#111111]">Customers</div>
-                      <div className="px-2 py-1 text-[#666666] hover:text-[#111111]">Invoices</div>
-                      <div className="px-2 py-1 text-[#666666] hover:text-[#111111]">Reports</div>
-                      <div className="px-2 py-1 text-[#666666] hover:text-[#111111]">Settings</div>
-                    </div>
-                  </div>
-
-                  {/* Dashboard Content */}
-                  <div className="col-span-9 p-4 space-y-3.5 bg-white">
-                    {/* Header */}
-                    <div>
-                      <h3 className="text-sm font-bold text-[#111111]">Dashboard</h3>
-                      <p className="text-[10px] text-[#666666]">Here's what's happening with your business today.</p>
-                    </div>
-
-                    {/* KPI Cards: 4 metrics */}
-                    <div className="grid grid-cols-4 gap-2">
-                      <div className="p-2 border border-[#E5E5E5] rounded-lg bg-[#FAFAFA]">
-                        <div className="text-[9px] text-[#666666]">Total Leads</div>
-                        <div className="text-sm font-bold font-mono text-[#111111]">248</div>
-                        <div className="text-[8px] text-[#111111] font-mono">+12% vs last mo</div>
-                      </div>
-
-                      <div className="p-2 border border-[#E5E5E5] rounded-lg bg-[#FAFAFA]">
-                        <div className="text-[9px] text-[#666666]">Active Deals</div>
-                        <div className="text-sm font-bold font-mono text-[#111111]">76</div>
-                        <div className="text-[8px] text-[#111111] font-mono">+8%</div>
-                      </div>
-
-                      <div className="p-2 border border-[#E5E5E5] rounded-lg bg-[#FAFAFA]">
-                        <div className="text-[9px] text-[#666666]">Revenue</div>
-                        <div className="text-sm font-bold font-mono text-[#111111]">₹18,42,500</div>
-                        <div className="text-[8px] text-[#111111] font-mono">+24%</div>
-                      </div>
-
-                      <div className="p-2 border border-[#E5E5E5] rounded-lg bg-[#FAFAFA]">
-                        <div className="text-[9px] text-[#666666]">Invoices</div>
-                        <div className="text-sm font-bold font-mono text-[#111111]">148</div>
-                        <div className="text-[8px] text-[#111111] font-mono">+18%</div>
-                      </div>
-                    </div>
-
-                    {/* Sales Overview Chart */}
-                    <div className="border border-[#E5E5E5] rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-semibold text-[#111111]">Sales Overview</span>
-                        <span className="text-[8px] font-mono text-[#666666]">Jan - Sep 2026</span>
-                      </div>
-                      <div className="h-16 w-full flex items-end">
-                        <svg className="w-full h-full" viewBox="0 0 360 60" preserveAspectRatio="none">
-                          <line x1="0" y1="15" x2="360" y2="15" stroke="#F0F0F0" strokeDasharray="3 3" />
-                          <line x1="0" y1="35" x2="360" y2="35" stroke="#F0F0F0" strokeDasharray="3 3" />
-                          <path
-                            d="M0,50 Q45,45 90,38 T180,28 T270,18 T360,8"
-                            fill="none"
-                            stroke="#111111"
-                            strokeWidth="2"
-                          />
-                          <circle cx="360" cy="8" r="3" fill="#111111" />
-                        </svg>
-                      </div>
-                      <div className="flex justify-between text-[8px] font-mono text-[#999999] pt-1 border-t border-[#F0F0F0]">
-                        <span>Jan</span>
-                        <span>Mar</span>
-                        <span>May</span>
-                        <span>Jul</span>
-                        <span>Sep</span>
-                      </div>
-                    </div>
-
-                    {/* Recent Activity */}
-                    <div className="grid grid-cols-2 gap-2 text-[10px]">
-                      <div className="p-2 border border-[#E5E5E5] rounded bg-[#FAFAFA] flex items-center justify-between">
-                        <span className="text-[#111111]">New Lead: Tech Mahindra</span>
-                        <span className="text-[#888888] font-mono text-[9px]">2m ago</span>
-                      </div>
-                      <div className="p-2 border border-[#E5E5E5] rounded bg-[#FAFAFA] flex items-center justify-between">
-                        <span className="text-[#111111]">Invoice #1029 Paid</span>
-                        <span className="text-[#888888] font-mono text-[9px]">Just now</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Overlapping Mobile Mockup */}
-              <div className="hidden sm:block absolute -bottom-4 -right-3 w-48 bg-[#000000] p-1.5 rounded-[26px] shadow-[0_20px_35px_rgba(0,0,0,0.22)] border border-[#333333]">
-                <div className="w-12 h-2.5 bg-[#000000] rounded-full mx-auto mb-1 flex items-center justify-center">
-                  <span className="w-2 h-0.5 bg-[#333333] rounded-full" />
-                </div>
-                <div className="bg-white rounded-[20px] p-2.5 border border-[#E5E5E5] space-y-2">
-                  <div className="flex items-center justify-between pb-1 border-b border-[#E5E5E5]">
-                    <span className="text-[9px] font-bold text-[#111111]">Today</span>
-                    <span className="text-[8px] font-mono text-[#888888]">Live</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5 text-[8px]">
-                    <div className="p-1 bg-[#FAFAFA] rounded border border-[#E5E5E5]">
-                      <div className="text-[#666666]">Leads</div>
-                      <div className="font-bold font-mono text-[#111111]">248</div>
-                    </div>
-                    <div className="p-1 bg-[#FAFAFA] rounded border border-[#E5E5E5]">
-                      <div className="text-[#666666]">Deals</div>
-                      <div className="font-bold font-mono text-[#111111]">76</div>
-                    </div>
-                  </div>
-                  <div className="p-1.5 bg-[#FAFAFA] rounded border border-[#E5E5E5] text-[8px]">
-                    <div className="text-[#666666]">Revenue</div>
-                    <div className="font-bold font-mono text-[#111111] text-[10px]">₹18,42,500</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* BOTTOM BENEFITS */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-[#E5E5E5]">
-              <div className="flex items-start space-x-2.5">
-                <div className="w-7 h-7 rounded-full bg-[#FAFAFA] border border-[#E5E5E5] flex items-center justify-center shrink-0">
-                  <Clock className="w-3.5 h-3.5 text-[#111111]" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#111111]">Free 14-Day Trial</div>
-                  <div className="text-[11px] text-[#666666]">No credit card required</div>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-2.5">
-                <div className="w-7 h-7 rounded-full bg-[#FAFAFA] border border-[#E5E5E5] flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#111111]" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#111111]">Secure & Encrypted</div>
-                  <div className="text-[11px] text-[#666666]">Your data is protected</div>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-2.5">
-                <div className="w-7 h-7 rounded-full bg-[#FAFAFA] border border-[#E5E5E5] flex items-center justify-center shrink-0">
-                  <CreditCard className="w-3.5 h-3.5 text-[#111111]" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#111111]">Cancel Anytime</div>
-                  <div className="text-[11px] text-[#666666]">No long-term commitment</div>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-2.5">
-                <div className="w-7 h-7 rounded-full bg-[#FAFAFA] border border-[#E5E5E5] flex items-center justify-center shrink-0">
-                  <Headphones className="w-3.5 h-3.5 text-[#111111]" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#111111]">Dedicated Support</div>
-                  <div className="text-[11px] text-[#666666]">We’re here to help</div>
-                </div>
+            {/* Clean Realistic 3D Laptop & Phone Showcase Frame */}
+            <div className="relative rounded-2xl overflow-hidden border border-[#E5E5E5] bg-white shadow-[0_16px_40px_-12px_rgba(0,0,0,0.08)] group">
+              <Image 
+                src="/zyvo-3d-showcase.jpg" 
+                alt="Zyvo CRM 3D Command Center & Invoice Showcase"
+                width={1200}
+                height={675}
+                priority
+                className="w-full h-auto object-cover group-hover:scale-[1.01] transition-transform duration-500 ease-out"
+              />
+              
+              {/* Subtle Ambient Live Badge */}
+              <div className="absolute bottom-3 left-3 flex items-center space-x-2 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-lg border border-[#E5E5E5] text-[10px] font-semibold text-[#111111] shadow-xs">
+                <TrendingUp className="w-3.5 h-3.5 text-[#16A34A]" />
+                <span>Real-Time Deal Velocity • ₹18.4L MTD</span>
               </div>
             </div>
 
@@ -488,9 +282,9 @@ function LoginForm() {
         </div>
       </main>
 
-      {/* FOOTER */}
-      <footer className="w-full border-t border-[#E5E5E5] bg-white py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#666666] space-y-3 sm:space-y-0">
+      {/* FOOTER (Compact minimal line) */}
+      <footer className="w-full border-t border-[#E5E5E5] bg-white py-3 shrink-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#666666] space-y-2 sm:space-y-0">
           <div>
             &copy; 2026 Zyvo. All rights reserved.
           </div>

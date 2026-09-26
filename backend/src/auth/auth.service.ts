@@ -1,5 +1,6 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
@@ -7,7 +8,12 @@ import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(AuthService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService
+  ) {}
 
   private getJwtSecret(): string {
     return process.env.JWT_SECRET || 'crm-secret-key-super-secure-production-2026';
@@ -133,6 +139,12 @@ export class AuthService {
       include: { organization: true },
     });
 
+    // Dispatch real Welcome Email asynchronously via Resend
+    const orgDisplayName = user.organization ? user.organization.name : (dto.organizationName || 'Your Workspace');
+    this.mailService.sendWelcomeEmail(user.email, user.name, orgDisplayName).catch((err) => {
+      this.logger.warn(`Failed to dispatch welcome email to ${user.email}: ${err.message}`);
+    });
+
     const tokenPayload = {
       sub: user.id,
       email: user.email,
@@ -150,7 +162,7 @@ export class AuthService {
         role: user.role,
         department: user.department,
         organizationId: user.organization_id,
-        organizationName: user.organization ? user.organization.name : 'ABC Technologies',
+        organizationName: orgDisplayName,
       },
     };
   }

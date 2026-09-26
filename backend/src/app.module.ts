@@ -36,6 +36,7 @@ import { ExternalApiModule } from './external-api/external-api.module';
 import { PublicApiModule } from './public-api/public-api.module';
 import { FormsModule } from './forms/forms.module';
 import { CommunicationsModule } from './communications/communications.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { CommunicationsModule } from './communications/communications.module';
     PublicApiModule,
     FormsModule,
     CommunicationsModule,
+    MailModule,
   ],
 })
 export class AppModule {}

@@ -826,3 +826,16 @@ model SubscriptionInvoice {
   subscription       OrganizationSubscription @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
 }
 
+model OtpVerification {
+  id         String   @id @default(cuid())
+  email      String
+  otp_code   String
+  type       String   @default("VERIFICATION") // VERIFICATION, PASSWORD_RESET, LOGIN_2FA
+  expires_at DateTime
+  attempts   Int      @default(0)
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([email, type])
+}
+

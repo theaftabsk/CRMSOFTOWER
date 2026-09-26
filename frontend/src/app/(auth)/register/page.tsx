@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { 
-  ArrowRight, Eye, EyeOff, Mail, Lock, Building2, User, AlertCircle, X, ShieldCheck 
+  ArrowRight, Eye, EyeOff, Mail, Lock, Building2, User, AlertCircle, X, 
+  TrendingUp, ShieldCheck, Quote, CheckCircle2, Zap 
 } from 'lucide-react';
 import ZyvoLogo from '../../../components/ZyvoLogo';
 
@@ -87,23 +87,12 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#F6F7F9] relative flex flex-col justify-between p-4 sm:p-8 antialiased selection:bg-[#111111] selection:text-white">
       
-      {/* Top Header - Just Clean Logo, No Top Right Button */}
+      {/* Top Header */}
       <header className="w-full max-w-7xl mx-auto flex items-center justify-between py-2 sm:py-4">
         <Link href="/" className="inline-block">
           <ZyvoLogo height={30} className="text-[#111111]" />
         </Link>
       </header>
-
-      {/* Embedded CSS Animations */}
-      <style jsx>{`
-        @keyframes subtleFloat {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-        }
-        .animate-laptop-float {
-          animation: subtleFloat 6s ease-in-out infinite;
-        }
-      `}</style>
 
       {/* Main Content: Two Columns */}
       <main className="w-full max-w-7xl mx-auto my-auto py-6 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -302,7 +291,7 @@ export default function RegisterPage() {
                 disabled={loading}
                 className="w-full py-3 bg-[#111111] hover:bg-[#262626] active:scale-[0.99] disabled:opacity-50 text-white font-semibold rounded-xl text-xs sm:text-sm transition duration-150 flex items-center justify-center space-x-2 shadow-sm mt-3"
               >
-                <span>{loading ? 'Creating workspace...' : 'Continue'}</span>
+                <span>{loading ? 'Creating workspace...' : 'Create Account'}</span>
                 {!loading && <ArrowRight className="w-4 h-4" />}
               </button>
             </form>
@@ -318,18 +307,77 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Right Column: Only the Laptop Dashboard Image */}
-        <div className="lg:col-span-7 flex items-center justify-center p-2 sm:p-6">
-          <div className="relative w-full rounded-2xl overflow-hidden animate-laptop-float">
-            <Image 
-              src="/zyvo-laptop-dashboard.jpg" 
-              alt="Zyvo CRM Dashboard Laptop Display"
-              width={1400}
-              height={787}
-              priority
-              className="w-full h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
-            />
+        {/* Right Column: Customer Testimonial & High-Contrast Metrics */}
+        <div className="lg:col-span-7 flex flex-col justify-center p-4 sm:p-8 space-y-6">
+          
+          {/* Main Testimonial Card */}
+          <div className="bg-white rounded-3xl border border-[#E5E5E5] p-8 sm:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.02)] space-y-6 relative overflow-hidden">
+            
+            {/* Top Badge */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 px-3 py-1 bg-[#F4F4F6] rounded-full border border-[#E5E5E5] text-[11px] font-medium text-[#111111]">
+                <Zap className="w-3.5 h-3.5 text-[#16A34A]" />
+                <span>Enterprise Growth Story</span>
+              </div>
+              <div className="flex items-center space-x-1 text-[#16A34A] text-[11px] font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Verified Customer</span>
+              </div>
+            </div>
+
+            {/* High-Contrast Executive Quote */}
+            <div className="space-y-4">
+              <Quote className="w-8 h-8 text-[#D4D4D4]" />
+              <blockquote className="text-lg sm:text-xl font-medium text-[#111111] leading-relaxed tracking-tight">
+                &ldquo;Zyvo completely replaced three disjointed tools for our sales operations. Our deal velocity doubled within 30 days, and the integrated Cashfree settlements eliminated manual payment reconciliations entirely.&rdquo;
+              </blockquote>
+            </div>
+
+            {/* Author Attribution */}
+            <div className="flex items-center space-x-3.5 pt-4 border-t border-[#F0F0F0]">
+              <div className="w-11 h-11 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-sm tracking-wide">
+                AM
+              </div>
+              <div>
+                <div className="text-sm font-bold text-[#111111]">Aarav Mehta</div>
+                <div className="text-xs text-[#666666]">Co-Founder &amp; COO, NexaScale Logistics</div>
+              </div>
+            </div>
+
           </div>
+
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-3 gap-3.5 sm:gap-4">
+            <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 sm:p-5 shadow-xs">
+              <div className="text-[11px] font-medium text-[#666666]">Annual Volume</div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-[#111111] mt-1">₹48.5 Cr+</div>
+              <div className="text-[10px] text-[#16A34A] font-medium mt-1 flex items-center space-x-1">
+                <TrendingUp className="w-3 h-3" />
+                <span>+120% YoY</span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 sm:p-5 shadow-xs">
+              <div className="text-[11px] font-medium text-[#666666]">Deal Velocity</div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-[#111111] mt-1">3.8x</div>
+              <div className="text-[10px] text-[#666666] mt-1">Faster settlement</div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 sm:p-5 shadow-xs">
+              <div className="text-[11px] font-medium text-[#666666]">Reconciliation</div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-[#111111] mt-1">99.98%</div>
+              <div className="text-[10px] text-[#16A34A] font-medium mt-1">Auto-synced GST</div>
+            </div>
+          </div>
+
+          {/* Social Proof Line */}
+          <div className="flex items-center justify-between px-2 text-[11px] text-[#888888]">
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A]" />
+              <span>SOC2 Compliant &bull; 256-bit TLS Encryption &bull; GST Ready</span>
+            </div>
+          </div>
+
         </div>
 
       </main>

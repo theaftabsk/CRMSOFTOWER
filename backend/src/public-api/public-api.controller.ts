@@ -10,10 +10,14 @@ import {
   Query,
 } from '@nestjs/common';
 import { PublicApiService } from './public-api.service';
+import { ExternalApiService } from '../external-api/external-api.service';
 
 @Controller('public')
 export class PublicApiController {
-  constructor(private readonly publicApiService: PublicApiService) {}
+  constructor(
+    private readonly publicApiService: PublicApiService,
+    private readonly externalApiService: ExternalApiService,
+  ) {}
 
   // 1. Fetch form definition for iframe or direct link
   @Get('forms/:id')
@@ -55,4 +59,35 @@ export class PublicApiController {
   bookPublicMeeting(@Body() body: any) {
     return this.publicApiService.bookPublicMeeting(body);
   }
+
+  // 7. Redeem Partner Single-Sign-On (SSO) Ticket
+  @Get('auth/redeem-sso')
+  redeemSsoTicket(@Query('ticket') ticket: string) {
+    return this.externalApiService.redeemSsoTicket(ticket);
+  }
+
+  // 8. Public Website Enquiry Lead Submission (Zero-config website form capture)
+  @Post('leads')
+  submitWebsiteLead(
+    @Body() body: any,
+    @Headers('x-org-id') orgIdHeader: string = 'ORG001',
+  ) {
+    const orgId = body.organization_id || orgIdHeader || 'ORG001';
+    return this.externalApiService.createLead(orgId, {
+      name: body.name || 'Website Lead',
+      email: body.email,
+      phone: body.phone || 'N/A',
+      company: body.company || 'Website Visitor',
+      source: body.source || 'Website Contact Form',
+      message: body.message || body.notes,
+      service_interest: body.service_interest,
+      website_url: body.website_url,
+      referrer: body.referrer,
+      utm_source: body.utm_source,
+      utm_medium: body.utm_medium,
+      utm_campaign: body.utm_campaign,
+      expected_value: body.expected_value ? Number(body.expected_value) : 0,
+    }, 'Public Website Ingestion');
+  }
 }
+

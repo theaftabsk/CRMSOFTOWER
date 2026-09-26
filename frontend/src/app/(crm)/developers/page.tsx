@@ -7,35 +7,40 @@ import {
   Key, Plus, Copy, Check, ShieldAlert, Code2, Play, 
   Webhook, RefreshCw, X, AlertCircle, CheckCircle2, Terminal,
   Inbox, CreditCard, ShieldCheck, UserCheck, ExternalLink,
-  ChevronRight, Lock, MoreHorizontal, Trash2, Power, Eye, EyeOff, Info
+  ChevronRight, Lock, MoreHorizontal, Trash2, Power, Eye, EyeOff, Info,
+  Globe, Send, Sparkles, CheckCircle, ArrowRight, UserPlus
 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import Link from 'next/link';
 
 const AVAILABLE_SCOPES = [
-  { id: 'leads:read', label: 'leads:read', desc: 'Query and view leads' },
-  { id: 'leads:write', label: 'leads:write', desc: 'Create and update leads' },
-  { id: 'contacts:read', label: 'contacts:read', desc: 'View contacts' },
-  { id: 'deals:read', label: 'deals:read', desc: 'View pipeline deals' },
-  { id: 'deals:write', label: 'deals:write', desc: 'Create and update deals' },
-  { id: 'invoices:read', label: 'invoices:read', desc: 'View invoices' },
-  { id: 'invoices:write', label: 'invoices:write', desc: 'Generate invoices & payment links' },
-  { id: 'webhooks:manage', label: 'webhooks:manage', desc: 'Configure webhooks' },
+  { id: 'leads:read', label: 'leads:read', desc: 'Query and view CRM leads' },
+  { id: 'leads:write', label: 'leads:write', desc: 'Ingest website enquiries and update leads' },
+  { id: 'auth:sso', label: 'auth:sso', desc: 'Partner software user linking and 1-click SSO session creation' },
+  { id: 'contacts:read', label: 'contacts:read', desc: 'View contacts directory' },
+  { id: 'deals:read', label: 'deals:read', desc: 'View sales pipeline deals' },
+  { id: 'deals:write', label: 'deals:write', desc: 'Create and advance deal stages' },
+  { id: 'invoices:read', label: 'invoices:read', desc: 'View customer invoices' },
+  { id: 'invoices:write', label: 'invoices:write', desc: 'Generate customer invoices & payment links' },
+  { id: 'webhooks:manage', label: 'webhooks:manage', desc: 'Configure outgoing webhooks' },
 ];
 
 export default function DevelopersPage() {
-  const [activeTab, setActiveTab] = useState<'requests' | 'keys' | 'payment_tokens' | 'docs' | 'webhooks'>('requests');
+  const [activeTab, setActiveTab] = useState<'lead_capture' | 'auth_sso' | 'keys' | 'requests' | 'webhooks' | 'sandbox'>('lead_capture');
 
   // Data States
   const [requests, setRequests] = useState<any[]>([]);
   const [keys, setKeys] = useState<any[]>([]);
   const [webhooks, setWebhooks] = useState<any[]>([]);
+  const [devStats, setDevStats] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Modals
+  // Modals & Notifications
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showWebhookModal, setShowWebhookModal] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<any | null>(null);
+  const [notification, setNotification] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   // Dialog States
   const [requestToReject, setRequestToReject] = useState<string | null>(null);
@@ -44,13 +49,11 @@ export default function DevelopersPage() {
   const [webhookToDelete, setWebhookToDelete] = useState<string | null>(null);
   const [openMenuKeyId, setOpenMenuKeyId] = useState<string | null>(null);
   const [openMenuWebhookId, setOpenMenuWebhookId] = useState<string | null>(null);
-  const [visibleWebhookSecretId, setVisibleWebhookSecretId] = useState<string | null>(null);
-  const [notification, setNotification] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-  const showToast = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setNotification({ text, type });
-    setTimeout(() => setNotification(null), 4000);
-  };
+  // Direct Key Form State
+  const [directKeyName, setDirectKeyName] = useState('');
+  const [directScopes, setDirectScopes] = useState<string[]>(['leads:write', 'leads:read', 'auth:sso']);
+  const [creatingKey, setCreatingKey] = useState(false);
 
   // Partner Request Form State
   const [newReq, setNewReq] = useState({
@@ -58,39 +61,77 @@ export default function DevelopersPage() {
     company_name: '',
     email: '',
     purpose: '',
-    requested_scopes: ['leads:write', 'invoices:read', 'invoices:write'],
+    requested_scopes: ['leads:write', 'auth:sso', 'invoices:read'],
   });
   const [submittingReq, setSubmittingReq] = useState(false);
 
-  // Direct Key Form State
-  const [directKeyName, setDirectKeyName] = useState('');
-  const [directScopes, setDirectScopes] = useState<string[]>(['leads:write', 'leads:read']);
-  const [creatingKey, setCreatingKey] = useState(false);
-
   // Webhook Form State
   const [webhookUrl, setWebhookUrl] = useState('');
-  const [webhookEvents, setWebhookEvents] = useState<string[]>(['lead.created', 'deal.won', 'invoice.paid']);
+  const [webhookEvents, setWebhookEvents] = useState<string[]>(['lead.created', 'lead.updated', 'deal.won']);
   const [creatingWebhook, setCreatingWebhook] = useState(false);
 
-  // Code Tab State
-  const [codeTab, setCodeTab] = useState<'curl' | 'js' | 'python'>('curl');
+  // Code Tab for Lead Capture
+  const [leadCodeTab, setLeadCodeTab] = useState<'html' | 'js' | 'php' | 'python' | 'curl'>('js');
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Sandbox State
-  const [testKey, setTestKey] = useState('crm_live_demo_key_super_secure_123');
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<any | null>(null);
+  // Interactive Live Website Lead Test Form
+  const [testLeadForm, setTestLeadForm] = useState({
+    name: 'Rohit Verma',
+    email: 'rohit.verma@apextech.in',
+    phone: '+91 9876543299',
+    company: 'Apex Digital Labs',
+    source: 'Landing Page Google Ads',
+    service_interest: 'Enterprise Cloud CRM Plan',
+    website_url: 'https://apextech.in/pricing',
+    utm_source: 'google',
+    utm_medium: 'cpc',
+    utm_campaign: 'q3-growth',
+    message: 'We need CRM migration for 40 team members and API access.',
+    expected_value: 75000,
+  });
+  const [submittingTestLead, setSubmittingTestLead] = useState(false);
+  const [testLeadResult, setTestLeadResult] = useState<any | null>(null);
+
+  // Interactive Live SSO Simulator
+  const [ssoForm, setSsoForm] = useState({
+    email: 'client.director@partnercorp.com',
+    name: 'Suresh Menon',
+    external_user_id: 'EXT-USR-9921',
+    redirect_path: '/dashboard',
+  });
+  const [generatingSso, setGeneratingSso] = useState(false);
+  const [ssoResult, setSsoResult] = useState<any | null>(null);
+
+  // API Sandbox State
+  const [sandboxApiKey, setSandboxApiKey] = useState('crm_live_demo_key_super_secure_123');
+  const [sandboxEndpoint, setSandboxEndpoint] = useState('/external/auth/verify');
+  const [sandboxTesting, setSandboxTesting] = useState(false);
+  const [sandboxResult, setSandboxResult] = useState<any | null>(null);
+
+  const showToast = (text: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setNotification({ text, type });
+    setTimeout(() => setNotification(null), 4000);
+  };
+
+  const copyText = (txt: string, label: string = 'Copied to clipboard!') => {
+    navigator.clipboard.writeText(txt);
+    setCopiedCode(true);
+    showToast(label, 'success');
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
 
   const loadAll = async () => {
     setLoading(true);
-    const [reqsData, keysData, whData] = await Promise.all([
+    const [reqsData, keysData, whData, statsData] = await Promise.all([
       api.getPartnerRequests(),
       api.getApiKeys(),
       api.getWebhooks(),
+      api.getExternalStats(),
     ]);
     setRequests(Array.isArray(reqsData) ? reqsData : []);
     setKeys(Array.isArray(keysData) ? keysData : []);
     setWebhooks(Array.isArray(whData) ? whData : []);
+    if (statsData) setDevStats(statsData);
     setLoading(false);
   };
 
@@ -98,16 +139,53 @@ export default function DevelopersPage() {
     loadAll();
   }, []);
 
+  const handleCreateDirectKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directKeyName) return;
+    setCreatingKey(true);
+    const result = await api.createApiKey({
+      key_name: directKeyName,
+      permissions: directScopes,
+      rate_limit_per_min: 150,
+    });
+    setCreatingKey(false);
+    setShowKeyModal(false);
+    setDirectKeyName('');
+    if (result && result.raw_api_key) {
+      setGeneratedKey(result);
+    }
+    showToast('API Key generated successfully!', 'success');
+    loadAll();
+  };
+
+  const handleRevokeKey = async (id: string) => {
+    await api.revokeApiKey(id);
+    setKeyToRevoke(null);
+    showToast('API Key revoked', 'info');
+    loadAll();
+  };
+
+  const handleDeleteKey = async (id: string) => {
+    await api.deleteApiKey(id);
+    setKeyToDelete(null);
+    showToast('API Key permanently deleted', 'info');
+    loadAll();
+  };
+
   const handleApproveRequest = async (requestId: string) => {
     const res = await api.approvePartnerRequest(requestId);
     if (res && res.issued_key) {
       setGeneratedKey(res.issued_key);
     }
+    showToast('Partner request approved and API key issued!', 'success');
     loadAll();
   };
 
-  const handleRejectRequest = (requestId: string) => {
-    setRequestToReject(requestId);
+  const handleRejectRequest = async (requestId: string) => {
+    await api.rejectPartnerRequest(requestId);
+    setRequestToReject(null);
+    showToast('Partner request declined', 'info');
+    loadAll();
   };
 
   const handleSubmitRequest = async (e: React.FormEvent) => {
@@ -121,48 +199,10 @@ export default function DevelopersPage() {
       company_name: '',
       email: '',
       purpose: '',
-      requested_scopes: ['leads:write', 'invoices:read', 'invoices:write'],
+      requested_scopes: ['leads:write', 'auth:sso', 'invoices:read'],
     });
+    showToast('Partner application submitted for admin review', 'success');
     loadAll();
-  };
-
-  const handleCreateDirectKey = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!directKeyName) return;
-    setCreatingKey(true);
-    const result = await api.createApiKey({
-      key_name: directKeyName,
-      permissions: directScopes,
-    });
-    setCreatingKey(false);
-    setShowKeyModal(false);
-    setDirectKeyName('');
-    if (result && result.raw_api_key) {
-      setGeneratedKey(result);
-    }
-    loadAll();
-  };
-
-  const handleRevokeKey = (id: string) => {
-    setKeyToRevoke(id);
-    setOpenMenuKeyId(null);
-  };
-
-  const handleDeleteKey = (id: string) => {
-    setKeyToDelete(id);
-    setOpenMenuKeyId(null);
-  };
-
-  const handleToggleWebhook = async (id: string) => {
-    setOpenMenuWebhookId(null);
-    await api.toggleWebhook(id);
-    showToast('Webhook status updated', 'success');
-    loadAll();
-  };
-
-  const handleDeleteWebhook = (id: string) => {
-    setWebhookToDelete(id);
-    setOpenMenuWebhookId(null);
   };
 
   const handleCreateWebhook = async (e: React.FormEvent) => {
@@ -176,7 +216,21 @@ export default function DevelopersPage() {
     setCreatingWebhook(false);
     setShowWebhookModal(false);
     setWebhookUrl('');
-    showToast('Webhook created successfully!', 'success');
+    showToast('Webhook registered successfully!', 'success');
+    loadAll();
+  };
+
+  const handleToggleWebhook = async (id: string) => {
+    setOpenMenuWebhookId(null);
+    await api.toggleWebhook(id);
+    showToast('Webhook status updated', 'success');
+    loadAll();
+  };
+
+  const handleDeleteWebhook = async (id: string) => {
+    await api.deleteWebhook(id);
+    setWebhookToDelete(null);
+    showToast('Webhook removed', 'info');
     loadAll();
   };
 
@@ -184,93 +238,201 @@ export default function DevelopersPage() {
     setOpenMenuWebhookId(null);
     const res = await api.testWebhook(id);
     showToast(res?.message || 'Test event dispatched successfully!', 'success');
-    loadAll();
   };
 
-  const handleRunSandbox = async () => {
-    setTesting(true);
-    setTestResult(null);
-    try {
-      const res = await fetch('http://localhost:4000/api/v1/external/auth/verify', {
-        headers: { 'x-api-key': testKey.trim() },
-      });
-      const json = await res.json();
-      setTestResult({ status: res.status, ok: res.ok, data: json });
-    } catch (err: any) {
-      setTestResult({ status: 500, ok: false, error: err.message });
-    } finally {
-      setTesting(false);
+  // Test Lead Submission
+  const handleExecuteLeadTest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingTestLead(true);
+    setTestLeadResult(null);
+
+    const res = await api.submitExternalLead(testLeadForm, sandboxApiKey);
+    setTestLeadResult(res);
+    setSubmittingTestLead(false);
+
+    if (res.ok) {
+      showToast('Live test enquiry captured into CRM!', 'success');
+      loadAll();
+    } else {
+      showToast('Enquiry submission failed', 'error');
     }
   };
 
-  const copyText = (txt: string, label: string = 'Copied to clipboard!') => {
-    navigator.clipboard.writeText(txt);
-    setCopiedCode(true);
-    showToast(label, 'success');
-    setTimeout(() => setCopiedCode(false), 2000);
+  // Generate SSO Ticket
+  const handleGenerateSsoTicket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGeneratingSso(true);
+    setSsoResult(null);
+
+    const res = await api.generatePartnerSsoToken(ssoForm, sandboxApiKey);
+    setSsoResult(res);
+    setGeneratingSso(false);
+
+    if (res.ok) {
+      showToast('1-Click SSO ticket generated successfully!', 'success');
+    } else {
+      showToast(res.data?.message || 'Failed to generate SSO ticket', 'error');
+    }
   };
 
-  const pendingCount = requests.filter((r) => r.status === 'Pending').length;
+  // Run Sandbox Request
+  const handleRunSandbox = async () => {
+    setSandboxTesting(true);
+    setSandboxResult(null);
 
-  const cURLSnippet = `curl -X POST http://localhost:4000/api/v1/external/leads \\
+    try {
+      const res = await fetch(`http://localhost:4000/api/v1${sandboxEndpoint}`, {
+        headers: { 'x-api-key': sandboxApiKey.trim() },
+      });
+      const data = await res.json();
+      setSandboxResult({ status: res.status, ok: res.ok, data });
+    } catch (err: any) {
+      setSandboxResult({ status: 500, ok: false, error: err.message });
+    } finally {
+      setSandboxTesting(false);
+    }
+  };
+
+  const pendingRequestsCount = requests.filter(r => r.status === 'Pending').length;
+
+  // Code Snippets for Website Enquiry Ingestion
+  const snippets = {
+    html: `<!-- Standard HTML Contact / Enquiry Form -->
+<!-- Submits directly to the CRM without any complex backend setup -->
+<form action="http://localhost:4000/api/v1/public/leads" method="POST">
+  <input type="text" name="name" placeholder="Full Name" required />
+  <input type="email" name="email" placeholder="Business Email" required />
+  <input type="tel" name="phone" placeholder="Phone Number" required />
+  <input type="text" name="company" placeholder="Company Name" />
+  <input type="hidden" name="source" value="Website Contact Page" />
+  <input type="hidden" name="website_url" value="https://yourwebsite.com/contact" />
+  <textarea name="message" placeholder="How can we help you?"></textarea>
+  <button type="submit">Submit Enquiry</button>
+</form>`,
+
+    js: `// Modern JavaScript (Fetch API) for React, Vue, Webflow, or Custom Website
+async function submitWebsiteEnquiry(formData) {
+  const response = await fetch("http://localhost:4000/api/v1/external/leads", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": "YOUR_API_KEY", // Issued from CRM Developer Portal
+    },
+    body: JSON.stringify({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      company: formData.company || "Website Visitor",
+      source: "Website Pricing Form",
+      service_interest: formData.service || "Enterprise Tier",
+      website_url: window.location.href,
+      referrer: document.referrer,
+      utm_source: new URLSearchParams(window.location.search).get("utm_source") || "direct",
+      utm_campaign: new URLSearchParams(window.location.search).get("utm_campaign") || "",
+      message: formData.message,
+      expected_value: 50000
+    }),
+  });
+
+  const result = await response.json();
+  if (response.ok && result.success) {
+    alert("Thank you! Our sales team has received your enquiry.");
+  }
+}`,
+
+    php: `<?php
+// WordPress / PHP Contact Form Integration (e.g. in functions.php or form handler)
+function send_lead_to_crm($name, $email, $phone, $company, $message) {
+    $url = 'http://localhost:4000/api/v1/external/leads';
+    $api_key = 'YOUR_API_KEY';
+
+    $payload = [
+        'name'             => sanitize_text_field($name),
+        'email'            => sanitize_email($email),
+        'phone'            => sanitize_text_field($phone),
+        'company'          => sanitize_text_field($company),
+        'source'           => 'WordPress Contact Form',
+        'website_url'      => home_url($_SERVER['REQUEST_URI']),
+        'message'          => sanitize_textarea_field($message),
+        'expected_value'   => 45000
+    ];
+
+    $response = wp_remote_post($url, [
+        'headers' => [
+            'Content-Type' => 'application/json',
+            'x-api-key'    => $api_key,
+        ],
+        'body'    => json_encode($payload),
+        'timeout' => 15,
+    ]);
+
+    return !is_wp_error($response) && wp_remote_retrieve_response_code($response) === 201;
+}`,
+
+    python: `import requests
+
+# Python Flask / Django / FastAPI Backend Lead Ingestion
+CRM_API_URL = "http://localhost:4000/api/v1/external/leads"
+API_KEY = "YOUR_API_KEY"
+
+def send_enquiry_to_crm(lead_data):
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": API_KEY,
+    }
+    payload = {
+        "name": lead_data.get("name"),
+        "email": lead_data.get("email"),
+        "phone": lead_data.get("phone"),
+        "company": lead_data.get("company", "Web Lead"),
+        "source": "Landing Page Google Ads",
+        "website_url": "https://company.com/landing",
+        "utm_source": "google-ads",
+        "utm_campaign": "q3-enterprise",
+        "message": lead_data.get("message"),
+        "expected_value": 75000,
+    }
+
+    resp = requests.post(CRM_API_URL, json=payload, headers=headers)
+    return resp.status_code in (200, 201), resp.json()`,
+
+    curl: `curl -X POST http://localhost:4000/api/v1/external/leads \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: YOUR_API_KEY" \\
-  -H "Idempotency-Key: partner-req-${Date.now()}" \\
   -d '{
-    "name": "Partner Lead",
-    "email": "lead@partnercorp.com",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@innovate.co",
     "phone": "+91 9876543210",
-    "company": "Partner Enterprise",
-    "expected_value": 90000,
-    "source": "External Partner API"
-  }'`;
-
-  const jsSnippet = `const response = await fetch("http://localhost:4000/api/v1/external/leads", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "x-api-key": "YOUR_API_KEY",
-    "Idempotency-Key": "partner-req-" + Date.now()
-  },
-  body: JSON.stringify({
-    name: "Partner Lead",
-    email: "lead@partnercorp.com",
-    phone: "+91 9876543210",
-    company: "Partner Enterprise",
-    expected_value: 90000,
-    source: "External Software"
-  })
-});
-const result = await response.json();
-console.log("Success:", result);`;
-
-  const pythonSnippet = `import requests
-import time
-
-url = "http://localhost:4000/api/v1/external/leads"
-headers = {
-    "Content-Type": "application/json",
-    "x-api-key": "YOUR_API_KEY",
-    "Idempotency-Key": f"partner-req-{int(time.time())}"
-}
-payload = {
-    "name": "Partner Lead",
-    "email": "lead@partnercorp.com",
-    "phone": "+91 9876543210",
-    "company": "Partner Enterprise",
-    "expected_value": 90000,
-    "source": "Python Client"
-}
-
-response = requests.post(url, json=payload, headers=headers)
-print(response.status_code, response.json())`;
+    "company": "Innovate Technologies",
+    "source": "Website Contact Page",
+    "website_url": "https://innovate.co/contact",
+    "service_interest": "Custom SaaS Solution",
+    "message": "Looking to automate our sales workflow for 25 representatives.",
+    "expected_value": 85000
+  }'`,
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 antialiased">
+      {/* Toast Notification */}
+      {notification && (
+        <div className={`fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-lg border text-xs font-medium shadow-md flex items-center space-x-2 animate-fadeIn ${
+          notification.type === 'success' 
+            ? 'bg-[#111111] text-white border-[#111111]' 
+            : notification.type === 'error'
+            ? 'bg-[#DC2626] text-white border-[#DC2626]'
+            : 'bg-white text-[#111111] border-[#E5E5E5]'
+        }`}>
+          <Check className="w-3.5 h-3.5" />
+          <span>{notification.text}</span>
+        </div>
+      )}
+
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <PageHeader
-          title="Developer Portal & Partner Integration Hub"
-          subtitle="Enterprise API authorization, partner permission request approvals, payment tokens, and live sandbox."
+          title="Developer Platform & Public API Ecosystem"
+          subtitle="Enterprise REST API, website enquiry ingestion, third-party software Auth/SSO linking, and webhooks."
         />
         <div className="flex items-center space-x-2">
           <button
@@ -278,188 +440,509 @@ print(response.status_code, response.json())`;
             className="flex items-center space-x-1.5 px-3 py-2 bg-white border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#111111] hover:bg-[#F8F8F8] transition"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Submit Partner Request</span>
+            <span>Apply as Partner</span>
           </button>
           <button
             onClick={() => setShowKeyModal(true)}
             className="flex items-center space-x-1.5 px-3 py-2 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] transition shadow-sm"
           >
             <Key className="w-3.5 h-3.5" />
-            <span>Issue Direct Key</span>
+            <span>Issue API Key</span>
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Quick Metric Ribbon */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div className="bg-white border border-[#E5E5E5] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <span className="text-[#666666] font-medium block">Total Leads Ingested</span>
+          <span className="text-xl font-bold font-mono text-[#111111] mt-1 block">
+            {devStats?.total_leads ?? '...'}
+          </span>
+          <span className="text-[10px] text-[#16A34A] font-mono mt-0.5 block">Live Synchronized</span>
+        </div>
+        <div className="bg-white border border-[#E5E5E5] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <span className="text-[#666666] font-medium block">Active API Keys</span>
+          <span className="text-xl font-bold font-mono text-[#111111] mt-1 block">
+            {keys.filter(k => !k.is_revoked).length}
+          </span>
+          <span className="text-[10px] text-[#666666] font-mono mt-0.5 block">SHA-256 Encrypted</span>
+        </div>
+        <div className="bg-white border border-[#E5E5E5] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <span className="text-[#666666] font-medium block">Subscribed Webhooks</span>
+          <span className="text-xl font-bold font-mono text-[#111111] mt-1 block">
+            {webhooks.filter(w => w.is_active).length}
+          </span>
+          <span className="text-[10px] text-[#666666] font-mono mt-0.5 block">HMAC-SHA256 Signed</span>
+        </div>
+        <div className="bg-white border border-[#E5E5E5] rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          <span className="text-[#666666] font-medium block">Partner Inquiries</span>
+          <span className="text-xl font-bold font-mono text-[#111111] mt-1 block">
+            {pendingRequestsCount}
+          </span>
+          <span className="text-[10px] text-[#D97706] font-mono mt-0.5 block">
+            {pendingRequestsCount > 0 ? 'Pending Admin Action' : 'All clear'}
+          </span>
+        </div>
+      </div>
+
+      {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-[#E5E5E5] pb-2">
         <button
+          onClick={() => setActiveTab('lead_capture')}
+          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition ${
+            activeTab === 'lead_capture' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>Website Enquiry API</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('auth_sso')}
+          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition ${
+            activeTab === 'auth_sso' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
+          }`}
+        >
+          <UserCheck className="w-3.5 h-3.5" />
+          <span>Partner Auth & SSO Link</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('keys')}
+          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition ${
+            activeTab === 'keys' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
+          }`}
+        >
+          <Key className="w-3.5 h-3.5" />
+          <span>API Keys ({keys.length})</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('requests')}
-          className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
+          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition ${
             activeTab === 'requests' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
           }`}
         >
           <Inbox className="w-3.5 h-3.5" />
-          <span>Access Requests</span>
-          {pendingCount > 0 && (
+          <span>Partner Requests</span>
+          {pendingRequestsCount > 0 && (
             <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#DC2626] text-white">
-              {pendingCount}
+              {pendingRequestsCount}
             </span>
           )}
         </button>
 
         <button
-          onClick={() => setActiveTab('keys')}
-          className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
-            activeTab === 'keys' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
-          }`}
-        >
-          <Key className="w-3.5 h-3.5" />
-          <span>Issued API Keys ({keys.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('payment_tokens')}
-          className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
-            activeTab === 'payment_tokens' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
-          }`}
-        >
-          <CreditCard className="w-3.5 h-3.5" />
-          <span>Payment Tokens & Checkout APIs</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('docs')}
-          className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
-            activeTab === 'docs' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
-          }`}
-        >
-          <Code2 className="w-3.5 h-3.5" />
-          <span>Integration Docs & Sandbox</span>
-        </button>
-
-        <button
           onClick={() => setActiveTab('webhooks')}
-          className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
+          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition ${
             activeTab === 'webhooks' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
           }`}
         >
           <Webhook className="w-3.5 h-3.5" />
-          <span>Webhooks & Retries ({webhooks.length})</span>
+          <span>Webhooks ({webhooks.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('sandbox')}
+          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition ${
+            activeTab === 'sandbox' ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
+          }`}
+        >
+          <Terminal className="w-3.5 h-3.5" />
+          <span>Live API Sandbox</span>
         </button>
       </div>
 
-      {/* TAB 1: ACCESS REQUESTS (APPROVAL INBOX) */}
-      {activeTab === 'requests' && (
-        <div className="space-y-4">
-          <div className="bg-white border border-[#E5E5E5] rounded-xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-            <div className="flex justify-between items-center mb-4">
+      {/* TAB 1: WEBSITE ENQUIRY & LEAD INGESTION API */}
+      {activeTab === 'lead_capture' && (
+        <div className="space-y-6">
+          {/* Architecture Overview */}
+          <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-3">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
+              <h3 className="text-sm font-semibold text-[#111111]">
+                Website Enquiry to CRM Pipeline Integration
+              </h3>
+            </div>
+            <p className="text-xs text-[#666666] leading-relaxed max-w-3xl">
+              Connect contact forms, quotation requests, and landing pages directly to the CRM. Every incoming enquiry automatically records visitor contact info, originating URL, message body, and marketing attribution tags (UTM source, campaign).
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1 text-[11px] font-mono text-[#666666]">
+              <span className="px-2 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded">Endpoint: POST /api/v1/external/leads</span>
+              <span className="px-2 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded">Header: x-api-key: YOUR_KEY</span>
+              <span className="px-2 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded">Scope: leads:write</span>
+              <span className="px-2 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[#16A34A]">Auto-Deduplication: Enabled</span>
+            </div>
+          </div>
+
+          {/* Code Snippets & Language Switcher */}
+          <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-[#E5E5E5] pb-3">
               <div>
-                <h3 className="text-sm font-semibold text-[#111111]">Partner Permission & Access Requests</h3>
-                <p className="text-xs text-[#666666]">
-                  Collaborators and third-party software developers submit access requests with requested scopes. Admins review and grant permission.
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#111111]">
+                  Integration Code Examples
+                </h4>
+                <p className="text-[11px] text-[#666666]">Select your platform or programming language.</p>
+              </div>
+              <div className="flex flex-wrap gap-1 bg-[#F8F8F8] p-1 rounded-lg border border-[#E5E5E5]">
+                {(['js', 'html', 'php', 'python', 'curl'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setLeadCodeTab(tab)}
+                    className={`px-2.5 py-1 text-xs font-mono font-medium rounded transition ${
+                      leadCodeTab === tab ? 'bg-[#111111] text-white shadow-sm' : 'text-[#666666] hover:text-[#111111]'
+                    }`}
+                  >
+                    {tab === 'js' ? 'JavaScript' : tab === 'html' ? 'HTML Form' : tab === 'php' ? 'WordPress/PHP' : tab === 'python' ? 'Python' : 'cURL'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative bg-[#111111] text-white rounded-xl p-4 font-mono text-xs overflow-x-auto">
+              <pre className="text-emerald-400 leading-relaxed">
+                {snippets[leadCodeTab]}
+              </pre>
+              <button
+                onClick={() => copyText(snippets[leadCodeTab])}
+                className="absolute top-3 right-3 flex items-center space-x-1 bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded text-[11px] transition"
+              >
+                {copiedCode ? <Check className="w-3.5 h-3.5 text-[#16A34A]" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedCode ? 'Copied' : 'Copy Code'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Live Website Enquiry Simulator */}
+          <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
+            <div className="border-b border-[#E5E5E5] pb-3 flex justify-between items-center">
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#111111] flex items-center space-x-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#16A34A]" />
+                  <span>Interactive Live Enquiry Simulator</span>
+                </h4>
+                <p className="text-[11px] text-[#666666]">
+                  Simulate an external website visitor submitting an inquiry. This sends a real HTTP request to your CRM backend API.
                 </p>
               </div>
               <button
-                onClick={loadAll}
-                className="p-1.5 text-[#666666] hover:text-[#111111] hover:bg-[#F8F8F8] rounded-lg transition"
+                type="button"
+                onClick={() => setSandboxApiKey('crm_live_demo_key_super_secure_123')}
+                className="text-[11px] font-mono text-[#111111] underline hover:text-[#444444]"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                Use Demo API Key
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-[#E5E5E5] text-[#666666] uppercase text-[11px] tracking-wider bg-[#FAFAFA]">
-                    <th className="py-3 px-4 font-semibold">Developer / Company</th>
-                    <th className="py-3 px-4 font-semibold">Contact Email</th>
-                    <th className="py-3 px-4 font-semibold">Integration Purpose</th>
-                    <th className="py-3 px-4 font-semibold">Requested Scopes</th>
-                    <th className="py-3 px-4 font-semibold">Status</th>
-                    <th className="py-3 px-4 font-semibold text-right">Approval Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E5E5E5]">
-                  {requests.map((r) => (
-                    <tr key={r.id} className="hover:bg-[#FAFAFA] transition">
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-[#111111]">{r.developer_name}</div>
-                        <div className="text-[11px] text-[#666666]">{r.company_name}</div>
-                      </td>
-                      <td className="py-3 px-4 font-mono text-[#444444]">{r.email}</td>
-                      <td className="py-3 px-4 text-[#444444] max-w-xs">{r.purpose}</td>
-                      <td className="py-3 px-4">
-                        <div className="flex flex-wrap gap-1">
-                          {r.requested_scopes.map((sc: string) => (
-                            <span key={sc} className="px-1.5 py-0.5 rounded bg-[#F4F4F5] text-[#111111] font-mono text-[10px]">
-                              {sc}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold ${
-                            r.status === 'Approved'
-                              ? 'bg-[#DCFCE7] text-[#16A34A]'
-                              : r.status === 'Rejected'
-                              ? 'bg-[#FEF2F2] text-[#DC2626]'
-                              : 'bg-[#FEF3C7] text-[#D97706]'
-                          }`}
-                        >
-                          {r.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right space-x-2">
-                        {r.status === 'Pending' ? (
-                          <>
-                            <button
-                              onClick={() => handleApproveRequest(r.id)}
-                              className="px-3 py-1 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] transition"
-                            >
-                              Approve & Issue Key
-                            </button>
-                            <button
-                              onClick={() => handleRejectRequest(r.id)}
-                              className="px-2.5 py-1 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#DC2626] hover:bg-[#FEF2F2] transition"
-                            >
-                              Decline
-                            </button>
-                          </>
-                        ) : (
-                          <span className="text-[11px] text-[#999999]">Reviewed</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+            <form onSubmit={handleExecuteLeadTest} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={testLeadForm.name}
+                    onChange={(e) => setTestLeadForm({ ...testLeadForm, name: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    value={testLeadForm.email}
+                    onChange={(e) => setTestLeadForm({ ...testLeadForm, email: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">Phone Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={testLeadForm.phone}
+                    onChange={(e) => setTestLeadForm({ ...testLeadForm, phone: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono"
+                  />
+                </div>
+              </div>
 
-                  {requests.length === 0 && !loading && (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-xs text-[#666666]">
-                        No partner access requests found. Click "Submit Partner Request" to simulate an external partner applying for API credentials.
-                      </td>
-                    </tr>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">Company / Organization</label>
+                  <input
+                    type="text"
+                    value={testLeadForm.company}
+                    onChange={(e) => setTestLeadForm({ ...testLeadForm, company: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">Origin Source Label</label>
+                  <input
+                    type="text"
+                    value={testLeadForm.source}
+                    onChange={(e) => setTestLeadForm({ ...testLeadForm, source: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">Expected Deal Value (₹)</label>
+                  <input
+                    type="number"
+                    value={testLeadForm.expected_value}
+                    onChange={(e) => setTestLeadForm({ ...testLeadForm, expected_value: Number(e.target.value) })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">Website URL</label>
+                  <input
+                    type="text"
+                    value={testLeadForm.website_url}
+                    onChange={(e) => setTestLeadForm({ ...testLeadForm, website_url: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono text-[11px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">UTM Campaign</label>
+                  <input
+                    type="text"
+                    value={testLeadForm.utm_campaign}
+                    onChange={(e) => setTestLeadForm({ ...testLeadForm, utm_campaign: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono text-[11px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">API Key for Ingestion</label>
+                  <input
+                    type="text"
+                    value={sandboxApiKey}
+                    onChange={(e) => setSandboxApiKey(e.target.value)}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+
+              <div className="text-xs">
+                <label className="block text-[#404040] font-medium mb-1">Enquiry Message Body</label>
+                <textarea
+                  rows={2}
+                  value={testLeadForm.message}
+                  onChange={(e) => setTestLeadForm({ ...testLeadForm, message: e.target.value })}
+                  className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none"
+                />
+              </div>
+
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-[11px] text-[#666666]">
+                  Dispatches <code className="font-mono text-[#111111]">lead.created</code> webhook if successful.
+                </span>
+                <button
+                  type="submit"
+                  disabled={submittingTestLead}
+                  className="flex items-center space-x-1.5 px-4 py-2 bg-[#111111] hover:bg-[#262626] disabled:opacity-50 text-white rounded-lg text-xs font-medium transition"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{submittingTestLead ? 'Submitting to API...' : 'Send Live Test Enquiry'}</span>
+                </button>
+              </div>
+            </form>
+
+            {/* Test Result Inspector */}
+            {testLeadResult && (
+              <div className={`p-4 rounded-xl border text-xs font-mono mt-3 ${
+                testLeadResult.ok ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]' : 'bg-[#FEF2F2] border-[#FECACA] text-[#991B1B]'
+              }`}>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center space-x-2 font-bold">
+                    {testLeadResult.ok ? <CheckCircle2 className="w-4 h-4 text-[#16A34A]" /> : <AlertCircle className="w-4 h-4 text-[#DC2626]" />}
+                    <span>Status: HTTP {testLeadResult.status} {testLeadResult.ok ? 'Created / Authorized' : 'Error'}</span>
+                  </div>
+                  {testLeadResult.ok && (
+                    <Link
+                      href="/leads"
+                      className="inline-flex items-center space-x-1 px-2.5 py-1 bg-white border border-[#BBF7D0] rounded text-[11px] font-sans font-medium text-[#166534] hover:bg-[#DCFCE7] transition"
+                    >
+                      <span>View in CRM Leads</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
                   )}
-                </tbody>
-              </table>
-            </div>
+                </div>
+                <pre className="text-[11px] overflow-x-auto whitespace-pre-wrap">
+                  {JSON.stringify(testLeadResult.data || testLeadResult.error, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* TAB 2: ISSUED API KEYS */}
+      {/* TAB 2: PARTNER AUTH & SSO USER LINKING */}
+      {activeTab === 'auth_sso' && (
+        <div className="space-y-6">
+          <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
+              <h3 className="text-sm font-semibold text-[#111111]">
+                External Software Auth & Single Sign-On (SSO) Handshake
+              </h3>
+            </div>
+            <p className="text-xs text-[#666666] leading-relaxed max-w-3xl">
+              Enable your partners, client portals, and external SaaS platforms to link directly with your CRM. Users authenticated in an external system can jump seamlessly into your CRM without entering separate credentials.
+            </p>
+
+            {/* 2-Step Architecture Diagram */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
+              <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E5E5E5] space-y-2">
+                <div className="flex items-center space-x-2 font-semibold text-[#111111]">
+                  <span className="w-5 h-5 rounded-full bg-[#111111] text-white flex items-center justify-center text-[10px] font-mono">1</span>
+                  <span>Backend Ticket Generation</span>
+                </div>
+                <code className="block bg-white p-2 rounded border border-[#E5E5E5] font-mono text-[11px] text-[#111111]">
+                  POST /api/v1/external/auth/sso-token
+                </code>
+                <p className="text-[#666666] text-[11px] leading-relaxed">
+                  Your external software backend passes the user's email, name, and external ID along with your API Key (scope: <code className="font-mono text-[#111111]">auth:sso</code>). Returns a single-use ticket valid for 5 minutes.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E5E5E5] space-y-2">
+                <div className="flex items-center space-x-2 font-semibold text-[#111111]">
+                  <span className="w-5 h-5 rounded-full bg-[#111111] text-white flex items-center justify-center text-[10px] font-mono">2</span>
+                  <span>1-Click User Redirection</span>
+                </div>
+                <code className="block bg-white p-2 rounded border border-[#E5E5E5] font-mono text-[11px] text-[#111111]">
+                  GET /api/auth/sso?ticket=sso_ticket_...
+                </code>
+                <p className="text-[#666666] text-[11px] leading-relaxed">
+                  External software directs the browser to this URL. The CRM verifies the ticket, signs a secure 7-day session cookie, and opens the CRM directly.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Live SSO Session Generator */}
+          <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
+            <div className="border-b border-[#E5E5E5] pb-3">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#111111]">
+                Live SSO Ticket Generator Simulator
+              </h4>
+              <p className="text-[11px] text-[#666666]">
+                Generate a live single-use SSO link for any test partner user.
+              </p>
+            </div>
+
+            <form onSubmit={handleGenerateSsoTicket} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">User Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    value={ssoForm.email}
+                    onChange={(e) => setSsoForm({ ...ssoForm, email: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">User Full Name</label>
+                  <input
+                    type="text"
+                    value={ssoForm.name}
+                    onChange={(e) => setSsoForm({ ...ssoForm, name: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#404040] font-medium mb-1">External System User ID</label>
+                  <input
+                    type="text"
+                    value={ssoForm.external_user_id}
+                    onChange={(e) => setSsoForm({ ...ssoForm, external_user_id: e.target.value })}
+                    className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-[11px] text-[#666666]">
+                  Uses active API Key: <code className="font-mono text-[#111111]">{sandboxApiKey.slice(0, 16)}...</code>
+                </span>
+                <button
+                  type="submit"
+                  disabled={generatingSso}
+                  className="flex items-center space-x-1.5 px-4 py-2 bg-[#111111] hover:bg-[#262626] disabled:opacity-50 text-white rounded-lg text-xs font-medium transition"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>{generatingSso ? 'Issuing Ticket...' : 'Generate 1-Click SSO Link'}</span>
+                </button>
+              </div>
+            </form>
+
+            {ssoResult && (
+              <div className={`p-4 rounded-xl border text-xs font-mono mt-3 ${
+                ssoResult.ok ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]' : 'bg-[#FEF2F2] border-[#FECACA] text-[#991B1B]'
+              }`}>
+                {ssoResult.ok ? (
+                  <div className="space-y-3 font-sans">
+                    <div className="flex items-center space-x-2 font-semibold text-[#16A34A]">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>SSO Session Ready (Expires in 5 minutes)</span>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-[#BBF7D0] space-y-2">
+                      <span className="text-[11px] text-[#666666] font-medium block">Generated SSO Link:</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-xs font-mono text-[#111111] break-all">
+                          {ssoResult.data.sso_redirect_url}
+                        </code>
+                        <button
+                          onClick={() => copyText(ssoResult.data.sso_redirect_url, 'SSO Link copied!')}
+                          className="px-2 py-1 bg-[#F8F8F8] hover:bg-[#E5E5E5] border border-[#D4D4D4] rounded text-xs text-[#111111] font-medium shrink-0"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                    <a
+                      href={ssoResult.data.sso_redirect_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-[#16A34A] text-white rounded-lg text-xs font-medium hover:bg-[#15803D] transition shadow-sm"
+                    >
+                      <span>Test Live SSO Login (Opens in New Tab)</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                ) : (
+                  <pre className="text-[11px]">
+                    {JSON.stringify(ssoResult.data || ssoResult.error, null, 2)}
+                  </pre>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: ISSUED API KEYS */}
       {activeTab === 'keys' && (
         <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
           <div className="flex justify-between items-center border-b border-[#E5E5E5] pb-3">
             <div>
-              <h3 className="text-sm font-semibold text-[#111111]">Active Partner API Keys</h3>
+              <h3 className="text-sm font-semibold text-[#111111]">Active Partner & Developer API Keys</h3>
               <p className="text-xs text-[#666666]">
-                Only cryptographic SHA-256 hashes are stored in database. Prefix is displayed for identification.
+                Only cryptographic SHA-256 hashes are persisted in PostgreSQL. Keys include rate limits and granular scopes.
               </p>
             </div>
             <button
               onClick={() => setShowKeyModal(true)}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626]"
+              className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] transition shadow-sm"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Issue New Key</span>
@@ -469,31 +952,31 @@ print(response.status_code, response.json())`;
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#E5E5E5] text-[#666666] uppercase text-[11px] tracking-wider">
-                  <th className="pb-3 font-semibold">Key Label / Client</th>
-                  <th className="pb-3 font-semibold">Prefix</th>
-                  <th className="pb-3 font-semibold">Authorized Scopes</th>
-                  <th className="pb-3 font-semibold">Rate Limit</th>
-                  <th className="pb-3 font-semibold">Status</th>
-                  <th className="pb-3 font-semibold text-right">Actions</th>
+                <tr className="border-b border-[#E5E5E5] text-[#666666] uppercase text-[11px] tracking-wider bg-[#FAFAFA]">
+                  <th className="py-2.5 px-3 font-semibold">Key Label</th>
+                  <th className="py-2.5 px-3 font-semibold">Prefix</th>
+                  <th className="py-2.5 px-3 font-semibold">Authorized Scopes</th>
+                  <th className="py-2.5 px-3 font-semibold">Rate Limit</th>
+                  <th className="py-2.5 px-3 font-semibold">Status</th>
+                  <th className="py-2.5 px-3 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F0F0F0]">
+              <tbody className="divide-y divide-[#E5E5E5]">
                 {keys.map((k) => (
                   <tr key={k.id} className="hover:bg-[#FAFAFA] transition">
-                    <td className="py-3 font-semibold text-[#111111]">{k.key_name}</td>
-                    <td className="py-3 font-mono text-[#666666]">{k.key_prefix}</td>
-                    <td className="py-3">
+                    <td className="py-3 px-3 font-semibold text-[#111111]">{k.key_name}</td>
+                    <td className="py-3 px-3 font-mono text-[#666666]">{k.key_prefix}</td>
+                    <td className="py-3 px-3">
                       <div className="flex flex-wrap gap-1">
                         {k.permissions.map((p: string) => (
-                          <span key={p} className="px-1.5 py-0.5 rounded bg-[#F4F4F5] text-[#333333] font-mono text-[10px]">
+                          <span key={p} className="px-1.5 py-0.5 rounded bg-[#F4F4F5] text-[#111111] font-mono text-[10px]">
                             {p}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="py-3 font-mono text-[#666666]">{k.rate_limit_per_min} req/min</td>
-                    <td className="py-3">
+                    <td className="py-3 px-3 font-mono text-[#666666]">{k.rate_limit_per_min} req/min</td>
+                    <td className="py-3 px-3">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold ${
                           k.is_revoked ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#DCFCE7] text-[#16A34A]'
@@ -502,18 +985,18 @@ print(response.status_code, response.json())`;
                         {k.is_revoked ? 'Revoked' : 'Active'}
                       </span>
                     </td>
-                    <td className="py-3 text-right pr-2">
+                    <td className="py-3 px-3 text-right">
                       <div className="flex items-center justify-end space-x-1.5 relative">
                         {!k.is_revoked ? (
                           <button
-                            onClick={() => handleRevokeKey(k.id)}
+                            onClick={() => setKeyToRevoke(k.id)}
                             className="px-2.5 py-1 bg-white border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#DC2626] hover:bg-[#FEF2F2] transition"
                           >
                             Revoke
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleDeleteKey(k.id)}
+                            onClick={() => setKeyToDelete(k.id)}
                             className="px-2.5 py-1 bg-white border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#666666] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition"
                           >
                             Delete
@@ -522,7 +1005,6 @@ print(response.status_code, response.json())`;
                         <button
                           onClick={() => setOpenMenuKeyId(openMenuKeyId === k.id ? null : k.id)}
                           className="p-1 text-[#666666] hover:text-[#111111] hover:bg-[#F0F0F0] rounded-lg transition"
-                          title="More actions"
                         >
                           <MoreHorizontal className="w-4 h-4" />
                         </button>
@@ -554,7 +1036,10 @@ print(response.status_code, response.json())`;
                             </button>
                             <div className="border-t border-[#E5E5E5] my-1" />
                             <button
-                              onClick={() => handleDeleteKey(k.id)}
+                              onClick={() => {
+                                setKeyToDelete(k.id);
+                                setOpenMenuKeyId(null);
+                              }}
                               className="w-full flex items-center space-x-2 px-3 py-1.5 text-xs text-[#DC2626] hover:bg-[#FEF2F2] transition"
                             >
                               <Trash2 className="w-3.5 h-3.5 text-[#DC2626]" />
@@ -567,10 +1052,10 @@ print(response.status_code, response.json())`;
                   </tr>
                 ))}
 
-                {keys.length === 0 && (
+                {keys.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-xs text-[#666666]">
-                      No keys issued yet.
+                    <td colSpan={6} className="py-8 text-center text-xs text-[#666666]">
+                      No API keys created yet. Click "Issue New Key" above.
                     </td>
                   </tr>
                 )}
@@ -580,159 +1065,111 @@ print(response.status_code, response.json())`;
         </div>
       )}
 
-      {/* TAB 3: PAYMENT TOKENS & CHECKOUT APIS */}
-      {activeTab === 'payment_tokens' && (
-        <div className="space-y-6">
-          <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
-            <div className="border-b border-[#E5E5E5] pb-3">
-              <h3 className="text-sm font-semibold text-[#111111] flex items-center space-x-2">
-                <Lock className="w-4 h-4 text-[#111111]" />
-                <span>High-Entropy Payment Tokens Architecture</span>
-              </h3>
-              <p className="text-xs text-[#666666]">
-                Each invoice generated via API or CRM is automatically assigned a cryptographically random 48-character hex payment token.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5] space-y-2">
-                <span className="font-semibold text-[#111111] block">Sanitized Public Endpoint:</span>
-                <code className="block bg-white p-2 rounded border border-[#E5E5E5] font-mono text-[11px] text-[#111111]">
-                  GET /api/v1/public/invoices/:payment_token
-                </code>
-                <p className="text-[#666666] text-[11px]">
-                  Exposes only non-sensitive customer invoice lines, total amount, paid balance, and company public name. Zero internal UUIDs or tenant configuration leaks.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5] space-y-2">
-                <span className="font-semibold text-[#111111] block">Instant Payment Confirmation:</span>
-                <code className="block bg-white p-2 rounded border border-[#E5E5E5] font-mono text-[11px] text-[#111111]">
-                  POST /api/v1/public/invoices/:payment_token/pay
-                </code>
-                <p className="text-[#666666] text-[11px]">
-                  Records atomic payment entry, updates invoice to <code className="font-mono text-[#16A34A]">Paid</code>, and dispatches <code className="font-mono">invoice.paid</code> webhook event.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <span className="text-xs font-semibold text-[#111111] block mb-2">Live Demo Payment Portal:</span>
-              <a
-                href="/pay/pay_token_apex_demo_2026"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 px-4 py-2 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] transition shadow-sm"
-              >
-                <span>Open Live Invoice Checkout Portal (pay_token_apex_demo_2026)</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: INTEGRATION DOCS & SANDBOX */}
-      {activeTab === 'docs' && (
-        <div className="space-y-6">
-          <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
-            <div className="flex justify-between items-center border-b border-[#E5E5E5] pb-3">
-              <div>
-                <h3 className="text-sm font-semibold text-[#111111]">Partner Lead Ingestion Code</h3>
-                <p className="text-xs text-[#666666]">
-                  Pass <code className="font-mono text-[#111111]">x-api-key</code> and <code className="font-mono text-[#111111]">Idempotency-Key</code> in HTTP headers.
-                </p>
-              </div>
-              <div className="flex space-x-1.5">
-                {(['curl', 'js', 'python'] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setCodeTab(t)}
-                    className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition ${
-                      codeTab === t ? 'bg-[#111111] text-white' : 'text-[#666666] hover:bg-[#F8F8F8]'
-                    }`}
-                  >
-                    {t.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative bg-[#111111] text-white rounded-lg p-4 font-mono text-xs overflow-x-auto">
-              <pre className="text-emerald-400 leading-relaxed">
-                {codeTab === 'curl' && cURLSnippet}
-                {codeTab === 'js' && jsSnippet}
-                {codeTab === 'python' && pythonSnippet}
-              </pre>
-              <button
-                onClick={() => {
-                  const str = codeTab === 'curl' ? cURLSnippet : codeTab === 'js' ? jsSnippet : pythonSnippet;
-                  copyText(str);
-                }}
-                className="absolute top-3 right-3 flex items-center space-x-1 bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded text-[11px] transition"
-              >
-                {copiedCode ? <Check className="w-3 h-3 text-[#16A34A]" /> : <Copy className="w-3 h-3" />}
-                <span>{copiedCode ? 'Copied' : 'Copy'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Live Sandbox */}
-          <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
+      {/* TAB 4: PARTNER ACCESS REQUESTS */}
+      {activeTab === 'requests' && (
+        <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
+          <div className="flex justify-between items-center border-b border-[#E5E5E5] pb-3">
             <div>
-              <h3 className="text-sm font-semibold text-[#111111]">Live API Sandbox Tester</h3>
+              <h3 className="text-sm font-semibold text-[#111111]">Third-Party Access Applications</h3>
               <p className="text-xs text-[#666666]">
-                Execute live validation against the API Gateway endpoint (<code className="font-mono text-[#111111]">GET /api/v1/external/auth/verify</code>).
+                External developers and partners submit access requests with requested scopes for admin approval.
               </p>
             </div>
+            <button
+              onClick={loadAll}
+              className="p-1.5 text-[#666666] hover:text-[#111111] hover:bg-[#F8F8F8] rounded-lg transition"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="text"
-                placeholder="Enter API Key"
-                value={testKey}
-                onChange={(e) => setTestKey(e.target.value)}
-                className="flex-1 text-xs font-mono bg-[#F8F8F8] border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] focus:outline-none focus:border-[#111111]"
-              />
-              <button
-                onClick={handleRunSandbox}
-                disabled={testing || !testKey}
-                className="flex items-center justify-center space-x-1.5 px-4 py-2 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] disabled:opacity-50 transition"
-              >
-                <Play className="w-3.5 h-3.5" />
-                <span>{testing ? 'Calling Gateway...' : 'Execute Request'}</span>
-              </button>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[#E5E5E5] text-[#666666] uppercase text-[11px] tracking-wider bg-[#FAFAFA]">
+                  <th className="py-2.5 px-3 font-semibold">Developer / Company</th>
+                  <th className="py-2.5 px-3 font-semibold">Contact Email</th>
+                  <th className="py-2.5 px-3 font-semibold">Integration Purpose</th>
+                  <th className="py-2.5 px-3 font-semibold">Requested Scopes</th>
+                  <th className="py-2.5 px-3 font-semibold">Status</th>
+                  <th className="py-2.5 px-3 font-semibold text-right">Approval Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5E5E5]">
+                {requests.map((r) => (
+                  <tr key={r.id} className="hover:bg-[#FAFAFA] transition">
+                    <td className="py-3 px-3">
+                      <div className="font-semibold text-[#111111]">{r.developer_name}</div>
+                      <div className="text-[11px] text-[#666666]">{r.company_name}</div>
+                    </td>
+                    <td className="py-3 px-3 font-mono text-[#444444]">{r.email}</td>
+                    <td className="py-3 px-3 text-[#444444] max-w-xs">{r.purpose}</td>
+                    <td className="py-3 px-3">
+                      <div className="flex flex-wrap gap-1">
+                        {r.requested_scopes.map((sc: string) => (
+                          <span key={sc} className="px-1.5 py-0.5 rounded bg-[#F4F4F5] text-[#111111] font-mono text-[10px]">
+                            {sc}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold ${
+                          r.status === 'Approved'
+                            ? 'bg-[#DCFCE7] text-[#16A34A]'
+                            : r.status === 'Rejected'
+                            ? 'bg-[#FEF2F2] text-[#DC2626]'
+                            : 'bg-[#FEF3C7] text-[#D97706]'
+                        }`}
+                      >
+                        {r.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-right space-x-2">
+                      {r.status === 'Pending' ? (
+                        <>
+                          <button
+                            onClick={() => handleApproveRequest(r.id)}
+                            className="px-3 py-1 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] transition"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => setRequestToReject(r.id)}
+                            className="px-2.5 py-1 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#DC2626] hover:bg-[#FEF2F2] transition"
+                          >
+                            Decline
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-[11px] text-[#999999]">Reviewed</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
 
-            {testResult && (
-              <div
-                className={`p-4 rounded-lg border text-xs font-mono ${
-                  testResult.ok
-                    ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]'
-                    : 'bg-[#FEF2F2] border-[#FECACA] text-[#991B1B]'
-                }`}
-              >
-                <div className="flex items-center space-x-2 font-bold mb-2">
-                  {testResult.ok ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                  <span>Status: HTTP {testResult.status} {testResult.ok ? 'OK (Authorized)' : 'Unauthorized'}</span>
-                </div>
-                <pre className="text-[11px] overflow-x-auto whitespace-pre-wrap">
-                  {JSON.stringify(testResult.data || testResult.error, null, 2)}
-                </pre>
-              </div>
-            )}
+                {requests.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-xs text-[#666666]">
+                      No partner requests found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      {/* TAB 5: WEBHOOKS & RETRIES */}
+      {/* TAB 5: WEBHOOKS */}
       {activeTab === 'webhooks' && (
         <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
           <div className="flex justify-between items-center border-b border-[#E5E5E5] pb-3">
             <div>
               <h3 className="text-sm font-semibold text-[#111111]">Configured Outgoing Webhooks</h3>
               <p className="text-xs text-[#666666]">
-                Webhook deliveries automatically retry up to 3 times with exponential backoff and HMAC-SHA256 signatures.
+                Webhook payloads are delivered in JSON with exponential backoff retries and cryptographic HMAC-SHA256 signatures.
               </p>
             </div>
             <button
@@ -740,7 +1177,7 @@ print(response.status_code, response.json())`;
               className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626]"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Add Webhook</span>
+              <span>Register Webhook</span>
             </button>
           </div>
 
@@ -768,7 +1205,6 @@ print(response.status_code, response.json())`;
                     </div>
                   </div>
 
-                  {/* Action Dock for Webhook */}
                   <div className="flex items-center space-x-1.5 relative">
                     <button
                       onClick={() => handleTestPing(wh.id)}
@@ -779,7 +1215,6 @@ print(response.status_code, response.json())`;
                     <button
                       onClick={() => setOpenMenuWebhookId(openMenuWebhookId === wh.id ? null : wh.id)}
                       className="p-1 text-[#666666] hover:text-[#111111] hover:bg-[#F0F0F0] rounded-lg transition"
-                      title="More actions"
                     >
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
@@ -796,19 +1231,12 @@ print(response.status_code, response.json())`;
                           <Power className="w-3.5 h-3.5 text-[#666666]" />
                           <span>{wh.is_active ? 'Pause / Disable' : 'Activate Webhook'}</span>
                         </button>
-                        <button
-                          onClick={() => {
-                            copyText(wh.secret_token, 'Secret token copied!');
-                            setOpenMenuWebhookId(null);
-                          }}
-                          className="w-full flex items-center space-x-2 px-3 py-1.5 text-xs text-[#444444] hover:bg-[#F8F8F8] transition"
-                        >
-                          <Copy className="w-3.5 h-3.5 text-[#666666]" />
-                          <span>Copy Signing Secret</span>
-                        </button>
                         <div className="border-t border-[#E5E5E5] my-1" />
                         <button
-                          onClick={() => handleDeleteWebhook(wh.id)}
+                          onClick={() => {
+                            setWebhookToDelete(wh.id);
+                            setOpenMenuWebhookId(null);
+                          }}
                           className="w-full flex items-center space-x-2 px-3 py-1.5 text-xs text-[#DC2626] hover:bg-[#FEF2F2] transition"
                         >
                           <Trash2 className="w-3.5 h-3.5 text-[#DC2626]" />
@@ -818,152 +1246,130 @@ print(response.status_code, response.json())`;
                     )}
                   </div>
                 </div>
-
-                {/* Signing Secret Box */}
-                {wh.secret_token && (
-                  <div className="flex items-center justify-between bg-white border border-[#E5E5E5] rounded-lg px-3 py-2 text-xs">
-                    <div className="flex items-center space-x-2">
-                      <Lock className="w-3.5 h-3.5 text-[#666666]" />
-                      <span className="text-[#666666] font-medium text-[11px]">HMAC Signature Secret:</span>
-                      <span className="font-mono text-[#111111] text-[11px]">
-                        {visibleWebhookSecretId === wh.id 
-                          ? wh.secret_token 
-                          : `${wh.secret_token.slice(0, 10)}••••••••••••••••••••`}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <button
-                        onClick={() => setVisibleWebhookSecretId(visibleWebhookSecretId === wh.id ? null : wh.id)}
-                        className="p-1 text-[#666666] hover:text-[#111111] rounded hover:bg-[#F8F8F8]"
-                        title={visibleWebhookSecretId === wh.id ? 'Hide Secret' : 'Reveal Secret'}
-                      >
-                        {visibleWebhookSecretId === wh.id ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                      <button
-                        onClick={() => copyText(wh.secret_token, 'Signing secret copied to clipboard!')}
-                        className="p-1 text-[#666666] hover:text-[#111111] rounded hover:bg-[#F8F8F8]"
-                        title="Copy Secret"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Delivery Log */}
-                {wh.logs && wh.logs.length > 0 && (
-                  <div className="pt-2 border-t border-[#E5E5E5]">
-                    <span className="text-[10px] text-[#666666] uppercase font-semibold">Delivery Logs (Last 3 Dispatches):</span>
-                    <div className="space-y-1.5 mt-1.5">
-                      {wh.logs.slice(0, 3).map((l: any) => (
-                        <div key={l.id} className="flex items-center justify-between text-[11px] font-mono bg-white p-2 rounded border border-[#E5E5E5]">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-[#111111] font-semibold">{l.event}</span>
-                            <span className="text-[#666666] text-[10px]">(Attempt {l.attempt}/{l.max_attempts})</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-[#666666] text-[10px]">
-                              {new Date(l.executed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </span>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                              l.status_code >= 200 && l.status_code < 300 ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEF2F2] text-[#DC2626]'
-                            }`}>
-                              {l.status_code ? `HTTP ${l.status_code}` : 'Network Timeout'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             ))}
 
-            {webhooks.length === 0 && (
-              <p className="text-center py-6 text-xs text-[#666666]">No webhooks configured yet.</p>
+            {webhooks.length === 0 && !loading && (
+              <div className="text-center py-8 text-xs text-[#666666]">
+                No webhooks configured yet.
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {/* MODAL: SUBMIT PARTNER REQUEST */}
-      {showRequestModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-lg max-w-md w-full p-6 space-y-4">
+      {/* TAB 6: LIVE API GATEWAY SANDBOX */}
+      {activeTab === 'sandbox' && (
+        <div className="bg-white border border-[#E5E5E5] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-[#111111]">API Gateway Endpoint Tester</h3>
+            <p className="text-xs text-[#666666]">
+              Send live verification requests directly to any endpoint using your API credentials.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="sm:col-span-2">
+              <label className="block text-[#404040] font-medium mb-1">API Key Header (<code className="font-mono text-[#111111]">x-api-key</code>)</label>
+              <input
+                type="text"
+                value={sandboxApiKey}
+                onChange={(e) => setSandboxApiKey(e.target.value)}
+                className="w-full bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] font-mono outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[#404040] font-medium mb-1">Target Endpoint</label>
+              <select
+                value={sandboxEndpoint}
+                onChange={(e) => setSandboxEndpoint(e.target.value)}
+                className="w-full bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono text-[11px]"
+              >
+                <option value="/external/auth/verify">GET /external/auth/verify</option>
+                <option value="/external/stats">GET /external/stats</option>
+                <option value="/external/leads">GET /external/leads</option>
+                <option value="/external/deals">GET /external/deals</option>
+                <option value="/external/invoices">GET /external/invoices</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center pt-2">
+            <button
+              type="button"
+              onClick={() => setSandboxApiKey('crm_live_demo_key_super_secure_123')}
+              className="text-[11px] font-mono text-[#111111] underline hover:text-[#444444]"
+            >
+              Fill Demo API Key
+            </button>
+            <button
+              onClick={handleRunSandbox}
+              disabled={sandboxTesting}
+              className="flex items-center space-x-1.5 px-4 py-2 bg-[#111111] hover:bg-[#262626] disabled:opacity-50 text-white rounded-lg text-xs font-medium transition"
+            >
+              <Play className="w-3.5 h-3.5" />
+              <span>{sandboxTesting ? 'Sending Request...' : 'Execute API Call'}</span>
+            </button>
+          </div>
+
+          {sandboxResult && (
+            <div className={`p-4 rounded-xl border text-xs font-mono mt-3 ${
+              sandboxResult.ok ? 'bg-[#F0FDF4] border-[#BBF7D0] text-[#166534]' : 'bg-[#FEF2F2] border-[#FECACA] text-[#991B1B]'
+            }`}>
+              <div className="flex items-center space-x-2 font-bold mb-2">
+                {sandboxResult.ok ? <CheckCircle2 className="w-4 h-4 text-[#16A34A]" /> : <AlertCircle className="w-4 h-4 text-[#DC2626]" />}
+                <span>HTTP {sandboxResult.status} {sandboxResult.ok ? 'OK (Authorized)' : 'Unauthorized'}</span>
+              </div>
+              <pre className="text-[11px] overflow-x-auto whitespace-pre-wrap">
+                {JSON.stringify(sandboxResult.data || sandboxResult.error, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* MODAL: ISSUE NEW KEY */}
+      {showKeyModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-lg max-w-md w-full p-6 space-y-4 animate-scaleUp">
             <div className="flex justify-between items-center border-b border-[#E5E5E5] pb-3">
-              <h3 className="text-sm font-semibold text-[#111111]">Request Developer API Access</h3>
-              <button onClick={() => setShowRequestModal(false)} className="text-[#666666] hover:bg-[#F8F8F8] p-1 rounded">
-                <X className="w-4 h-4" />
+              <h3 className="text-sm font-semibold text-[#111111]">Issue Production API Key</h3>
+              <button onClick={() => setShowKeyModal(false)} className="p-1 hover:bg-[#F8F8F8] rounded">
+                <X className="w-4 h-4 text-[#666666]" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitRequest} className="space-y-3">
+            <form onSubmit={handleCreateDirectKey} className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-medium text-[#111111] mb-1">Developer / Lead Name *</label>
+                <label className="block text-[#404040] font-medium mb-1">Key Label / Application Name *</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Vikramaditya Sen"
-                  value={newReq.developer_name}
-                  onChange={(e) => setNewReq({ ...newReq, developer_name: e.target.value })}
-                  className="w-full text-xs bg-white border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] focus:outline-none focus:border-[#111111]"
+                  placeholder="e.g. Website Contact Form Widget"
+                  value={directKeyName}
+                  onChange={(e) => setDirectKeyName(e.target.value)}
+                  className="w-full bg-[#FAFAFA] border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#111111] mb-1">Company / App Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. HealthBridge App Systems"
-                  value={newReq.company_name}
-                  onChange={(e) => setNewReq({ ...newReq, company_name: e.target.value })}
-                  className="w-full text-xs bg-white border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] focus:outline-none focus:border-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#111111] mb-1">Official Email *</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="e.g. dev@healthbridge.io"
-                  value={newReq.email}
-                  onChange={(e) => setNewReq({ ...newReq, email: e.target.value })}
-                  className="w-full text-xs bg-white border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] focus:outline-none focus:border-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#111111] mb-1">Integration Purpose *</label>
-                <textarea
-                  rows={2}
-                  required
-                  placeholder="Describe your collaboration and which endpoints you require"
-                  value={newReq.purpose}
-                  onChange={(e) => setNewReq({ ...newReq, purpose: e.target.value })}
-                  className="w-full text-xs bg-white border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] focus:outline-none focus:border-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#111111] mb-2">Requested Permissions</label>
-                <div className="space-y-1.5 max-h-36 overflow-y-auto border border-[#E5E5E5] rounded-lg p-2.5 text-xs">
+                <label className="block text-[#404040] font-medium mb-1.5">Authorized Permissions & Scopes</label>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto p-2 bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg">
                   {AVAILABLE_SCOPES.map((sc) => (
-                    <label key={sc.id} className="flex items-center space-x-2 cursor-pointer font-mono">
+                    <label key={sc.id} className="flex items-start space-x-2 text-[11px] cursor-pointer hover:bg-white p-1 rounded transition">
                       <input
                         type="checkbox"
-                        checked={newReq.requested_scopes.includes(sc.id)}
-                        onChange={() => {
-                          if (newReq.requested_scopes.includes(sc.id)) {
-                            setNewReq({ ...newReq, requested_scopes: newReq.requested_scopes.filter((s) => s !== sc.id) });
-                          } else {
-                            setNewReq({ ...newReq, requested_scopes: [...newReq.requested_scopes, sc.id] });
-                          }
+                        checked={directScopes.includes(sc.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) setDirectScopes([...directScopes, sc.id]);
+                          else setDirectScopes(directScopes.filter(s => s !== sc.id));
                         }}
-                        className="rounded border-[#D4D4D4] text-[#111111]"
+                        className="mt-0.5"
                       />
-                      <span>{sc.label}</span>
+                      <div>
+                        <div className="font-mono font-semibold text-[#111111]">{sc.label}</div>
+                        <div className="text-[#666666]">{sc.desc}</div>
+                      </div>
                     </label>
                   ))}
                 </div>
@@ -972,127 +1378,8 @@ print(response.status_code, response.json())`;
               <div className="flex justify-end space-x-2 pt-2 border-t border-[#E5E5E5]">
                 <button
                   type="button"
-                  onClick={() => setShowRequestModal(false)}
-                  className="px-4 py-2 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#111111] hover:bg-[#F8F8F8]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingReq}
-                  className="px-4 py-2 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] disabled:opacity-50"
-                >
-                  {submittingReq ? 'Submitting...' : 'Submit Request'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: ONE-TIME SECRET KEY DISPLAY */}
-      {generatedKey && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-lg max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center space-x-2 text-[#16A34A]">
-              <CheckCircle2 className="w-5 h-5 shrink-0" />
-              <h3 className="text-sm font-bold text-[#111111]">API Key Generated & Authorized</h3>
-            </div>
-
-            <div className="p-3 bg-[#FEF2F2] border border-[#FCA5A5] rounded-lg text-xs text-[#991B1B] space-y-1">
-              <div className="font-bold flex items-center space-x-1">
-                <ShieldAlert className="w-3.5 h-3.5" />
-                <span>One-Time Key Display Reminder:</span>
-              </div>
-              <p>
-                This raw API key is displayed once only. Copy and store it securely now.
-              </p>
-            </div>
-
-            <div className="relative bg-[#F8F8F8] border border-[#E5E5E5] rounded-lg p-3 font-mono text-xs text-[#111111] break-all">
-              {generatedKey.raw_api_key}
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-2">
-              <button
-                onClick={() => {
-                  copyText(generatedKey.raw_api_key, 'API Key copied to clipboard!');
-                  setTimeout(() => setGeneratedKey(null), 800);
-                }}
-                className="flex items-center space-x-1.5 px-4 py-2 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626]"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                <span>Copy Key & Close</span>
-              </button>
-              <button
-                onClick={() => setGeneratedKey(null)}
-                className="px-4 py-2 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#111111] hover:bg-[#F8F8F8]"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: DIRECT KEY ISSUANCE */}
-      {showKeyModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-lg max-w-md w-full p-6 space-y-4">
-            <div className="flex justify-between items-center border-b border-[#E5E5E5] pb-3">
-              <h3 className="text-sm font-semibold text-[#111111]">Issue Direct Partner API Key</h3>
-              <button onClick={() => setShowKeyModal(false)} className="text-[#666666] hover:bg-[#F8F8F8] p-1 rounded">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateDirectKey} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-[#111111] mb-1">Key Label *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Mobile App Partner, Accounting Bridge"
-                  value={directKeyName}
-                  onChange={(e) => setDirectKeyName(e.target.value)}
-                  className="w-full text-xs bg-white border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] focus:outline-none focus:border-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#111111] mb-2">Granted Permissions</label>
-                <div className="space-y-2 max-h-48 overflow-y-auto border border-[#E5E5E5] rounded-lg p-3 text-xs">
-                  {AVAILABLE_SCOPES.map((sc) => {
-                    const checked = directScopes.includes(sc.id);
-                    return (
-                      <label key={sc.id} className="flex items-start space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => {
-                            if (checked) {
-                              setDirectScopes(directScopes.filter((s) => s !== sc.id));
-                            } else {
-                              setDirectScopes([...directScopes, sc.id]);
-                            }
-                          }}
-                          className="mt-0.5 rounded border-[#D4D4D4] text-[#111111]"
-                        />
-                        <div>
-                          <span className="font-mono font-semibold text-[#111111]">{sc.label}</span>
-                          <p className="text-[11px] text-[#666666]">{sc.desc}</p>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-2 border-t border-[#E5E5E5]">
-                <button
-                  type="button"
                   onClick={() => setShowKeyModal(false)}
-                  className="px-4 py-2 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#111111] hover:bg-[#F8F8F8]"
+                  className="px-3 py-2 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#666666] hover:bg-[#F8F8F8]"
                 >
                   Cancel
                 </button>
@@ -1101,7 +1388,7 @@ print(response.status_code, response.json())`;
                   disabled={creatingKey || !directKeyName}
                   className="px-4 py-2 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] disabled:opacity-50"
                 >
-                  {creatingKey ? 'Generating...' : 'Generate Key'}
+                  {creatingKey ? 'Generating...' : 'Create API Key'}
                 </button>
               </div>
             </form>
@@ -1109,48 +1396,166 @@ print(response.status_code, response.json())`;
         </div>
       )}
 
-      {/* MODAL: ADD WEBHOOK */}
-      {showWebhookModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-lg max-w-md w-full p-6 space-y-4">
+      {/* MODAL: NEWLY GENERATED KEY DISPLAY */}
+      {generatedKey && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-xl max-w-md w-full p-6 space-y-4 animate-scaleUp">
+            <div className="text-center space-y-1">
+              <div className="w-10 h-10 rounded-full bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center mx-auto mb-2">
+                <Check className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-[#111111]">API Key Generated</h3>
+              <p className="text-xs text-[#666666]">
+                Copy and save this key immediately. For security, it will never be displayed again.
+              </p>
+            </div>
+
+            <div className="p-3 bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg space-y-2 text-xs">
+              <span className="font-medium text-[#666666] block">Your Secret API Key:</span>
+              <div className="flex items-center justify-between gap-2">
+                <code className="text-xs font-mono font-bold text-[#111111] break-all">
+                  {generatedKey.raw_api_key}
+                </code>
+                <button
+                  onClick={() => copyText(generatedKey.raw_api_key, 'API Key copied!')}
+                  className="px-2.5 py-1.5 bg-[#111111] text-white rounded text-xs font-medium shrink-0 hover:bg-[#262626]"
+                >
+                  Copy Key
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setGeneratedKey(null)}
+                className="w-full py-2 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626]"
+              >
+                I Have Saved My Key
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: SUBMIT PARTNER REQUEST */}
+      {showRequestModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-lg max-w-md w-full p-6 space-y-4 animate-scaleUp">
             <div className="flex justify-between items-center border-b border-[#E5E5E5] pb-3">
-              <h3 className="text-sm font-semibold text-[#111111]">Register Outgoing Webhook</h3>
-              <button onClick={() => setShowWebhookModal(false)} className="text-[#666666] hover:bg-[#F8F8F8] p-1 rounded">
-                <X className="w-4 h-4" />
+              <h3 className="text-sm font-semibold text-[#111111]">Partner Integration Application</h3>
+              <button onClick={() => setShowRequestModal(false)} className="p-1 hover:bg-[#F8F8F8] rounded">
+                <X className="w-4 h-4 text-[#666666]" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateWebhook} className="space-y-4">
+            <form onSubmit={handleSubmitRequest} className="space-y-3 text-xs">
               <div>
-                <label className="block text-xs font-medium text-[#111111] mb-1">Target Webhook URL *</label>
+                <label className="block text-[#404040] font-medium mb-1">Developer / Contact Name *</label>
                 <input
-                  type="url"
+                  type="text"
                   required
-                  placeholder="https://partner-system.com/webhook/crm-events"
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  className="w-full text-xs font-mono bg-white border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] focus:outline-none focus:border-[#111111]"
+                  placeholder="e.g. Ananya Sen"
+                  value={newReq.developer_name}
+                  onChange={(e) => setNewReq({ ...newReq, developer_name: e.target.value })}
+                  className="w-full bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#111111] mb-2">Events to Deliver</label>
-                <div className="space-y-1.5 border border-[#E5E5E5] rounded-lg p-3 text-xs">
-                  {['lead.created', 'deal.won', 'deal.created', 'invoice.paid'].map((ev) => (
-                    <label key={ev} className="flex items-center space-x-2 cursor-pointer font-mono">
+                <label className="block text-[#404040] font-medium mb-1">Company / Organization *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. ZenScale Systems"
+                  value={newReq.company_name}
+                  onChange={(e) => setNewReq({ ...newReq, company_name: e.target.value })}
+                  className="w-full bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#404040] font-medium mb-1">Official Email *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="ananya@zenscale.io"
+                  value={newReq.email}
+                  onChange={(e) => setNewReq({ ...newReq, email: e.target.value })}
+                  className="w-full bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#404040] font-medium mb-1">Integration Purpose *</label>
+                <textarea
+                  required
+                  rows={2}
+                  placeholder="Describe your software integration or website enquiry workflow..."
+                  value={newReq.purpose}
+                  onChange={(e) => setNewReq({ ...newReq, purpose: e.target.value })}
+                  className="w-full bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t border-[#E5E5E5]">
+                <button
+                  type="button"
+                  onClick={() => setShowRequestModal(false)}
+                  className="px-3 py-2 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#666666] hover:bg-[#F8F8F8]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingReq}
+                  className="px-4 py-2 bg-[#111111] text-white rounded-lg text-xs font-medium hover:bg-[#262626] disabled:opacity-50"
+                >
+                  {submittingReq ? 'Submitting...' : 'Submit Application'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CONFIGURE WEBHOOK */}
+      {showWebhookModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl border border-[#E5E5E5] shadow-lg max-w-md w-full p-6 space-y-4 animate-scaleUp">
+            <div className="flex justify-between items-center border-b border-[#E5E5E5] pb-3">
+              <h3 className="text-sm font-semibold text-[#111111]">Register Outgoing Webhook</h3>
+              <button onClick={() => setShowWebhookModal(false)} className="p-1 hover:bg-[#F8F8F8] rounded">
+                <X className="w-4 h-4 text-[#666666]" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateWebhook} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[#404040] font-medium mb-1">Target Endpoint URL (HTTPS) *</label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://yourapp.com/webhooks/crm"
+                  value={webhookUrl}
+                  onChange={(e) => setWebhookUrl(e.target.value)}
+                  className="w-full bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg px-3 py-2 text-[#111111] font-mono outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#404040] font-medium mb-1.5">Subscribed Real-Time Events</label>
+                <div className="space-y-1 bg-[#FAFAFA] p-2 rounded-lg border border-[#E5E5E5]">
+                  {['lead.created', 'lead.updated', 'deal.won', 'invoice.paid'].map((ev) => (
+                    <label key={ev} className="flex items-center space-x-2 text-[11px] cursor-pointer hover:bg-white p-1 rounded">
                       <input
                         type="checkbox"
                         checked={webhookEvents.includes(ev)}
-                        onChange={() => {
-                          if (webhookEvents.includes(ev)) {
-                            setWebhookEvents(webhookEvents.filter((e) => e !== ev));
-                          } else {
-                            setWebhookEvents([...webhookEvents, ev]);
-                          }
+                        onChange={(e) => {
+                          if (e.target.checked) setWebhookEvents([...webhookEvents, ev]);
+                          else setWebhookEvents(webhookEvents.filter(x => x !== ev));
                         }}
-                        className="rounded border-[#D4D4D4] text-[#111111]"
                       />
-                      <span>{ev}</span>
+                      <span className="font-mono text-[#111111]">{ev}</span>
                     </label>
                   ))}
                 </div>
@@ -1160,7 +1565,7 @@ print(response.status_code, response.json())`;
                 <button
                   type="button"
                   onClick={() => setShowWebhookModal(false)}
-                  className="px-4 py-2 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#111111] hover:bg-[#F8F8F8]"
+                  className="px-3 py-2 border border-[#D4D4D4] rounded-lg text-xs font-medium text-[#666666] hover:bg-[#F8F8F8]"
                 >
                   Cancel
                 </button>
@@ -1176,103 +1581,43 @@ print(response.status_code, response.json())`;
           </div>
         </div>
       )}
-      {/* Dialog for Declining Request */}
-      <ConfirmDialog
-        isOpen={!!requestToReject}
-        title="Decline Integration Request"
-        message="Are you sure you want to decline this integration request? The partner developer will not receive API credentials."
-        confirmLabel="Decline Request"
-        cancelLabel="Cancel"
-        isDestructive={true}
-        onConfirm={async () => {
-          if (requestToReject) {
-            await api.rejectPartnerRequest(requestToReject);
-            setRequestToReject(null);
-            showToast('Partner request declined', 'info');
-            loadAll();
-          }
-        }}
-        onCancel={() => setRequestToReject(null)}
-      />
 
-      {/* Dialog for Revoking API Key */}
+      {/* CONFIRM DIALOGS */}
       <ConfirmDialog
-        isOpen={!!keyToRevoke}
+        isOpen={Boolean(keyToRevoke)}
         title="Revoke API Key"
-        message="Revoking will immediately deny all external requests authenticated with this secret key. Any active workflows using this key will immediately fail."
+        message="Are you sure you want to revoke this API key? Any third-party software or website using it will immediately be rejected."
         confirmLabel="Revoke Key"
-        cancelLabel="Cancel"
-        isDestructive={true}
-        onConfirm={async () => {
-          if (keyToRevoke) {
-            await api.revokeApiKey(keyToRevoke);
-            setKeyToRevoke(null);
-            showToast('API key revoked', 'info');
-            loadAll();
-          }
-        }}
+        onConfirm={() => { if (keyToRevoke) handleRevokeKey(keyToRevoke); }}
         onCancel={() => setKeyToRevoke(null)}
       />
 
-      {/* Dialog for Deleting API Key */}
       <ConfirmDialog
-        isOpen={!!keyToDelete}
+        isOpen={Boolean(keyToDelete)}
         title="Delete API Key Record"
-        message="Permanently delete this API key record from the database. This action cannot be reversed."
-        confirmLabel="Delete Key"
-        cancelLabel="Cancel"
-        isDestructive={true}
-        onConfirm={async () => {
-          if (keyToDelete) {
-            await api.deleteApiKey(keyToDelete);
-            setKeyToDelete(null);
-            showToast('API key permanently deleted', 'success');
-            loadAll();
-          }
-        }}
+        message="Are you sure you want to permanently remove this key record? This action cannot be undone."
+        confirmLabel="Delete Record"
+        onConfirm={() => { if (keyToDelete) handleDeleteKey(keyToDelete); }}
         onCancel={() => setKeyToDelete(null)}
       />
 
-      {/* Dialog for Deleting Webhook */}
       <ConfirmDialog
-        isOpen={!!webhookToDelete}
-        title="Delete Webhook Configuration"
-        message="Permanently remove this webhook endpoint and delete all related delivery logs. External dispatches to this endpoint will stop immediately."
+        isOpen={Boolean(webhookToDelete)}
+        title="Delete Webhook"
+        message="Are you sure you want to remove this outgoing webhook destination?"
         confirmLabel="Delete Webhook"
-        cancelLabel="Cancel"
-        isDestructive={true}
-        onConfirm={async () => {
-          if (webhookToDelete) {
-            await api.deleteWebhook(webhookToDelete);
-            setWebhookToDelete(null);
-            showToast('Webhook permanently deleted', 'success');
-            loadAll();
-          }
-        }}
+        onConfirm={() => { if (webhookToDelete) handleDeleteWebhook(webhookToDelete); }}
         onCancel={() => setWebhookToDelete(null)}
       />
 
-      {/* Toast Notification */}
-      {notification && (
-        <div 
-          className={`fixed bottom-6 right-6 z-50 text-xs px-4 py-3 rounded-lg shadow-xl flex items-center space-x-2 border transition-all duration-300 animate-slideUp ${
-            notification.type === 'error' 
-              ? 'bg-[#111111] text-[#EF4444] border-[#DC2626]/40' 
-              : notification.type === 'info'
-              ? 'bg-[#111111] text-[#60A5FA] border-[#3B82F6]/40'
-              : 'bg-[#111111] text-white border-[#333333]'
-          }`}
-        >
-          {notification.type === 'error' ? (
-            <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0" />
-          ) : notification.type === 'info' ? (
-            <Info className="w-4 h-4 text-[#60A5FA] flex-shrink-0" />
-          ) : (
-            <CheckCircle2 className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
-          )}
-          <span className="font-medium">{notification.text}</span>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={Boolean(requestToReject)}
+        title="Decline Partner Request"
+        message="Decline this developer's API access application?"
+        confirmLabel="Decline Application"
+        onConfirm={() => { if (requestToReject) handleRejectRequest(requestToReject); }}
+        onCancel={() => setRequestToReject(null)}
+      />
     </div>
   );
 }

@@ -1311,6 +1311,66 @@ export const api = {
     }
   },
 
+  // External Developer Platform Methods
+  async getExternalStats(apiKey?: string, orgId?: string) {
+    try {
+      const headers: Record<string, string> = getHeaders(orgId);
+      if (apiKey) headers['x-api-key'] = apiKey;
+      const res = await fetch(`${API_BASE_URL}/external/stats`, {
+        headers,
+        credentials: 'include',
+      });
+      const json = await res.json();
+      return json?.data || json;
+    } catch (e) {
+      return null;
+    }
+  },
+  async verifyExternalAuth(apiKey: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/external/auth/verify`, {
+        headers: { 'x-api-key': apiKey.trim() },
+      });
+      const json = await res.json();
+      return { ok: res.ok, status: res.status, data: json?.data || json };
+    } catch (e: any) {
+      return { ok: false, status: 500, error: e.message };
+    }
+  },
+  async submitExternalLead(data: any, apiKey?: string) {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['x-api-key'] = apiKey.trim();
+      
+      const endpoint = apiKey ? `${API_BASE_URL}/external/leads` : `${API_BASE_URL}/public/leads`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      return { ok: res.ok, status: res.status, data: json?.data || json };
+    } catch (e: any) {
+      return { ok: false, status: 500, error: e.message };
+    }
+  },
+  async generatePartnerSsoToken(data: any, apiKey: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/external/auth/sso-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey.trim(),
+        },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      return { ok: res.ok, status: res.status, data: json?.data || json };
+    } catch (e: any) {
+      return { ok: false, status: 500, error: e.message };
+    }
+  },
+
   // Communications (Email & WhatsApp)
   async sendEmail(data: any, orgId?: string) {
     try {

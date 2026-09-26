@@ -32,8 +32,40 @@ interface AppItem {
   connected: boolean;
 }
 
+const DEFAULT_VIDEO_APPS: AppItem[] = [
+  {
+    app_id: 'google_calendar',
+    name: 'Google Meet & Calendar',
+    category: 'CALENDAR',
+    description: 'Official Google Workspace Meet REST API v2 spaces & Calendar v3 engine. Live meeting space creation, bidirectional calendar synchronization, and Google invites.',
+    icon: 'google_calendar',
+    badge: 'Meet REST API v2 (Live)',
+    status: 'DISCONNECTED',
+    health_status: 'READY',
+    config: {},
+    connected: false,
+  },
+  {
+    app_id: 'zoom',
+    name: 'Zoom Meetings',
+    category: 'CALENDAR',
+    description: 'Generate instant passcoded Zoom video conference links for CRM activities and discovery calls.',
+    icon: 'zoom',
+    badge: 'Zoom Marketplace (Live)',
+    status: 'DISCONNECTED',
+    health_status: 'READY',
+    config: {
+      client_id: 'z0VW6KC1SrYapvu5Ibpzw',
+      client_secret: 'DyxVeH3NMnEcvHNWELq2MS1socQr2tD0',
+      redirect_uri: 'http://localhost:3000/integrations/zoom/callback',
+      allow_list: 'http://localhost:3000',
+    },
+    connected: false,
+  },
+];
+
 export default function IntegrationsPage() {
-  const [apps, setApps] = useState<AppItem[]>([]);
+  const [apps, setApps] = useState<AppItem[]>(DEFAULT_VIDEO_APPS);
   const [meetings, setMeetings] = useState<MeetingItem[]>([]);
   const [meetingCount, setMeetingCount] = useState<number>(0);
   const [meetingSearch, setMeetingSearch] = useState<string>('');
@@ -49,7 +81,7 @@ export default function IntegrationsPage() {
   // Modal Configuration State
   const [activeModalApp, setActiveModalApp] = useState<AppItem | null>(null);
   const [testingAppId, setTestingAppId] = useState<string | null>(null);
-  const [connectingOAuth, setConnectingOAuth] = useState(false);
+  const [connectingAppId, setConnectingAppId] = useState<'google' | 'zoom' | null>(null);
 
   // Notification Toast
   const [notification, setNotification] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -71,32 +103,36 @@ export default function IntegrationsPage() {
         const raw = appsRes.value;
         const appsList: AppItem[] = Array.isArray(raw) ? raw : (raw?.data || []);
         
-        // Filter strictly to Google Meet & Zoom only
-        const videoApps = appsList
-          .filter((a) => a.app_id === 'google_calendar' || a.app_id === 'zoom')
-          .map((app) => {
-            if (app.app_id === 'google_calendar' && app.connected) {
-              return {
-                ...app,
-                account_identifier: app.account_identifier || 'aftabsk741156@gmail.com',
-                account_name: app.account_name || 'A gameing Tech',
-                avatar_url: app.avatar_url || 'https://lh3.googleusercontent.com/a/ACg8ocIpyV898mMl23VjWABjMSijjZgooRYKiqicQ5I1EZCE_-XMKQ=s96-c',
-              };
-            }
-            if (app.app_id === 'zoom') {
-              return {
-                ...app,
-                config: {
-                  client_id: 'z0VW6KC1SrYapvu5Ibpzw',
-                  client_secret: 'DyxVeH3NMnEcvHNWELq2MS1socQr2tD0',
-                  redirect_uri: 'http://localhost:3000/integrations/zoom/callback',
-                  allow_list: 'http://localhost:3000',
-                  ...app.config,
-                },
-              };
-            }
-            return app;
-          });
+        // Merge server apps with DEFAULT_VIDEO_APPS so cards are ALWAYS visible
+        const videoApps = DEFAULT_VIDEO_APPS.map((defApp) => {
+          const match = appsList.find((a) => a.app_id === defApp.app_id);
+          if (!match) return defApp;
+
+          let accountId = match.account_identifier;
+          let accountName = match.account_name;
+          let avatar = match.avatar_url;
+          const isConn = Boolean(match.connected || match.status === 'CONNECTED');
+
+          if (defApp.app_id === 'google_calendar' && isConn) {
+            accountId = accountId || 'aftabsk741156@gmail.com';
+            accountName = accountName || 'A gameing Tech';
+            avatar = avatar || 'https://lh3.googleusercontent.com/a/ACg8ocIpyV898mMl23VjWABjMSijjZgooRYKiqicQ5I1EZCE_-XMKQ=s96-c';
+          }
+
+          return {
+            ...defApp,
+            ...match,
+            account_identifier: accountId,
+            account_name: accountName,
+            avatar_url: avatar,
+            config: {
+              ...defApp.config,
+              ...(match.config || {}),
+            },
+            connected: isConn,
+            status: isConn ? ('CONNECTED' as const) : ('DISCONNECTED' as const),
+          };
+        });
 
         setApps(videoApps);
       }
@@ -113,6 +149,7 @@ export default function IntegrationsPage() {
       setLoading(false);
     }
   };
+
 
   const handleDeleteMeeting = async (id: string) => {
     try {
@@ -140,19 +177,21 @@ export default function IntegrationsPage() {
   // Google OAuth Flow
   const handleConnectGoogle = async () => {
     try {
-      setConnectingOAuth(true);
-      const res = await api.get('/integrations/google-meet/auth-url');
+      setConnectingAppId('google');
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const redirectUri = `${origin}/integrations/callback`;
+      const res = await api.get(`/integrations/google-meet/auth-url?redirect_uri=${encodeURIComponent(redirectUri)}`);
       const url = res?.oauthUrl || res?.data?.oauthUrl;
       if (url) {
         showToast('Opening Google Cloud OAuth 2.0 authorization screen...', 'info');
         window.location.href = url;
       } else {
         showToast('Google OAuth Client ID not configured in backend/.env', 'error');
-        setConnectingOAuth(false);
+        setConnectingAppId(null);
       }
     } catch (err: any) {
       showToast(err.message || 'Could not initiate Google OAuth flow.', 'error');
-      setConnectingOAuth(false);
+      setConnectingAppId(null);
     }
   };
 
@@ -177,18 +216,21 @@ export default function IntegrationsPage() {
 
   const handleConnectZoom = async () => {
     try {
-      setConnectingOAuth(true);
-      const res = await api.get('/integrations/zoom/auth-url');
+      setConnectingAppId('zoom');
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const redirectUri = `${origin}/integrations/zoom/callback`;
+      const res = await api.get(`/integrations/zoom/auth-url?redirect_uri=${encodeURIComponent(redirectUri)}`);
       const authUrl = res?.data?.url || res?.url;
       if (authUrl) {
+        showToast('Redirecting to Zoom OAuth authorization...', 'info');
         window.location.href = authUrl;
       } else {
         showToast('Could not retrieve Zoom OAuth authorization URL.', 'error');
-        setConnectingOAuth(false);
+        setConnectingAppId(null);
       }
     } catch (err: any) {
       showToast(err.message || 'Could not initiate Zoom OAuth flow.', 'error');
-      setConnectingOAuth(false);
+      setConnectingAppId(null);
     }
   };
 
@@ -448,11 +490,11 @@ export default function IntegrationsPage() {
                     ) : (
                       <button
                         onClick={handleConnectGoogle}
-                        disabled={connectingOAuth}
+                        disabled={connectingAppId === 'google'}
                         className="px-3 py-1 text-[11px] font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition shadow-sm flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
                       >
                         <Calendar className="w-3 h-3" />
-                        <span>{connectingOAuth ? 'Connecting...' : 'Connect'}</span>
+                        <span>{connectingAppId === 'google' ? 'Connecting...' : 'Connect'}</span>
                       </button>
                     )
                   ) : (
@@ -476,11 +518,11 @@ export default function IntegrationsPage() {
                     ) : (
                       <button
                         onClick={handleConnectZoom}
-                        disabled={connectingOAuth}
+                        disabled={connectingAppId === 'zoom'}
                         className="px-3 py-1 text-[11px] font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition shadow-sm flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
                       >
                         <Video className="w-3 h-3 text-[#2D8CFF]" />
-                        <span>{connectingOAuth ? 'Connecting...' : 'Connect'}</span>
+                        <span>{connectingAppId === 'zoom' ? 'Connecting...' : 'Connect'}</span>
                       </button>
                     )
                   )}
@@ -636,11 +678,11 @@ export default function IntegrationsPage() {
                     <button
                       type="button"
                       onClick={handleConnectGoogle}
-                      disabled={connectingOAuth}
+                      disabled={connectingAppId === 'google'}
                       className="px-4 py-2 text-xs font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition shadow-sm flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0"
                     >
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>{connectingOAuth ? 'Connecting...' : 'Connect Google'}</span>
+                      <span>{connectingAppId === 'google' ? 'Connecting...' : 'Connect Google'}</span>
                     </button>
                   </div>
                 )}
@@ -768,11 +810,11 @@ export default function IntegrationsPage() {
                     <button
                       type="button"
                       onClick={handleConnectZoom}
-                      disabled={connectingOAuth}
+                      disabled={connectingAppId === 'zoom'}
                       className="px-4 py-2 text-xs font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition shadow-sm flex items-center space-x-2 cursor-pointer disabled:opacity-50 flex-shrink-0"
                     >
                       <Video className="w-3.5 h-3.5 text-[#2D8CFF]" />
-                      <span>{connectingOAuth ? 'Redirecting to Zoom...' : 'Connect with Zoom'}</span>
+                      <span>{connectingAppId === 'zoom' ? 'Redirecting to Zoom...' : 'Connect with Zoom'}</span>
                     </button>
                   </div>
                 )}

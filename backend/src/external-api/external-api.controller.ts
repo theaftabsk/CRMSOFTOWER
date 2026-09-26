@@ -20,11 +20,31 @@ import { ExternalLeadDto } from './dto/external-lead.dto';
 export class ExternalApiController {
   constructor(private readonly externalApiService: ExternalApiService) {}
 
+  // 1. Partner Auth & Connection Handshake
   @Get('auth/verify')
   verifyAuth(@Req() req: any) {
     return this.externalApiService.verifyAuth(req.organizationId, req.apiKey);
   }
 
+  @Post('auth/handshake')
+  handshake(@Req() req: any) {
+    return this.externalApiService.verifyAuth(req.organizationId, req.apiKey);
+  }
+
+  // 2. Partner User Single Sign-On (SSO) Session Generator
+  @Post('auth/sso-token')
+  @RequireScope('auth:sso')
+  generateSsoToken(@Req() req: any, @Body() body: any) {
+    return this.externalApiService.generateSsoToken(req.organizationId, req.apiKey, body);
+  }
+
+  // 3. Developer Analytics & Activity Stats
+  @Get('stats')
+  getStats(@Req() req: any) {
+    return this.externalApiService.getStats(req.organizationId);
+  }
+
+  // 4. Ingest Website Enquiry / External Lead
   @Post('leads')
   @RequireScope('leads:write')
   createLead(@Req() req: any, @Body() dto: ExternalLeadDto) {
@@ -37,14 +57,17 @@ export class ExternalApiController {
     @Req() req: any,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @Query('source') source?: string,
   ) {
     return this.externalApiService.getLeads(
       req.organizationId,
       limit ? parseInt(limit, 10) : 50,
       offset ? parseInt(offset, 10) : 0,
+      source,
     );
   }
 
+  // 5. Deals & Opportunities
   @Post('deals')
   @RequireScope('deals:write')
   createDeal(@Req() req: any, @Body() data: any) {
@@ -60,6 +83,7 @@ export class ExternalApiController {
     );
   }
 
+  // 6. Invoices & Payment Links
   @Post('invoices')
   @RequireScope('invoices:write')
   createInvoice(@Req() req: any, @Body() data: any) {
@@ -75,3 +99,4 @@ export class ExternalApiController {
     );
   }
 }
+

@@ -42,12 +42,9 @@ export function proxy(request: NextRequest) {
     pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // 1. Root route "/"
+  // 1. Root route "/" (Public Landing Page)
   if (pathname === '/') {
-    if (token) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.next();
   }
 
   // 2. Unauthenticated user trying to access a protected CRM route

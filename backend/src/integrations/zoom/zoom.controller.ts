@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Query } from '@nestjs/common';
 import { ZoomService, CreateZoomMeetingDto } from './zoom.service';
 import { TenantOrg } from '../../common/decorators/tenant.decorator';
 
@@ -12,8 +12,11 @@ export class ZoomController {
   }
 
   @Get('auth-url')
-  getAuthUrl(@TenantOrg() orgId: string) {
-    return this.zoomService.getAuthUrl(orgId);
+  getAuthUrl(
+    @TenantOrg() orgId: string,
+    @Query('redirect_uri') redirectUri?: string,
+  ) {
+    return this.zoomService.getAuthUrl(orgId, redirectUri);
   }
 
   @Post('exchange')

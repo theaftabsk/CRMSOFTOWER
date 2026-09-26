@@ -34,9 +34,11 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+      if (typeof window !== 'undefined') {
+        window.location.href = `/login?redirect=${encodeURIComponent(pathname)}`;
+      }
     }
-  }, [isAuthenticated, isLoading, router, pathname]);
+  }, [isAuthenticated, isLoading, pathname]);
 
   const isLocked = Boolean(subData?.access?.isLocked && pathname !== '/billing');
   const remainingTrialDays = subData?.subscription?.remaining_trial_days ?? 14;
@@ -46,17 +48,13 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
   // Loading State: Frosted Glass Launch Screen
   if (isLoading) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#F4F5F8] text-[#111111] relative overflow-hidden select-none">
-        {/* Subtle Ambient Lighting */}
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-blue-200/40 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl" />
-        
-        <div className="relative liquid-glass-modal p-8 flex flex-col items-center space-y-4 max-w-xs w-full text-center border border-white/80 shadow-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-[#222222] to-[#111111] text-white flex items-center justify-center font-bold text-sm shadow-[0_8px_16px_rgba(0,0,0,0.18)] border border-white/20 font-mono">
-            ZY
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#FFFFFF] text-[#111111] select-none">
+        <div className="p-8 flex flex-col items-center space-y-4 max-w-xs w-full text-center border border-[#E5E5E5] rounded-xl shadow-sm bg-white">
+          <div className="w-12 h-12 rounded-xl bg-[#111111] text-white flex items-center justify-center font-bold text-sm font-mono">
+            CRM
           </div>
           <div className="space-y-1">
-            <h2 className="text-sm font-semibold tracking-tight text-[#111111]">Zyvo</h2>
+            <h2 className="text-sm font-semibold tracking-tight text-[#111111]">Enterprise CRM</h2>
             <p className="text-[11px] text-[#666666] font-mono flex items-center justify-center space-x-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#111111] animate-ping inline-block" />
               <span>Verifying enterprise session...</span>
@@ -67,17 +65,29 @@ export default function CRMLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not authenticated, keep sleek loader while fast redirect occurs
+  // If not authenticated, keep clean redirect card
   if (!isAuthenticated) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[#F4F5F8]">
-        <div className="liquid-glass p-4 rounded-2xl flex items-center space-x-3 text-xs font-mono text-[#666666] border border-white/80 shadow-lg">
-          <span className="w-2 h-2 rounded-full bg-[#111111] animate-ping" />
-          <span>Redirecting to Login...</span>
+      <div className="h-screen w-screen flex items-center justify-center bg-[#F8F8F8]">
+        <div className="p-6 rounded-xl bg-white border border-[#E5E5E5] shadow-sm flex flex-col items-center space-y-3 max-w-sm text-center">
+          <div className="w-10 h-10 rounded-lg bg-[#111111] text-white flex items-center justify-center font-bold text-xs">
+            CRM
+          </div>
+          <h3 className="text-sm font-semibold text-[#111111]">Authentication Required</h3>
+          <p className="text-xs text-[#666666]">
+            Redirecting you to the secure login portal...
+          </p>
+          <a
+            href={`/login?redirect=${encodeURIComponent(pathname)}`}
+            className="w-full py-2 px-4 bg-[#111111] hover:bg-[#262626] text-white rounded-lg text-xs font-medium transition"
+          >
+            Click here to Sign In
+          </a>
         </div>
       </div>
     );
   }
+
 
   return (
     <div className="relative flex h-screen w-screen overflow-hidden font-sans bg-[#F4F5F8] text-[#111111]">

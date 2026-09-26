@@ -49,7 +49,6 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Organization name defaults cleanly from user's name if omitted
       const orgName = `${name.trim()}'s Workspace`;
       const res = await register(name, email, password, orgName);
       if (res.success) {
@@ -65,10 +64,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F2F6] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 antialiased selection:bg-[#3B5BFF] selection:text-white">
+    <div className="min-h-screen bg-[#F6F7F9] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 antialiased selection:bg-[#111111] selection:text-white">
       
       {/* Master Container Card */}
-      <div className="w-full max-w-6xl bg-white rounded-3xl sm:rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.06)] border border-[#E8ECF2] p-6 sm:p-10 lg:p-12">
+      <div className="w-full max-w-6xl bg-white rounded-3xl sm:rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.05)] border border-[#E5E5E5] p-6 sm:p-10 lg:p-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
           
           {/* Left Column: Form */}
@@ -123,7 +122,7 @@ export default function RegisterPage() {
                       setName(e.target.value);
                       if (error) setError(null);
                     }}
-                    className="w-full bg-white border border-[#DDE2EA] focus:border-[#3B5BFF] focus:ring-4 focus:ring-[#3B5BFF]/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
+                    className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
                     placeholder="Rafiqur Rahman" 
                   />
                 </div>
@@ -141,7 +140,7 @@ export default function RegisterPage() {
                       setEmail(e.target.value);
                       if (error) setError(null);
                     }}
-                    className="w-full bg-white border border-[#DDE2EA] focus:border-[#3B5BFF] focus:ring-4 focus:ring-[#3B5BFF]/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
+                    className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
                     placeholder="rafiqur51@company.com" 
                   />
                 </div>
@@ -163,7 +162,7 @@ export default function RegisterPage() {
                         setPassword(e.target.value);
                         if (error) setError(null);
                       }}
-                      className="w-full bg-white border border-[#DDE2EA] focus:border-[#3B5BFF] focus:ring-4 focus:ring-[#3B5BFF]/10 rounded-xl pl-4 pr-11 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
+                      className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] focus:ring-2 focus:ring-[#111111]/10 rounded-xl pl-4 pr-11 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
                       placeholder="min 8 chars" 
                     />
                     <button
@@ -183,18 +182,18 @@ export default function RegisterPage() {
                     id="terms" 
                     checked={agreeTerms}
                     onChange={(e) => setAgreeTerms(e.target.checked)}
-                    className="w-4 h-4 rounded border-[#DDE2EA] text-[#3B5BFF] accent-[#3B5BFF] focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 rounded border-[#D4D4D4] text-[#111111] accent-[#111111] focus:ring-0 cursor-pointer"
                   />
                   <label htmlFor="terms" className="text-xs text-[#555555] cursor-pointer select-none">
                     I agree to the <span className="text-[#111111] underline underline-offset-2">Terms &amp; Privacy</span>
                   </label>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit Button - Solid Black */}
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full py-3.5 bg-[#3B5BFF] hover:bg-[#2B47EE] active:scale-[0.99] disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition duration-150 shadow-[0_4px_16px_rgba(59,91,255,0.25)] flex items-center justify-center space-x-2 mt-2"
+                  className="w-full py-3.5 bg-[#111111] hover:bg-[#262626] active:scale-[0.99] disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition duration-150 shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center space-x-2 mt-2"
                 >
                   <span>{loading ? 'Creating workspace...' : 'Get Started'}</span>
                 </button>
@@ -203,7 +202,7 @@ export default function RegisterPage() {
               {/* Switch link */}
               <div className="mt-6 text-xs text-[#666666]">
                 Have an account?{' '}
-                <Link href="/login" className="text-[#3B5BFF] font-semibold hover:underline">
+                <Link href="/login" className="text-[#111111] font-bold hover:underline">
                   Sign in
                 </Link>
               </div>
@@ -215,18 +214,18 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Right Column: Reference-Style Showcase Card */}
-          <div className="lg:col-span-7 bg-gradient-to-br from-[#3B5BFF] to-[#2544E8] rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden flex flex-col justify-between shadow-[0_20px_50px_rgba(59,91,255,0.28)] min-h-[580px]">
+          {/* Right Column: Monochrome White & Black Luxury Showcase Card */}
+          <div className="lg:col-span-7 bg-[#111111] rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.22)] border border-[#27272A] min-h-[580px]">
             
-            {/* Background decorative glow */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            {/* Background subtle light beam */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header Text */}
             <div className="space-y-2 mb-8 relative z-10 max-w-md">
-              <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight text-white">
                 The simplest way to manage your workforce
               </h2>
-              <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed">
                 Enter your credentials to access your unified sales &amp; billing command center.
               </p>
             </div>
@@ -235,13 +234,13 @@ export default function RegisterPage() {
             <div className="relative z-10 my-auto">
               
               {/* Main White Dashboard Card */}
-              <div className="bg-white rounded-2xl p-5 shadow-2xl text-[#111111] space-y-4 max-w-lg">
+              <div className="bg-white rounded-2xl p-5 shadow-2xl text-[#111111] space-y-4 max-w-lg border border-[#E5E5E5]">
                 
                 {/* Dashboard Top bar */}
                 <div className="flex items-center justify-between pb-3 border-b border-[#F0F0F0]">
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-bold text-[#111111]">Dashboard</span>
-                    <span className="text-[10px] text-[#666666] bg-[#F4F4F6] px-2 py-0.5 rounded-md flex items-center space-x-1 font-medium">
+                    <span className="text-[10px] text-[#666666] bg-[#F4F4F6] px-2 py-0.5 rounded-md flex items-center space-x-1 font-medium border border-[#E5E5E5]">
                       <Calendar className="w-2.5 h-2.5" />
                       <span>Dec 27, 2026 - Jan 03, 2027</span>
                     </span>
@@ -249,10 +248,10 @@ export default function RegisterPage() {
                   <div className="flex items-center space-x-2">
                     <div className="flex -space-x-1.5 overflow-hidden">
                       <span className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-[#111111] text-white text-[9px] font-bold text-center leading-5">AK</span>
-                      <span className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-[#3B5BFF] text-white text-[9px] font-bold text-center leading-5">RD</span>
+                      <span className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-[#555555] text-white text-[9px] font-bold text-center leading-5">RD</span>
                       <span className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-[#16A34A] text-white text-[9px] font-bold text-center leading-5">+2</span>
                     </div>
-                    <span className="text-[10px] text-[#3B5BFF] bg-[#3B5BFF]/10 font-semibold px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] text-[#111111] bg-[#F4F4F6] border border-[#E5E5E5] font-semibold px-2 py-0.5 rounded-md">
                       + Add members
                     </span>
                   </div>
@@ -260,7 +259,7 @@ export default function RegisterPage() {
 
                 {/* Metrics Row */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#F8F9FC] rounded-xl p-3 border border-[#EAEFF8]">
+                  <div className="bg-[#FAFAFA] rounded-xl p-3 border border-[#E5E5E5]">
                     <div className="text-[10px] text-[#666666] font-medium">Productive Time / Day</div>
                     <div className="text-base font-bold font-mono text-[#111111] mt-0.5">12.4 hr</div>
                     <div className="flex items-center space-x-1 text-[9px] text-[#16A34A] font-semibold mt-1">
@@ -269,7 +268,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  <div className="bg-[#F8F9FC] rounded-xl p-3 border border-[#EAEFF8]">
+                  <div className="bg-[#FAFAFA] rounded-xl p-3 border border-[#E5E5E5]">
                     <div className="text-[10px] text-[#666666] font-medium">Active Pipeline Value</div>
                     <div className="text-base font-bold font-mono text-[#111111] mt-0.5">₹42.8L</div>
                     <div className="text-[9px] text-[#666666] mt-1 font-medium">328 Active Deals</div>
@@ -282,7 +281,7 @@ export default function RegisterPage() {
                   
                   <div className="flex items-center justify-between text-[10px] py-1 border-b border-[#F4F4F6]">
                     <div className="flex items-center space-x-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#3B5BFF]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
                       <span className="text-[#333333] font-medium">Marketing Operations</span>
                     </div>
                     <span className="text-[#16A34A] font-semibold bg-green-50 px-1.5 py-0.5 rounded text-[9px]">HIGH</span>
@@ -294,13 +293,13 @@ export default function RegisterPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
                       <span className="text-[#333333] font-medium">Direct Sales Team</span>
                     </div>
-                    <span className="text-[#3B5BFF] font-semibold bg-blue-50 px-1.5 py-0.5 rounded text-[9px]">OPTIMAL</span>
+                    <span className="text-[#111111] font-semibold bg-neutral-100 px-1.5 py-0.5 rounded text-[9px]">OPTIMAL</span>
                     <span className="font-mono text-[#111111]">85.00%</span>
                   </div>
 
                   <div className="flex items-center justify-between text-[10px] py-1">
                     <div className="flex items-center space-x-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
                       <span className="text-[#333333] font-medium">Billing &amp; Collections</span>
                     </div>
                     <span className="text-[#16A34A] font-semibold bg-green-50 px-1.5 py-0.5 rounded text-[9px]">SYNCED</span>
@@ -311,10 +310,10 @@ export default function RegisterPage() {
               </div>
 
               {/* Overlapping Floating Modal (Invoice / Cashfree Settlement) */}
-              <div className="hidden sm:block absolute -bottom-5 -right-3 w-56 bg-white rounded-xl shadow-[0_12px_36px_rgba(0,0,0,0.18)] border border-[#E5E5E5] p-3.5 text-[#111111] animate-in fade-in slide-in-from-bottom-3 duration-500">
+              <div className="hidden sm:block absolute -bottom-5 -right-3 w-56 bg-white rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.28)] border border-[#E5E5E5] p-3.5 text-[#111111] animate-in fade-in slide-in-from-bottom-3 duration-500">
                 <div className="flex items-center justify-between pb-2 border-b border-[#F0F0F0]">
                   <div className="flex items-center space-x-1 text-[10px] font-bold text-[#111111]">
-                    <CreditCard className="w-3 h-3 text-[#3B5BFF]" />
+                    <CreditCard className="w-3 h-3 text-[#111111]" />
                     <span>Invoice #1029</span>
                   </div>
                   <span className="text-[9px] bg-green-50 text-[#16A34A] font-bold px-1.5 py-0.5 rounded border border-green-200">
@@ -333,8 +332,8 @@ export default function RegisterPage() {
 
             </div>
 
-            {/* Bottom Partner Trust Logos */}
-            <div className="pt-8 border-t border-white/15 flex items-center justify-between text-xs text-white/70 font-semibold tracking-wide">
+            {/* Bottom Partner Trust Logos - Clean Monochrome */}
+            <div className="pt-8 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400 font-medium tracking-wide">
               <span>Cashfree</span>
               <span>GST Portal</span>
               <span>Stripe</span>

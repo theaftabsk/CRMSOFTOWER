@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { 
-  ArrowRight, Eye, EyeOff, Mail, Lock, Building2, User, AlertCircle, X, 
-  TrendingUp, ShieldCheck, Quote, CheckCircle2, Zap 
+  Eye, EyeOff, AlertCircle, X, TrendingUp, CheckCircle2, 
+  Calendar, CreditCard, ArrowRight, ShieldCheck, Zap
 } from 'lucide-react';
 import ZyvoLogo from '../../../components/ZyvoLogo';
 
@@ -14,383 +14,338 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const router = useRouter();
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [organizationName, setOrganizationName] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
-
-  const validate = () => {
-    const errors: { [key: string]: string } = {};
-
-    if (!firstName.trim()) errors.firstName = 'First name is required';
-    if (!lastName.trim()) errors.lastName = 'Last name is required';
-    if (!organizationName.trim()) errors.organizationName = 'Company name is required';
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      errors.email = 'Email address is required';
-    } else if (!emailRegex.test(email)) {
-      errors.email = 'Enter a valid work email address';
-    }
-
-    if (!password) {
-      errors.password = 'Password is required';
-    } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
-    }
-
-    if (password !== confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
-    }
-
-    if (!agreeTerms) {
-      errors.terms = 'Please accept the Terms of Service';
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!validate()) {
-      setError('Please review the highlighted fields below and try again.');
+    if (!name.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
+
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    if (!agreeTerms) {
+      setError('Please agree to the Terms & Privacy to continue.');
       return;
     }
 
     setLoading(true);
 
     try {
-      const fullName = `${firstName} ${lastName}`.trim() || firstName;
-      const res = await register(fullName, email, password, organizationName);
+      // Organization name defaults cleanly from user's name if omitted
+      const orgName = `${name.trim()}'s Workspace`;
+      const res = await register(name, email, password, orgName);
       if (res.success) {
         router.push('/onboarding');
       } else {
         setError(res.error || 'Registration failed. Please check inputs and try again.');
       }
     } catch {
-      setError('Unable to connect to authentication server. Please try again.');
+      setError('Unable to reach authentication server. Please check your connection.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F7F9] relative flex flex-col justify-between p-4 sm:p-8 antialiased selection:bg-[#111111] selection:text-white">
+    <div className="min-h-screen bg-[#F0F2F6] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 antialiased selection:bg-[#3B5BFF] selection:text-white">
       
-      {/* Top Header */}
-      <header className="w-full max-w-7xl mx-auto flex items-center justify-between py-2 sm:py-4">
-        <Link href="/" className="inline-block">
-          <ZyvoLogo height={30} className="text-[#111111]" />
-        </Link>
-      </header>
-
-      {/* Main Content: Two Columns */}
-      <main className="w-full max-w-7xl mx-auto my-auto py-6 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-        
-        {/* Left Column: Clean Registration Card */}
-        <div className="lg:col-span-5 w-full max-w-md mx-auto">
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#E5E5E5] p-7 sm:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
-            
-            <div className="space-y-1.5 mb-6">
-              <h1 className="text-2xl font-bold text-[#111111] tracking-tight">
-                Create your account
-              </h1>
-              <p className="text-xs sm:text-sm text-[#666666]">
-                Enter name and password to get started with your workspace.
-              </p>
-            </div>
-
-            {/* Error Alert */}
-            {error && (
-              <div className="flex items-start justify-between p-3.5 mb-5 bg-red-50/90 border border-red-200 rounded-xl text-xs text-[#DC2626] shadow-xs">
-                <div className="flex items-start space-x-2.5">
-                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-[#DC2626]" />
-                  <span className="font-medium">{error}</span>
-                </div>
-                <button 
-                  type="button" 
-                  onClick={() => setError(null)}
-                  className="text-red-400 hover:text-red-700 ml-2"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+      {/* Master Container Card */}
+      <div className="w-full max-w-6xl bg-white rounded-3xl sm:rounded-[36px] shadow-[0_20px_70px_rgba(0,0,0,0.06)] border border-[#E8ECF2] p-6 sm:p-10 lg:p-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+          
+          {/* Left Column: Form */}
+          <div className="lg:col-span-5 flex flex-col justify-between h-full min-h-[560px]">
+            <div>
+              {/* Logo */}
+              <div className="mb-10">
+                <Link href="/" className="inline-block">
+                  <ZyvoLogo height={32} className="text-[#111111]" />
+                </Link>
               </div>
-            )}
 
-            {/* Registration Form */}
-            <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-              {/* First Name & Last Name */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Title & Subtitle */}
+              <div className="space-y-1.5 mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#111111] tracking-tight">
+                  Get Started Now
+                </h1>
+                <p className="text-xs sm:text-sm text-[#666666]">
+                  Enter your credentials to access your account
+                </p>
+              </div>
+
+              {/* Error Alert */}
+              {error && (
+                <div className="flex items-start justify-between p-3.5 mb-5 bg-red-50 border border-red-200 rounded-xl text-xs text-[#DC2626] animate-in fade-in duration-200">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-[#DC2626]" />
+                    <span className="font-medium">{error}</span>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => setError(null)}
+                    className="text-red-400 hover:text-red-700 ml-2"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+                {/* Full Name */}
                 <div>
-                  <label className="block font-medium text-[#404040] mb-1">First Name</label>
+                  <label className="block text-xs font-semibold text-[#111111] mb-1.5">
+                    Name
+                  </label>
                   <input 
                     type="text" 
                     required 
-                    value={firstName}
+                    value={name}
                     onChange={(e) => {
-                      setFirstName(e.target.value);
-                      if (fieldErrors.firstName) setFieldErrors(prev => ({ ...prev, firstName: '' }));
+                      setName(e.target.value);
+                      if (error) setError(null);
                     }}
-                    className={`w-full bg-white border ${fieldErrors.firstName ? 'border-red-400' : 'border-[#E5E5E5]'} focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl px-3 py-2 text-xs text-[#111111] placeholder:text-[#999999] outline-none transition`} 
-                    placeholder="First name" 
+                    className="w-full bg-white border border-[#DDE2EA] focus:border-[#3B5BFF] focus:ring-4 focus:ring-[#3B5BFF]/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
+                    placeholder="Rafiqur Rahman" 
                   />
-                  {fieldErrors.firstName && (
-                    <p className="text-[10px] text-red-500 mt-1">{fieldErrors.firstName}</p>
-                  )}
                 </div>
+
+                {/* Email Address */}
                 <div>
-                  <label className="block font-medium text-[#404040] mb-1">Last Name</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={lastName}
-                    onChange={(e) => {
-                      setLastName(e.target.value);
-                      if (fieldErrors.lastName) setFieldErrors(prev => ({ ...prev, lastName: '' }));
-                    }}
-                    className={`w-full bg-white border ${fieldErrors.lastName ? 'border-red-400' : 'border-[#E5E5E5]'} focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl px-3 py-2 text-xs text-[#111111] placeholder:text-[#999999] outline-none transition`} 
-                    placeholder="Last name" 
-                  />
-                  {fieldErrors.lastName && (
-                    <p className="text-[10px] text-red-500 mt-1">{fieldErrors.lastName}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Company / Workspace Name */}
-              <div>
-                <label className="block font-medium text-[#404040] mb-1">Company / Organization</label>
-                <div className="relative">
-                  <Building2 className="w-4 h-4 text-[#999999] absolute left-3.5 top-2.5 pointer-events-none" />
-                  <input 
-                    type="text" 
-                    required 
-                    value={organizationName}
-                    onChange={(e) => {
-                      setOrganizationName(e.target.value);
-                      if (fieldErrors.organizationName) setFieldErrors(prev => ({ ...prev, organizationName: '' }));
-                    }}
-                    className={`w-full bg-white border ${fieldErrors.organizationName ? 'border-red-400' : 'border-[#E5E5E5]'} focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl pl-10 pr-3 py-2 text-xs text-[#111111] placeholder:text-[#999999] outline-none transition`} 
-                    placeholder="Company name" 
-                  />
-                </div>
-                {fieldErrors.organizationName && (
-                  <p className="text-[10px] text-red-500 mt-1">{fieldErrors.organizationName}</p>
-                )}
-              </div>
-
-              {/* Work Email */}
-              <div>
-                <label className="block font-medium text-[#404040] mb-1">Work Email</label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-[#999999] absolute left-3.5 top-2.5 pointer-events-none" />
+                  <label className="block text-xs font-semibold text-[#111111] mb-1.5">
+                    Email address
+                  </label>
                   <input 
                     type="email" 
                     required 
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
-                      if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: '' }));
+                      if (error) setError(null);
                     }}
-                    className={`w-full bg-white border ${fieldErrors.email ? 'border-red-400' : 'border-[#E5E5E5]'} focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl pl-10 pr-3 py-2 text-xs text-[#111111] placeholder:text-[#999999] outline-none transition`} 
-                    placeholder="you@company.com" 
+                    className="w-full bg-white border border-[#DDE2EA] focus:border-[#3B5BFF] focus:ring-4 focus:ring-[#3B5BFF]/10 rounded-xl px-4 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
+                    placeholder="rafiqur51@company.com" 
                   />
                 </div>
-                {fieldErrors.email && (
-                  <p className="text-[10px] text-red-500 mt-1">{fieldErrors.email}</p>
-                )}
-              </div>
 
-              {/* Password & Confirm */}
-              <div className="grid grid-cols-2 gap-3">
+                {/* Password with Eye Toggle */}
                 <div>
-                  <label className="block font-medium text-[#404040] mb-1">Password</label>
-                  <input 
-                    type={showPassword ? 'text' : 'password'} 
-                    required 
-                    minLength={6}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: '' }));
-                    }}
-                    className={`w-full bg-white border ${fieldErrors.password ? 'border-red-400' : 'border-[#E5E5E5]'} focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl px-3 py-2 text-xs text-[#111111] placeholder:text-[#999999] outline-none transition`} 
-                    placeholder="Password" 
-                  />
-                  {fieldErrors.password && (
-                    <p className="text-[10px] text-red-500 mt-1">{fieldErrors.password}</p>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block font-medium text-[#404040]">Confirm</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-[#111111]">
+                      Password
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type={showPassword ? 'text' : 'password'} 
+                      required 
+                      minLength={6}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (error) setError(null);
+                      }}
+                      className="w-full bg-white border border-[#DDE2EA] focus:border-[#3B5BFF] focus:ring-4 focus:ring-[#3B5BFF]/10 rounded-xl pl-4 pr-11 py-3 text-xs sm:text-sm text-[#111111] placeholder:text-[#999999] outline-none transition" 
+                      placeholder="min 8 chars" 
+                    />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="text-[10px] text-[#666666] hover:text-[#111111]"
+                      className="absolute right-3.5 top-3.5 text-[#999999] hover:text-[#111111] transition"
                     >
-                      {showPassword ? 'Hide' : 'Show'}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <input 
-                    type={showPassword ? 'text' : 'password'} 
-                    required 
-                    minLength={6}
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      if (fieldErrors.confirmPassword) setFieldErrors(prev => ({ ...prev, confirmPassword: '' }));
-                    }}
-                    className={`w-full bg-white border ${fieldErrors.confirmPassword ? 'border-red-400' : 'border-[#E5E5E5]'} focus:border-[#111111] focus:ring-1 focus:ring-[#111111] rounded-xl px-3 py-2 text-xs text-[#111111] placeholder:text-[#999999] outline-none transition`} 
-                    placeholder="Confirm" 
-                  />
-                  {fieldErrors.confirmPassword && (
-                    <p className="text-[10px] text-red-500 mt-1">{fieldErrors.confirmPassword}</p>
-                  )}
                 </div>
-              </div>
 
-              {/* Terms Checkbox */}
-              <div className="pt-1">
-                <div className="flex items-center space-x-2">
+                {/* Terms Agreement Checkbox */}
+                <div className="flex items-center space-x-2 pt-1">
                   <input 
                     type="checkbox" 
                     id="terms" 
                     checked={agreeTerms}
-                    onChange={(e) => {
-                      setAgreeTerms(e.target.checked);
-                      if (fieldErrors.terms) setFieldErrors(prev => ({ ...prev, terms: '' }));
-                    }}
-                    className="w-4 h-4 rounded border-[#D4D4D4] text-[#111111] accent-[#111111] focus:ring-0 cursor-pointer"
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                    className="w-4 h-4 rounded border-[#DDE2EA] text-[#3B5BFF] accent-[#3B5BFF] focus:ring-0 cursor-pointer"
                   />
-                  <label htmlFor="terms" className="text-[11px] text-[#666666] cursor-pointer select-none">
-                    Agree to our{' '}
-                    <span className="text-[#111111] underline underline-offset-2">Terms</span>
-                    {' '}and{' '}
-                    <span className="text-[#111111] underline underline-offset-2">Privacy Policy</span>
+                  <label htmlFor="terms" className="text-xs text-[#555555] cursor-pointer select-none">
+                    I agree to the <span className="text-[#111111] underline underline-offset-2">Terms &amp; Privacy</span>
                   </label>
                 </div>
-                {fieldErrors.terms && (
-                  <p className="text-[10px] text-red-500 mt-1">{fieldErrors.terms}</p>
-                )}
+
+                {/* Submit Button */}
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full py-3.5 bg-[#3B5BFF] hover:bg-[#2B47EE] active:scale-[0.99] disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition duration-150 shadow-[0_4px_16px_rgba(59,91,255,0.25)] flex items-center justify-center space-x-2 mt-2"
+                >
+                  <span>{loading ? 'Creating workspace...' : 'Get Started'}</span>
+                </button>
+              </form>
+
+              {/* Switch link */}
+              <div className="mt-6 text-xs text-[#666666]">
+                Have an account?{' '}
+                <Link href="/login" className="text-[#3B5BFF] font-semibold hover:underline">
+                  Sign in
+                </Link>
               </div>
-
-              {/* Continue CTA Button */}
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full py-3 bg-[#111111] hover:bg-[#262626] active:scale-[0.99] disabled:opacity-50 text-white font-semibold rounded-xl text-xs sm:text-sm transition duration-150 flex items-center justify-center space-x-2 shadow-sm mt-3"
-              >
-                <span>{loading ? 'Creating workspace...' : 'Create Account'}</span>
-                {!loading && <ArrowRight className="w-4 h-4" />}
-              </button>
-            </form>
-
-            {/* Bottom link to Login */}
-            <div className="mt-7 text-center text-xs text-[#666666]">
-              Already have an account?{' '}
-              <Link href="/login" className="text-[#111111] font-bold hover:underline">
-                Sign In
-              </Link>
             </div>
 
+            {/* Bottom Copyright */}
+            <div className="pt-8 text-xs text-[#999999]">
+              &copy; 2026 Zyvo, All rights Reserved
+            </div>
           </div>
-        </div>
 
-        {/* Right Column: Customer Testimonial & High-Contrast Metrics */}
-        <div className="lg:col-span-7 flex flex-col justify-center p-4 sm:p-8 space-y-6">
-          
-          {/* Main Testimonial Card */}
-          <div className="bg-white rounded-3xl border border-[#E5E5E5] p-8 sm:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.02)] space-y-6 relative overflow-hidden">
+          {/* Right Column: Reference-Style Showcase Card */}
+          <div className="lg:col-span-7 bg-gradient-to-br from-[#3B5BFF] to-[#2544E8] rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden flex flex-col justify-between shadow-[0_20px_50px_rgba(59,91,255,0.28)] min-h-[580px]">
             
-            {/* Top Badge */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 px-3 py-1 bg-[#F4F4F6] rounded-full border border-[#E5E5E5] text-[11px] font-medium text-[#111111]">
-                <Zap className="w-3.5 h-3.5 text-[#16A34A]" />
-                <span>Enterprise Growth Story</span>
+            {/* Background decorative glow */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header Text */}
+            <div className="space-y-2 mb-8 relative z-10 max-w-md">
+              <h2 className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight">
+                The simplest way to manage your workforce
+              </h2>
+              <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
+                Enter your credentials to access your unified sales &amp; billing command center.
+              </p>
+            </div>
+
+            {/* Interactive Multi-Layer Dashboard Mockup */}
+            <div className="relative z-10 my-auto">
+              
+              {/* Main White Dashboard Card */}
+              <div className="bg-white rounded-2xl p-5 shadow-2xl text-[#111111] space-y-4 max-w-lg">
+                
+                {/* Dashboard Top bar */}
+                <div className="flex items-center justify-between pb-3 border-b border-[#F0F0F0]">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-[#111111]">Dashboard</span>
+                    <span className="text-[10px] text-[#666666] bg-[#F4F4F6] px-2 py-0.5 rounded-md flex items-center space-x-1 font-medium">
+                      <Calendar className="w-2.5 h-2.5" />
+                      <span>Dec 27, 2026 - Jan 03, 2027</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex -space-x-1.5 overflow-hidden">
+                      <span className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-[#111111] text-white text-[9px] font-bold text-center leading-5">AK</span>
+                      <span className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-[#3B5BFF] text-white text-[9px] font-bold text-center leading-5">RD</span>
+                      <span className="inline-block h-5 w-5 rounded-full ring-2 ring-white bg-[#16A34A] text-white text-[9px] font-bold text-center leading-5">+2</span>
+                    </div>
+                    <span className="text-[10px] text-[#3B5BFF] bg-[#3B5BFF]/10 font-semibold px-2 py-0.5 rounded-md">
+                      + Add members
+                    </span>
+                  </div>
+                </div>
+
+                {/* Metrics Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#F8F9FC] rounded-xl p-3 border border-[#EAEFF8]">
+                    <div className="text-[10px] text-[#666666] font-medium">Productive Time / Day</div>
+                    <div className="text-base font-bold font-mono text-[#111111] mt-0.5">12.4 hr</div>
+                    <div className="flex items-center space-x-1 text-[9px] text-[#16A34A] font-semibold mt-1">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>+23% last week</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FC] rounded-xl p-3 border border-[#EAEFF8]">
+                    <div className="text-[10px] text-[#666666] font-medium">Active Pipeline Value</div>
+                    <div className="text-base font-bold font-mono text-[#111111] mt-0.5">₹42.8L</div>
+                    <div className="text-[9px] text-[#666666] mt-1 font-medium">328 Active Deals</div>
+                  </div>
+                </div>
+
+                {/* Utilization Progress Table */}
+                <div className="space-y-2 pt-1">
+                  <div className="text-[10px] font-bold text-[#111111]">Team&apos;s Utilization</div>
+                  
+                  <div className="flex items-center justify-between text-[10px] py-1 border-b border-[#F4F4F6]">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3B5BFF]" />
+                      <span className="text-[#333333] font-medium">Marketing Operations</span>
+                    </div>
+                    <span className="text-[#16A34A] font-semibold bg-green-50 px-1.5 py-0.5 rounded text-[9px]">HIGH</span>
+                    <span className="font-mono text-[#111111]">60.00%</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] py-1 border-b border-[#F4F4F6]">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
+                      <span className="text-[#333333] font-medium">Direct Sales Team</span>
+                    </div>
+                    <span className="text-[#3B5BFF] font-semibold bg-blue-50 px-1.5 py-0.5 rounded text-[9px]">OPTIMAL</span>
+                    <span className="font-mono text-[#111111]">85.00%</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] py-1">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
+                      <span className="text-[#333333] font-medium">Billing &amp; Collections</span>
+                    </div>
+                    <span className="text-[#16A34A] font-semibold bg-green-50 px-1.5 py-0.5 rounded text-[9px]">SYNCED</span>
+                    <span className="font-mono text-[#111111]">100.00%</span>
+                  </div>
+                </div>
+
               </div>
-              <div className="flex items-center space-x-1 text-[#16A34A] text-[11px] font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Verified Customer</span>
+
+              {/* Overlapping Floating Modal (Invoice / Cashfree Settlement) */}
+              <div className="hidden sm:block absolute -bottom-5 -right-3 w-56 bg-white rounded-xl shadow-[0_12px_36px_rgba(0,0,0,0.18)] border border-[#E5E5E5] p-3.5 text-[#111111] animate-in fade-in slide-in-from-bottom-3 duration-500">
+                <div className="flex items-center justify-between pb-2 border-b border-[#F0F0F0]">
+                  <div className="flex items-center space-x-1 text-[10px] font-bold text-[#111111]">
+                    <CreditCard className="w-3 h-3 text-[#3B5BFF]" />
+                    <span>Invoice #1029</span>
+                  </div>
+                  <span className="text-[9px] bg-green-50 text-[#16A34A] font-bold px-1.5 py-0.5 rounded border border-green-200">
+                    PAID
+                  </span>
+                </div>
+                <div className="pt-2">
+                  <div className="text-sm font-bold font-mono text-[#111111]">₹45,000.00</div>
+                  <div className="text-[9px] text-[#666666] mt-0.5">Direct Cashfree Settlement</div>
+                  <div className="flex items-center space-x-1 text-[9px] text-[#16A34A] font-semibold mt-1.5">
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>Auto-synced to CRM</span>
+                  </div>
+                </div>
               </div>
+
             </div>
 
-            {/* High-Contrast Executive Quote */}
-            <div className="space-y-4">
-              <Quote className="w-8 h-8 text-[#D4D4D4]" />
-              <blockquote className="text-lg sm:text-xl font-medium text-[#111111] leading-relaxed tracking-tight">
-                &ldquo;Zyvo completely replaced three disjointed tools for our sales operations. Our deal velocity doubled within 30 days, and the integrated Cashfree settlements eliminated manual payment reconciliations entirely.&rdquo;
-              </blockquote>
+            {/* Bottom Partner Trust Logos */}
+            <div className="pt-8 border-t border-white/15 flex items-center justify-between text-xs text-white/70 font-semibold tracking-wide">
+              <span>Cashfree</span>
+              <span>GST Portal</span>
+              <span>Stripe</span>
+              <span>Razorpay</span>
+              <span>AWS</span>
             </div>
 
-            {/* Author Attribution */}
-            <div className="flex items-center space-x-3.5 pt-4 border-t border-[#F0F0F0]">
-              <div className="w-11 h-11 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-sm tracking-wide">
-                AM
-              </div>
-              <div>
-                <div className="text-sm font-bold text-[#111111]">Aarav Mehta</div>
-                <div className="text-xs text-[#666666]">Co-Founder &amp; COO, NexaScale Logistics</div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-3 gap-3.5 sm:gap-4">
-            <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 sm:p-5 shadow-xs">
-              <div className="text-[11px] font-medium text-[#666666]">Annual Volume</div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-[#111111] mt-1">₹48.5 Cr+</div>
-              <div className="text-[10px] text-[#16A34A] font-medium mt-1 flex items-center space-x-1">
-                <TrendingUp className="w-3 h-3" />
-                <span>+120% YoY</span>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 sm:p-5 shadow-xs">
-              <div className="text-[11px] font-medium text-[#666666]">Deal Velocity</div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-[#111111] mt-1">3.8x</div>
-              <div className="text-[10px] text-[#666666] mt-1">Faster settlement</div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-[#E5E5E5] p-4 sm:p-5 shadow-xs">
-              <div className="text-[11px] font-medium text-[#666666]">Reconciliation</div>
-              <div className="text-xl sm:text-2xl font-bold font-mono text-[#111111] mt-1">99.98%</div>
-              <div className="text-[10px] text-[#16A34A] font-medium mt-1">Auto-synced GST</div>
-            </div>
-          </div>
-
-          {/* Social Proof Line */}
-          <div className="flex items-center justify-between px-2 text-[11px] text-[#888888]">
-            <div className="flex items-center space-x-2">
-              <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A]" />
-              <span>SOC2 Compliant &bull; 256-bit TLS Encryption &bull; GST Ready</span>
-            </div>
           </div>
 
         </div>
-
-      </main>
-
-      {/* Footer */}
-      <footer className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between py-4 text-[11px] text-[#888888] border-t border-[#E5E5E5]/60 mt-auto">
-        <div>&copy; 2026 Zyvo. All rights reserved.</div>
-        <div className="flex items-center space-x-4 mt-2 sm:mt-0">
-          <Link href="#" className="hover:text-[#111111] transition">Terms of Service</Link>
-          <Link href="#" className="hover:text-[#111111] transition">Privacy Policy</Link>
-          <Link href="#" className="hover:text-[#111111] transition">Help &amp; Support</Link>
-        </div>
-      </footer>
+      </div>
 
     </div>
   );

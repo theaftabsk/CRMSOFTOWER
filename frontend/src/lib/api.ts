@@ -15,10 +15,49 @@ export const API_BASE_URL = {
   },
 };
 
-const getHeaders = (orgId: string = 'ORG001') => ({
-  'Content-Type': 'application/json',
-  'x-org-id': orgId,
-});
+let currentActiveOrgId: string = '';
+
+export function setActiveOrgId(orgId: string) {
+  currentActiveOrgId = orgId;
+  if (typeof window !== 'undefined' && orgId) {
+    try {
+      localStorage.setItem('crm_current_org_id', orgId);
+    } catch {}
+  }
+}
+
+export function getActiveOrgId(): string {
+  if (currentActiveOrgId) return currentActiveOrgId;
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('crm_current_org_id');
+      if (stored) {
+        currentActiveOrgId = stored;
+        return stored;
+      }
+      const userStr = localStorage.getItem('crm_user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        if (u?.organizationId) {
+          currentActiveOrgId = u.organizationId;
+          return u.organizationId;
+        }
+      }
+    } catch {}
+  }
+  return '';
+}
+
+const getHeaders = (orgId?: string) => {
+  const resolvedOrg = orgId || getActiveOrgId();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (resolvedOrg) {
+    headers['x-org-id'] = resolvedOrg;
+  }
+  return headers;
+};
 
 export const api = {
   // Executive Dashboard Reports

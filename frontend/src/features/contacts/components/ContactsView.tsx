@@ -643,7 +643,7 @@ export const ContactsView: React.FC = () => {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Vikramaditya Singhania"
+                    placeholder="Enter your name"
                     className="shadcn-input w-full text-xs"
                   />
                 </div>
@@ -655,7 +655,7 @@ export const ContactsView: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="vikram@company.com"
+                    placeholder="Enter email"
                     className="shadcn-input w-full text-xs font-mono"
                   />
                 </div>
@@ -668,7 +668,7 @@ export const ContactsView: React.FC = () => {
                     required
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+91 98201 12345"
+                    placeholder="Enter phone number"
                     className="shadcn-input w-full text-xs font-mono"
                   />
                 </div>
@@ -679,7 +679,7 @@ export const ContactsView: React.FC = () => {
                     required
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    placeholder="e.g. Tata Consultancy Enterprise"
+                    placeholder="Enter company name"
                     className="shadcn-input w-full text-xs"
                   />
                 </div>
@@ -691,7 +691,7 @@ export const ContactsView: React.FC = () => {
                   <input
                     value={formData.designation}
                     onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                    placeholder="e.g. Chief Technology Officer (CTO)"
+                    placeholder="Enter job title"
                     className="shadcn-input w-full text-xs"
                   />
                 </div>

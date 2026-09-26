@@ -26,6 +26,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+import { setActiveOrgId } from '../lib/api';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -37,6 +39,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await res.json();
       if (res.ok && data.success && data.user) {
         setUser(data.user);
+        if (data.user.organizationId) {
+          setActiveOrgId(data.user.organizationId);
+        }
+        try {
+          localStorage.setItem('crm_user', JSON.stringify(data.user));
+        } catch {}
       } else {
         setUser(null);
       }
@@ -69,6 +77,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       setUser(data.user);
+      if (data.user?.organizationId) {
+        setActiveOrgId(data.user.organizationId);
+      }
+      try {
+        localStorage.setItem('crm_user', JSON.stringify(data.user));
+      } catch {}
       return { success: true };
     } catch (err: any) {
       return { 
@@ -96,6 +110,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       setUser(data.user);
+      if (data.user?.organizationId) {
+        setActiveOrgId(data.user.organizationId);
+      }
+      try {
+        localStorage.setItem('crm_user', JSON.stringify(data.user));
+      } catch {}
       return { success: true };
     } catch (err: any) {
       return { 
@@ -110,6 +130,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await fetch('/api/auth/logout', { method: 'POST' });
     } finally {
       setUser(null);
+      setActiveOrgId('');
+      try {
+        localStorage.removeItem('crm_user');
+        localStorage.removeItem('crm_current_org_id');
+      } catch {}
       router.push('/login');
     }
   };
@@ -119,8 +144,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         organization: {
-          id: user?.organizationId || 'ORG001',
-          name: user?.organizationName || 'ABC Technologies',
+          id: user?.organizationId || '',
+          name: user?.organizationName || (user?.name ? `${user.name}'s Workspace` : 'Workspace'),
         },
         isAuthenticated: !!user,
         isLoading,

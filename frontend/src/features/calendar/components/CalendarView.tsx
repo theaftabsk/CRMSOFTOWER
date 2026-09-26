@@ -1122,7 +1122,7 @@ export const CalendarView: React.FC = () => {
                   type="text"
                   value={newMeeting.title}
                   onChange={(e) => setNewMeeting({ ...newMeeting, title: e.target.value })}
-                  placeholder="e.g. Tata Motors Cloud ERP Architecture Demo"
+                  placeholder="Enter meeting title"
                   className="w-full text-xs p-2.5 bg-white border border-[#E5E5E5] rounded-lg text-[#111111] focus:outline-none focus:border-[#111111]"
                 />
               </div>
@@ -1134,7 +1134,7 @@ export const CalendarView: React.FC = () => {
                     type="text"
                     value={newMeeting.account_name}
                     onChange={(e) => setNewMeeting({ ...newMeeting, account_name: e.target.value })}
-                    placeholder="e.g. Tata Motors Enterprise"
+                    placeholder="Enter company / account name"
                     className="w-full text-xs p-2.5 bg-white border border-[#E5E5E5] rounded-lg text-[#111111] focus:outline-none focus:border-[#111111]"
                   />
                 </div>

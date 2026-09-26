@@ -22,9 +22,9 @@ export const Navbar: React.FC = () => {
 
   const pendingTasksCount = tasks.filter(t => t.status === 'Pending').length;
 
-  const displayName = user?.name || 'Aftab Admin';
+  const displayName = user?.name || 'User';
   const displayRole = user?.role || 'Admin';
-  const displayOrg = user?.organizationName || 'ABC Technologies';
+  const displayOrg = user?.organizationName || (user?.name ? `${user.name}'s Workspace` : 'Workspace');
   const initial = displayName.charAt(0).toUpperCase();
 
   return (

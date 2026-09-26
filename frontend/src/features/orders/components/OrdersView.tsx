@@ -72,7 +72,7 @@ export const OrdersView: React.FC = () => {
   const [formAccountName, setFormAccountName] = useState('');
   const [formStatus, setFormStatus] = useState('Confirmed');
   const [formItems, setFormItems] = useState<Array<{ product_name: string; qty: number; unit_price: number }>>([
-    { product_name: 'Custom SaaS Portal Development', qty: 1, unit_price: 50000 },
+    { product_name: '', qty: 1, unit_price: 0 },
   ]);
 
   const loadData = async () => {
@@ -758,7 +758,7 @@ export const OrdersView: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Apex Health Systems"
+                    placeholder="Enter customer / account name"
                     value={formAccountName}
                     onChange={(e) => setFormAccountName(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-[#E5E5E5] bg-[#FAFAFA] text-[#111111] focus:bg-white focus:outline-none focus:border-[#111111]"

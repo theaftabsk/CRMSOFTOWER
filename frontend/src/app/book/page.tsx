@@ -364,7 +364,7 @@ export default function PublicBookingPage() {
                       type="text"
                       value={guest.name}
                       onChange={(e) => setGuest({ ...guest, name: e.target.value })}
-                      placeholder="e.g. Rajesh Sharma"
+                      placeholder="Enter your name"
                       className="shadcn-input w-full"
                     />
                   </div>
@@ -374,7 +374,7 @@ export default function PublicBookingPage() {
                       type="text"
                       value={guest.company}
                       onChange={(e) => setGuest({ ...guest, company: e.target.value })}
-                      placeholder="e.g. Apex Health Systems"
+                      placeholder="Enter company name"
                       className="shadcn-input w-full"
                     />
                   </div>

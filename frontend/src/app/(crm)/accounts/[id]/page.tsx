@@ -1192,7 +1192,7 @@ export default function Account360CockpitPage() {
                   type="text"
                   value={newContact.name}
                   onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
-                  placeholder="e.g. Anand Mahindra"
+                  placeholder="Enter contact name"
                   className="shadcn-input w-full"
                 />
               </div>

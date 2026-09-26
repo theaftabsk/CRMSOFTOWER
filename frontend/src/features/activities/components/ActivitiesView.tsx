@@ -114,118 +114,22 @@ export const ActivitiesView: React.FC = () => {
         api.getActivitiesStats(),
       ]);
 
-      if (Array.isArray(tList) && tList.length > 0) {
+      if (Array.isArray(tList)) {
         setTasks(tList);
       } else {
-        setTasks([
-          {
-            id: 'tsk_1',
-            title: 'Send finalized commercial proposal to Dr. Priya Sharma',
-            assigned_to: 'Vikram Sales Manager',
-            priority: 'Urgent',
-            due_date: new Date().toISOString().split('T')[0],
-            status: 'Pending',
-            related_type: 'Deal',
-            related_name: 'Apex Hospital Cloud ERP',
-          },
-          {
-            id: 'tsk_2',
-            title: 'Schedule executive demonstration for Tata Motors EV division',
-            assigned_to: 'Aftab Admin',
-            priority: 'High',
-            due_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-            status: 'Pending',
-            related_type: 'Account',
-            related_name: 'Tata Motors Enterprise',
-          },
-          {
-            id: 'tsk_3',
-            title: 'Deliver SOC2 security questionnaire and SLA contract',
-            assigned_to: 'Priya Technical Lead',
-            priority: 'Medium',
-            due_date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-            status: 'Completed',
-            related_type: 'Lead',
-            related_name: 'Swiggy Instamart Portal',
-          },
-          {
-            id: 'tsk_4',
-            title: 'Audit API webhook callback payloads with partner engineers',
-            assigned_to: 'Vikram Sales Manager',
-            priority: 'Low',
-            due_date: new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0],
-            status: 'In Progress',
-            related_type: 'Integration',
-            related_name: 'Zapier & Google Meet',
-          },
-        ]);
+        setTasks([]);
       }
 
-      if (Array.isArray(cList) && cList.length > 0) {
+      if (Array.isArray(cList)) {
         setCalls(cList);
       } else {
-        setCalls([
-          {
-            id: 'call_1',
-            customer_name: 'Rajesh Kumar (Apex Health)',
-            caller_user: 'Vikram Sales Manager',
-            duration: '14 mins',
-            result: 'Connected - Follow Up',
-            notes: 'Customer requested finalized invoice breakdown under ₹1.2L. Confirmed demo next Tuesday.',
-            date_time: 'Today, 02:30 PM',
-          },
-          {
-            id: 'call_2',
-            customer_name: 'Anand Mahindra (Fleet Division)',
-            caller_user: 'Aftab Admin',
-            duration: '22 mins',
-            result: 'Interested - Send Proposal',
-            notes: 'Discussed 500 dealer licenses roll-out across Mumbai and Delhi. High buying intent.',
-            date_time: 'Yesterday, 11:15 AM',
-          },
-          {
-            id: 'call_3',
-            customer_name: 'Karan Mehra (Infosys BPM)',
-            caller_user: 'Vikram Sales Manager',
-            duration: '8 mins',
-            result: 'Left Voicemail',
-            notes: 'Left message regarding Q4 procurement timeline. Will retry Thursday morning.',
-            date_time: 'Sep 22, 04:00 PM',
-          },
-        ]);
+        setCalls([]);
       }
 
-      if (Array.isArray(mList) && mList.length > 0) {
+      if (Array.isArray(mList)) {
         setMeetings(mList);
       } else {
-        setMeetings([
-          {
-            id: 'mtg_1',
-            title: 'Apex Hospital Cloud ERP Architecture Demo',
-            date_time: 'Tomorrow, 11:00 AM',
-            status: 'Scheduled',
-            location: 'Google Meet',
-            meet_link: 'https://meet.google.com/abc-wxyz-qrs',
-            provider: 'GOOGLE_MEET',
-            duration_minutes: 45,
-            participants: ['priya@apexhealth.co.in', 'admin@crmsoftower.com'],
-            account_name: 'Apex Health Systems',
-            notes: 'Deep-dive walkthrough of automated invoice generation and doctor shift rosters.',
-          },
-          {
-            id: 'mtg_2',
-            title: 'Tata Motors Commercial Fleet Telematics Sync',
-            date_time: 'Friday, 03:00 PM',
-            status: 'Scheduled',
-            location: 'Google Meet',
-            meet_link: 'https://meet.google.com/tat-evmo-flt',
-            provider: 'GOOGLE_MEET',
-            duration_minutes: 60,
-            participants: ['rajesh.varma@tatamotors.com', 'aftab@crmsoftower.com'],
-            account_name: 'Tata Motors Enterprise',
-            notes: 'Contract review, SLA compliance, and multi-tenant security verification.',
-          },
-        ]);
+        setMeetings([]);
       }
 
       setStats(sSummary);
@@ -1155,7 +1059,7 @@ export const ActivitiesView: React.FC = () => {
                     type="text"
                     value={taskForm.related_name}
                     onChange={(e) => setTaskForm({ ...taskForm, related_name: e.target.value })}
-                    placeholder="e.g. Apex Hospital ERP"
+                    placeholder="Enter related entity name"
                     className="shadcn-input w-full"
                   />
                 </div>
@@ -1191,7 +1095,7 @@ export const ActivitiesView: React.FC = () => {
                   type="text"
                   value={callForm.customer_name}
                   onChange={(e) => setCallForm({ ...callForm, customer_name: e.target.value })}
-                  placeholder="e.g. Rajesh Kumar (Apex Health)"
+                  placeholder="Enter customer name"
                   className="shadcn-input w-full"
                 />
               </div>
@@ -1262,7 +1166,7 @@ export const ActivitiesView: React.FC = () => {
                   type="text"
                   value={meetingForm.title}
                   onChange={(e) => setMeetingForm({ ...meetingForm, title: e.target.value })}
-                  placeholder="e.g. Enterprise Cloud ERP Technical Architecture Demo"
+                  placeholder="Enter meeting title"
                   className="shadcn-input w-full"
                 />
               </div>

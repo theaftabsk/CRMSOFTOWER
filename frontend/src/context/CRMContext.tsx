@@ -5,13 +5,9 @@ import {
   Organization, User, Lead, Contact, Account, Deal, Task, 
   CallLog, Meeting, Product, Quote, Invoice, Payment, CustomField, AuditLog 
 } from '../types/crm';
-import { 
-  initialOrganization, initialUsers, initialLeads, initialAccounts, 
-  initialContacts, initialDeals, initialTasks, initialCalls, 
-  initialMeetings, initialProducts, initialQuotes, initialInvoices, 
-  initialPayments, initialCustomFields, initialAuditLogs 
-} from '../lib/initialData';
+
 import { api } from '../lib/api';
+import { useAuth } from './AuthContext';
 
 interface CRMContextType {
   theme: 'light' | 'dark';
@@ -86,26 +82,59 @@ interface CRMContextType {
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
 
 export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, organization: authOrg } = useAuth();
+
   const [theme, setThemeState] = useState<'light' | 'dark'>('light');
   const [showQuickCreate, setShowQuickCreate] = useState(false);
 
-  const [organization] = useState<Organization>(initialOrganization);
-  const [users] = useState<User[]>(initialUsers);
-  const [currentUser, setCurrentUser] = useState<User>(initialUsers[0]);
+  const organization: Organization = {
+    id: authOrg?.id || user?.organizationId || '',
+    name: authOrg?.name || user?.organizationName || 'My Workspace',
+    currency: '₹',
+    timezone: 'Asia/Kolkata',
+    created_at: new Date().toISOString().split('T')[0],
+  };
 
-  const [leads, setLeads] = useState<Lead[]>(initialLeads);
-  const [contacts, setContacts] = useState<Contact[]>(initialContacts);
-  const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
-  const [deals, setDeals] = useState<Deal[]>(initialDeals);
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [calls, setCalls] = useState<CallLog[]>(initialCalls);
-  const [meetings, setMeetings] = useState<Meeting[]>(initialMeetings);
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
-  const [payments, setPayments] = useState<Payment[]>(initialPayments);
-  const [customFields, setCustomFields] = useState<CustomField[]>(initialCustomFields);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User>({
+    id: user?.id || 'USR_CURRENT',
+    organization_id: organization.id,
+    name: user?.name || 'Administrator',
+    email: user?.email || '',
+    role: user?.role || 'Admin',
+    department: user?.department || 'Administration',
+    status: 'Active',
+    created_date: new Date().toISOString().split('T')[0],
+  });
+
+  useEffect(() => {
+    if (user) {
+      setCurrentUser({
+        id: user.id,
+        organization_id: user.organizationId,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department || 'Administration',
+        status: 'Active',
+        created_date: new Date().toISOString().split('T')[0],
+      });
+    }
+  }, [user]);
+
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [calls, setCalls] = useState<CallLog[]>([]);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModule, setActiveModule] = useState<string>('dashboard');
@@ -115,6 +144,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [reportsData, setReportsData] = useState<any>(null);
 
   const syncDataWithBackend = async () => {
+    const orgId = authOrg?.id || user?.organizationId;
     setIsSyncing(true);
     try {
       const [
@@ -122,25 +152,25 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         apiTasks, apiInvoices, apiProducts, apiCustomFields,
         apiReports
       ] = await Promise.all([
-        api.getLeads(),
-        api.getContacts(),
-        api.getAccounts(),
-        api.getDeals(),
-        api.getTasks(),
-        api.getInvoices(),
-        api.getProducts(),
-        api.getCustomFields(),
-        api.getDashboardReports(),
+        api.getLeads(orgId),
+        api.getContacts(orgId),
+        api.getAccounts(orgId),
+        api.getDeals(orgId),
+        api.getTasks(orgId),
+        api.getInvoices(orgId),
+        api.getProducts(orgId),
+        api.getCustomFields(orgId),
+        api.getDashboardReports(orgId),
       ]);
 
-      if (apiLeads && Array.isArray(apiLeads) && apiLeads.length > 0) setLeads(apiLeads);
-      if (apiContacts && Array.isArray(apiContacts) && apiContacts.length > 0) setContacts(apiContacts);
-      if (apiAccounts && Array.isArray(apiAccounts) && apiAccounts.length > 0) setAccounts(apiAccounts);
-      if (apiDeals && Array.isArray(apiDeals) && apiDeals.length > 0) setDeals(apiDeals);
-      if (apiTasks && Array.isArray(apiTasks) && apiTasks.length > 0) setTasks(apiTasks);
-      if (apiInvoices && Array.isArray(apiInvoices) && apiInvoices.length > 0) setInvoices(apiInvoices);
-      if (apiProducts && Array.isArray(apiProducts) && apiProducts.length > 0) setProducts(apiProducts);
-      if (apiCustomFields && Array.isArray(apiCustomFields) && apiCustomFields.length > 0) setCustomFields(apiCustomFields);
+      if (Array.isArray(apiLeads)) setLeads(apiLeads);
+      if (Array.isArray(apiContacts)) setContacts(apiContacts);
+      if (Array.isArray(apiAccounts)) setAccounts(apiAccounts);
+      if (Array.isArray(apiDeals)) setDeals(apiDeals);
+      if (Array.isArray(apiTasks)) setTasks(apiTasks);
+      if (Array.isArray(apiInvoices)) setInvoices(apiInvoices);
+      if (Array.isArray(apiProducts)) setProducts(apiProducts);
+      if (Array.isArray(apiCustomFields)) setCustomFields(apiCustomFields);
       if (apiReports) setReportsData(apiReports);
     } catch (err) {
       console.warn('Backend API sync notice: Using state', err);
@@ -151,7 +181,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     syncDataWithBackend();
-  }, []);
+  }, [user?.organizationId]);
 
   const setTheme = (t: 'light' | 'dark') => {
     setThemeState(t);

@@ -674,7 +674,7 @@ export const LeadsView: React.FC = () => {
                   <label className="text-xs font-semibold text-[#111111] block mb-1">Full Name *</label>
                   <input
                     required
-                    placeholder="e.g. Rajesh Gupta"
+                    placeholder="Enter your name"
                     value={newLead.name}
                     onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
                     className="shadcn-input w-full"
@@ -683,7 +683,7 @@ export const LeadsView: React.FC = () => {
                 <div>
                   <label className="text-xs font-semibold text-[#111111] block mb-1">Job Title</label>
                   <input
-                    placeholder="e.g. Chief Operating Officer"
+                    placeholder="Enter job title"
                     value={newLead.job_title}
                     onChange={(e) => setNewLead({ ...newLead, job_title: e.target.value })}
                     className="shadcn-input w-full"
@@ -696,7 +696,7 @@ export const LeadsView: React.FC = () => {
                   <label className="text-xs font-semibold text-[#111111] block mb-1">Company *</label>
                   <input
                     required
-                    placeholder="e.g. Apex Industries Ltd"
+                    placeholder="Enter company name"
                     value={newLead.company}
                     onChange={(e) => setNewLead({ ...newLead, company: e.target.value })}
                     className="shadcn-input w-full"
@@ -723,7 +723,7 @@ export const LeadsView: React.FC = () => {
                   <label className="text-xs font-semibold text-[#111111] block mb-1">Email</label>
                   <input
                     type="email"
-                    placeholder="rajesh@apex.com"
+                    placeholder="Enter email"
                     value={newLead.email}
                     onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
                     className="shadcn-input w-full"
@@ -732,7 +732,7 @@ export const LeadsView: React.FC = () => {
                 <div>
                   <label className="text-xs font-semibold text-[#111111] block mb-1">Phone</label>
                   <input
-                    placeholder="+91 98765 43210"
+                    placeholder="Enter phone number"
                     value={newLead.phone}
                     onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
                     className="shadcn-input w-full"

@@ -96,7 +96,7 @@ export default function RegisterPage() {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] placeholder:text-[#999999] outline-none transition" 
-                      placeholder="Jane" 
+                      placeholder="Enter your first name" 
                     />
                   </div>
                   <div>
@@ -107,7 +107,7 @@ export default function RegisterPage() {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] placeholder:text-[#999999] outline-none transition" 
-                      placeholder="Doe" 
+                      placeholder="Enter your last name" 
                     />
                   </div>
                 </div>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                     value={organizationName}
                     onChange={(e) => setOrganizationName(e.target.value)}
                     className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] placeholder:text-[#999999] outline-none transition" 
-                    placeholder="Acme Global Inc" 
+                    placeholder="Enter your company name" 
                   />
                 </div>
 
@@ -134,7 +134,7 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] placeholder:text-[#999999] outline-none transition" 
-                    placeholder="jane.doe@acme.com" 
+                    placeholder="Enter your email" 
                   />
                 </div>
 
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] placeholder:text-[#999999] outline-none transition" 
-                    placeholder="Enter your password again" 
+                    placeholder="Confirm your password" 
                   />
                 </div>
 

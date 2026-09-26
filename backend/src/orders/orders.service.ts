@@ -6,26 +6,11 @@ export class OrdersService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(orgId: string) {
-    let orders = await this.prisma.order.findMany({
+    return this.prisma.order.findMany({
       where: { organization_id: orgId },
       include: { items: true, account: true },
       orderBy: { created_date: 'desc' },
     });
-
-    if (orders.length === 0) {
-      try {
-        await this.seedDemoOrders(orgId);
-        orders = await this.prisma.order.findMany({
-          where: { organization_id: orgId },
-          include: { items: true, account: true },
-          orderBy: { created_date: 'desc' },
-        });
-      } catch (err) {
-        console.warn('Failed to seed demo orders:', err);
-      }
-    }
-
-    return orders;
   }
 
   async getStats(orgId: string) {

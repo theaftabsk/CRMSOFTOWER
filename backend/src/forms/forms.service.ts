@@ -53,10 +53,10 @@ export class FormsService {
 
   async create(orgId: string, data: any) {
     const defaultFields = [
-      { id: 'fld_name', name: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'e.g. Rahul Sharma', mapping: 'Lead.name' },
-      { id: 'fld_email', name: 'email', label: 'Work Email', type: 'email', required: true, placeholder: 'e.g. rahul@company.com', mapping: 'Lead.email' },
-      { id: 'fld_phone', name: 'phone', label: 'Phone Number', type: 'tel', required: true, placeholder: 'e.g. +91 9876543210', mapping: 'Lead.phone' },
-      { id: 'fld_company', name: 'company', label: 'Company / Organization', type: 'text', required: false, placeholder: 'e.g. Acme Corp', mapping: 'Lead.company' },
+      { id: 'fld_name', name: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'Enter your name', mapping: 'Lead.name' },
+      { id: 'fld_email', name: 'email', label: 'Work Email', type: 'email', required: true, placeholder: 'Enter email', mapping: 'Lead.email' },
+      { id: 'fld_phone', name: 'phone', label: 'Phone Number', type: 'tel', required: true, placeholder: 'Enter phone number', mapping: 'Lead.phone' },
+      { id: 'fld_company', name: 'company', label: 'Company / Organization', type: 'text', required: false, placeholder: 'Enter company name', mapping: 'Lead.company' },
       { id: 'fld_budget', name: 'budget', label: 'Estimated Budget', type: 'number', required: false, placeholder: '50000', mapping: 'Lead.expected_value' },
       { id: 'fld_message', name: 'message', label: 'Specific Requirements', type: 'textarea', required: false, placeholder: 'How can our solution help your team?', mapping: 'Lead.notes' },
     ];

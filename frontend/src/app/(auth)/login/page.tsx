@@ -38,17 +38,6 @@ function LoginForm() {
     }
   };
 
-  const handleFillDemo = (role: 'admin' | 'manager') => {
-    if (role === 'admin') {
-      setEmail('admin@abctechnologies.com');
-      setPassword('password123');
-    } else {
-      setEmail('vikram@abctechnologies.com');
-      setPassword('password123');
-    }
-    setError(null);
-  };
-
   return (
     <div className="min-h-screen bg-[#F4F4F6] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 antialiased">
       {/* Main Split Floating Card Container */}
@@ -91,7 +80,7 @@ function LoginForm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2 text-[#111111] placeholder:text-[#999999] outline-none transition" 
-                    placeholder="name@company.com" 
+                    placeholder="Enter your email" 
                   />
                 </div>
 
@@ -136,30 +125,6 @@ function LoginForm() {
                   {!loading && <ArrowRight className="w-3.5 h-3.5" />}
                 </button>
               </form>
-
-              {/* 1-Click Quick Demo Sign-in Chip */}
-              <div className="bg-[#F8F8F8] border border-[#E5E5E5] rounded-lg p-3 space-y-2 mt-5">
-                <div className="flex items-center space-x-1.5 text-[11px] font-semibold text-[#111111]">
-                  <KeyRound className="w-3.5 h-3.5 text-[#666666]" />
-                  <span>Quick Demo Access</span>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => handleFillDemo('admin')}
-                    className="flex-1 py-1.5 px-2 text-[10px] font-medium bg-white hover:bg-[#F4F4F5] border border-[#D4D4D4] rounded-md text-[#111111] transition"
-                  >
-                    Admin Demo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleFillDemo('manager')}
-                    className="flex-1 py-1.5 px-2 text-[10px] font-medium bg-white hover:bg-[#F4F4F5] border border-[#D4D4D4] rounded-md text-[#111111] transition"
-                  >
-                    Manager Demo
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Bottom Footer */}

@@ -52,25 +52,6 @@ export class ContactsService {
       orderBy: { created_date: 'desc' },
     });
 
-    if (contacts.length <= 1 && (!query?.search && !query?.buying_role)) {
-      await this.seedSampleContacts(orgId);
-      contacts = await this.prisma.contact.findMany({
-        where: { organization_id: orgId },
-        include: {
-          account: {
-            select: { id: true, name: true, industry: true, annual_revenue: true },
-          },
-          deals: {
-            select: { id: true, title: true, stage: true, value: true },
-          },
-          _count: {
-            select: { activities: true, deals: true },
-          },
-        },
-        orderBy: { created_date: 'desc' },
-      });
-    }
-
     return contacts;
   }
 

@@ -6,27 +6,11 @@ export class QuotesService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(orgId: string) {
-    let quotes = await this.prisma.quote.findMany({
+    return this.prisma.quote.findMany({
       where: { organization_id: orgId },
       include: { items: true, account: true },
       orderBy: { created_date: 'desc' },
     });
-
-    if (quotes.length === 0) {
-      // Seed enterprise demo quotes if catalog is empty
-      try {
-        await this.seedDemoQuotes(orgId);
-        quotes = await this.prisma.quote.findMany({
-          where: { organization_id: orgId },
-          include: { items: true, account: true },
-          orderBy: { created_date: 'desc' },
-        });
-      } catch (err) {
-        console.warn('Failed to seed demo quotes:', err);
-      }
-    }
-
-    return quotes;
   }
 
   async getStats(orgId: string) {

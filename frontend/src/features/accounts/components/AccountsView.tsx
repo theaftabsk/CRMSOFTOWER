@@ -57,130 +57,15 @@ export const AccountsView: React.FC = () => {
         api.getAccounts(),
         api.getAccountStats(),
       ]);
-      if (Array.isArray(accList) && accList.length > 0) {
+      if (Array.isArray(accList)) {
         setAccounts(accList);
       } else {
-        // Fallback default sample data to ensure instant, stunning live visualization
-        setAccounts([
-          {
-            id: 'acc_1',
-            organization_id: 'ORG001',
-            name: 'Tata Consultancy Services',
-            industry: 'IT Services & Consulting',
-            tier: 'TIER_1_ENTERPRISE',
-            type: 'CUSTOMER',
-            website: 'https://www.tcs.com',
-            phone: '+91 22 6778 9999',
-            city: 'Mumbai',
-            country: 'India',
-            annual_revenue: 185000000,
-            employee_count: 615000,
-            billing_address: 'TCS House, Raveline Street, Fort, Mumbai 400001',
-            owner_name: 'Aftab Admin',
-            health_score: 96,
-            notes: 'Global IT partner, annual renewal in Q4.',
-            _count: { contacts: 14, deals: 6, invoices: 18 },
-          },
-          {
-            id: 'acc_2',
-            organization_id: 'ORG001',
-            name: 'Reliance Industries (Jio Platforms)',
-            industry: 'Telecommunications & Tech',
-            tier: 'TIER_1_ENTERPRISE',
-            type: 'CUSTOMER',
-            website: 'https://www.jio.com',
-            phone: '+91 22 4477 0000',
-            city: 'Navi Mumbai',
-            country: 'India',
-            annual_revenue: 92000000,
-            employee_count: 98000,
-            billing_address: 'Reliance Corporate Park, Ghansoli, Navi Mumbai 400701',
-            owner_name: 'Priya Sharma',
-            health_score: 92,
-            notes: 'Enterprise 5G connectivity contract active.',
-            _count: { contacts: 8, deals: 4, invoices: 12 },
-          },
-          {
-            id: 'acc_3',
-            organization_id: 'ORG001',
-            name: 'Infosys BPM Limited',
-            industry: 'Business Process Management',
-            tier: 'TIER_1_ENTERPRISE',
-            type: 'CUSTOMER',
-            website: 'https://www.infosysbpm.com',
-            phone: '+91 80 2852 0261',
-            city: 'Bengaluru',
-            country: 'India',
-            annual_revenue: 64000000,
-            employee_count: 55000,
-            billing_address: 'Electronics City, Hosur Road, Bengaluru 560100',
-            owner_name: 'Senior Enterprise Lead',
-            health_score: 89,
-            notes: 'Expanding procurement seats in APAC.',
-            _count: { contacts: 6, deals: 3, invoices: 8 },
-          },
-          {
-            id: 'acc_4',
-            organization_id: 'ORG001',
-            name: 'Swiggy Technologies (Bundl)',
-            industry: 'Q-Commerce & Logistics',
-            tier: 'TIER_2_GROWTH',
-            type: 'PROSPECT',
-            website: 'https://www.swiggy.com',
-            phone: '+91 80 6746 6746',
-            city: 'Bengaluru',
-            country: 'India',
-            annual_revenue: 38000000,
-            employee_count: 6500,
-            billing_address: 'Marathahalli - Sarjapur Outer Ring Rd, Bengaluru',
-            owner_name: 'Rahul Sen',
-            health_score: 78,
-            notes: 'High intent prospect evaluating our CRM billing suite.',
-            _count: { contacts: 4, deals: 2, invoices: 2 },
-          },
-          {
-            id: 'acc_5',
-            organization_id: 'ORG001',
-            name: 'Zomato Enterprise Solutions',
-            industry: 'FoodTech & Supply Chain',
-            tier: 'TIER_2_GROWTH',
-            type: 'CUSTOMER',
-            website: 'https://www.zomato.com',
-            phone: '+91 124 402 9000',
-            city: 'Gurugram',
-            country: 'India',
-            annual_revenue: 29000000,
-            employee_count: 4200,
-            billing_address: 'Ground Floor, Tower C, Pioneer Urban Square, Gurugram',
-            owner_name: 'Aftab Admin',
-            health_score: 85,
-            notes: 'Integrated web forms live on partner portal.',
-            _count: { contacts: 5, deals: 2, invoices: 6 },
-          },
-          {
-            id: 'acc_6',
-            organization_id: 'ORG001',
-            name: 'Freshworks India Corp',
-            industry: 'Enterprise Software',
-            tier: 'TIER_3_SMB',
-            type: 'PARTNER',
-            website: 'https://www.freshworks.com',
-            phone: '+91 44 6667 8000',
-            city: 'Chennai',
-            country: 'India',
-            annual_revenue: 15000000,
-            employee_count: 1200,
-            billing_address: 'Global Infocity Park, Perungudi, Chennai 600096',
-            owner_name: 'Vikram Seth',
-            health_score: 91,
-            notes: 'Co-marketing and API webhook integration partner.',
-            _count: { contacts: 3, deals: 1, invoices: 4 },
-          },
-        ]);
+        setAccounts([]);
       }
-      setStats(statsSummary);
+      if (statsSummary) setStats(statsSummary);
     } catch (e) {
       console.error('Error loading accounts:', e);
+      setAccounts([]);
     } finally {
       setLoading(false);
     }
@@ -781,7 +666,7 @@ export const AccountsView: React.FC = () => {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Tata Consultancy Services Ltd."
+                  placeholder="Enter company name"
                   className="shadcn-input w-full text-xs"
                 />
               </div>
@@ -794,7 +679,7 @@ export const AccountsView: React.FC = () => {
                     type="text"
                     value={formData.industry}
                     onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                    placeholder="e.g. IT Services, FinTech, Retail"
+                    placeholder="Enter industry sector"
                     className="shadcn-input w-full text-xs"
                   />
                 </div>

@@ -18,10 +18,10 @@ export default function DevelopersPage() {
   const [codeType, setCodeType] = useState<'html' | 'js' | 'php'>('html');
 
   // Test form state
-  const [testName, setTestName] = useState('Rahul Sharma');
-  const [testPhone, setTestPhone] = useState('+91 9876543210');
-  const [testEmail, setTestEmail] = useState('rahul.sharma@example.com');
-  const [testMessage, setTestMessage] = useState('I want to enquire about CRM plans.');
+  const [testName, setTestName] = useState('');
+  const [testPhone, setTestPhone] = useState('');
+  const [testEmail, setTestEmail] = useState('');
+  const [testMessage, setTestMessage] = useState('');
   const [submittingTest, setSubmittingTest] = useState(false);
   const [testSuccess, setTestSuccess] = useState<string | null>(null);
   const [testError, setTestError] = useState<string | null>(null);
@@ -313,6 +313,7 @@ curl_close($ch);
                 type="text"
                 value={testName}
                 onChange={(e) => setTestName(e.target.value)}
+                placeholder="Enter your name"
                 required
                 className="w-full px-3 py-2 border border-[#D4D4D4] rounded-lg text-xs text-[#111111] focus:outline-none focus:border-[#111111]"
               />
@@ -323,6 +324,7 @@ curl_close($ch);
                 type="tel"
                 value={testPhone}
                 onChange={(e) => setTestPhone(e.target.value)}
+                placeholder="Enter phone number"
                 required
                 className="w-full px-3 py-2 border border-[#D4D4D4] rounded-lg text-xs text-[#111111] focus:outline-none focus:border-[#111111]"
               />
@@ -335,6 +337,7 @@ curl_close($ch);
               type="email"
               value={testEmail}
               onChange={(e) => setTestEmail(e.target.value)}
+              placeholder="Enter your email"
               required
               className="w-full px-3 py-2 border border-[#D4D4D4] rounded-lg text-xs text-[#111111] focus:outline-none focus:border-[#111111]"
             />
@@ -346,6 +349,7 @@ curl_close($ch);
               rows={2}
               value={testMessage}
               onChange={(e) => setTestMessage(e.target.value)}
+              placeholder="Enter your message"
               className="w-full px-3 py-2 border border-[#D4D4D4] rounded-lg text-xs text-[#111111] focus:outline-none focus:border-[#111111]"
             />
           </div>

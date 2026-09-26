@@ -62,85 +62,14 @@ export const ProductsView: React.FC = () => {
     setLoading(true);
     try {
       const data = await api.getProducts();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         setProducts(data);
       } else {
-        // High-density Enterprise Demo Catalog Fallback
-        setProducts([
-          {
-            id: 'prd_1',
-            code: 'PRD-ERP-CORE',
-            name: 'Enterprise Cloud ERP Platform (Annual Per-Seat)',
-            category: 'Software Licenses',
-            unit_price: 75000,
-            stock: 120,
-            gst_rate_percent: 18,
-            description: 'Core multi-tenant ERP platform covering finance, CRM pipeline, and supply chain telemetry.',
-          },
-          {
-            id: 'prd_2',
-            code: 'PRD-API-DEV',
-            name: 'Developer Webhooks & API Gateway Access Tier',
-            category: 'Cloud Subscriptions',
-            unit_price: 35000,
-            stock: 999,
-            gst_rate_percent: 18,
-            description: 'High-throughput REST API and WebSocket events gateway with 99.99% committed SLA.',
-          },
-          {
-            id: 'prd_3',
-            code: 'PRD-MED-SUITE',
-            name: 'Apex Healthcare EHR & Clinic Integration Module',
-            category: 'Software Licenses',
-            unit_price: 180000,
-            stock: 8,
-            gst_rate_percent: 18,
-            description: 'HIPAA & HL7 compliant patient lifecycle module for multi-specialty hospitals.',
-          },
-          {
-            id: 'prd_4',
-            code: 'PRD-CONS-ARCH',
-            name: 'Senior Cloud Solutions Architecture Consulting (40 hrs)',
-            category: 'Professional Services',
-            unit_price: 250000,
-            stock: 15,
-            gst_rate_percent: 18,
-            description: 'Dedicated cloud architect for custom tenant migration, VPC peering, and security audit.',
-          },
-          {
-            id: 'prd_5',
-            code: 'PRD-HW-GATEWAY',
-            name: 'Industrial IoT Telematics Edge Gateway Appliance',
-            category: 'Hardware & Infrastructure',
-            unit_price: 85000,
-            stock: 4,
-            gst_rate_percent: 18,
-            description: 'Ruggedized on-premise hardware node for automated shop-floor telemetry ingestion.',
-          },
-          {
-            id: 'prd_6',
-            code: 'PRD-SEC-SOC2',
-            name: 'Annual Cyber Compliance & SOC2 Security Retainer',
-            category: 'Professional Services',
-            unit_price: 120000,
-            stock: 25,
-            gst_rate_percent: 18,
-            description: 'Quarterly third-party penetration testing and continuous vulnerability mitigation.',
-          },
-          {
-            id: 'prd_7',
-            code: 'PRD-ZOOM-BOT',
-            name: 'Automated AI Meeting Scribe & Transcript Intelligence',
-            category: 'Cloud Subscriptions',
-            unit_price: 18000,
-            stock: 0,
-            gst_rate_percent: 18,
-            description: 'Real-time NLP speech-to-text integration for automated CRM notes generation.',
-          },
-        ]);
+        setProducts([]);
       }
     } catch (e) {
-      console.warn('Could not load products, using fallback:', e);
+      console.warn('Could not load products:', e);
+      setProducts([]);
     } finally {
       setLoading(false);
     }

@@ -856,7 +856,7 @@ export const DealsView: React.FC = () => {
                   value={newDeal.title}
                   onChange={(e) => setNewDeal({ ...newDeal, title: e.target.value })}
                   className="shadcn-input w-full"
-                  placeholder="e.g. Apex Hospital ERP Suite Migration"
+                  placeholder="Enter deal title"
                 />
               </div>
 
@@ -869,7 +869,7 @@ export const DealsView: React.FC = () => {
                     value={newDeal.account_name}
                     onChange={(e) => setNewDeal({ ...newDeal, account_name: e.target.value })}
                     className="shadcn-input w-full"
-                    placeholder="e.g. Apex Health Systems"
+                    placeholder="Enter company / account name"
                   />
                 </div>
                 <div>

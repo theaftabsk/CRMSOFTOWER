@@ -81,21 +81,23 @@ export const DashboardView: React.FC = () => {
           <div>
             <div className="flex items-center space-x-2.5">
               <span className="px-2.5 py-1 rounded-lg bg-black/[0.05] border border-black/[0.05] font-mono text-[10px] font-semibold text-[#111111]">
-                {organization?.name || user?.organizationName || 'ABC Technologies'}
+                {organization?.name || user?.organizationName || 'My Workspace'}
               </span>
               <span className="flex items-center space-x-1.5 text-xs text-[#16A34A] font-mono">
                 <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse inline-block" />
                 <span>PostgreSQL Live Sync</span>
               </span>
-              <span className="text-xs text-[#888888] font-mono">
-                Tenant: {organization?.id || user?.organizationId || 'ORG001'}
-              </span>
+              {organization?.id && (
+                <span className="text-xs text-[#888888] font-mono">
+                  Tenant: {organization.id}
+                </span>
+              )}
             </div>
             <h1 className="text-2xl font-bold text-[#111111] mt-2 tracking-tight">
               Executive CRM Dashboard
             </h1>
             <p className="text-xs text-[#555555] mt-0.5">
-              Enterprise Cloud SaaS Platform • Authenticated as <strong className="text-[#111111]">{user?.name || 'Aftab Admin'}</strong> ({user?.role || 'Admin'})
+              Enterprise Cloud SaaS Platform • Authenticated as <strong className="text-[#111111]">{user?.name || 'User'}</strong> ({user?.role || 'Admin'})
             </p>
           </div>
 

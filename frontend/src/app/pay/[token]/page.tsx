@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { CheckCircle2, AlertCircle, Printer, CreditCard, ShieldCheck, Loader2 } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
+import { getApiBaseUrl } from '@/lib/api';
 
 interface InvoiceData {
   invoice_number: string;
@@ -36,7 +37,7 @@ export default function PublicInvoicePaymentPage() {
 
   const fetchInvoice = async () => {
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/public/invoices/${token}`);
+      const res = await fetch(`${getApiBaseUrl()}/public/invoices/${token}`);
       if (!res.ok) throw new Error('Invoice not found or link has expired');
       const json = await res.json();
       setInvoice(json.data || json);
@@ -54,7 +55,7 @@ export default function PublicInvoicePaymentPage() {
   const handlePay = async () => {
     setPaying(true);
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/public/invoices/${token}/pay`, {
+      const res = await fetch(`${getApiBaseUrl()}/public/invoices/${token}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

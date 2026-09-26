@@ -1,13 +1,17 @@
-const API_BASE_URL = {
-  toString() {
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-    if (typeof window !== 'undefined') {
-      const host = window.location.hostname;
-      if (host.includes('zyvocrm.in')) {
-        return `${window.location.protocol}//api.zyvocrm.in/api/v1`;
-      }
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.includes('zyvocrm.in')) {
+      return `${window.location.protocol}//api.zyvocrm.in/api/v1`;
     }
-    return 'http://localhost:4000/api/v1';
+    return `${window.location.protocol}//${window.location.hostname}:4000/api/v1`;
+  }
+  return process.env.BACKEND_API_URL || 'http://127.0.0.1:4000/api/v1';
+}
+
+export const API_BASE_URL = {
+  toString() {
+    return getApiBaseUrl();
   },
 };
 

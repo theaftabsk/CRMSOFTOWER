@@ -281,7 +281,10 @@ export default function DevelopersPage() {
     setSandboxResult(null);
 
     try {
-      const res = await fetch(`http://localhost:4000/api/v1${sandboxEndpoint}`, {
+      const baseUrl = typeof window !== 'undefined' && window.location.hostname.includes('zyvocrm.in')
+        ? `${window.location.protocol}//api.zyvocrm.in/api/v1`
+        : `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:4000/api/v1`;
+      const res = await fetch(`${baseUrl}${sandboxEndpoint}`, {
         headers: { 'x-api-key': sandboxApiKey.trim() },
       });
       const data = await res.json();

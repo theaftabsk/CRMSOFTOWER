@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { FormRenderer } from '@/features/forms/components/FormRenderer';
 import { WebForm } from '@/types/crm';
+import { getApiBaseUrl } from '@/lib/api';
 
 export default function PublicWebFormPage() {
   const params = useParams();
@@ -41,7 +42,7 @@ export default function PublicWebFormPage() {
     const fetchForm = async () => {
       try {
         const isPreview = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('preview') === 'true';
-        const url = `http://localhost:4000/api/v1/public/forms/${formId}${isPreview ? '?preview=true' : ''}`;
+        const url = `${getApiBaseUrl()}/public/forms/${formId}${isPreview ? '?preview=true' : ''}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error('Form not found or is no longer active.');
         const json = await res.json();
@@ -72,7 +73,7 @@ export default function PublicWebFormPage() {
     };
 
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/public/forms/${formId}/submit`, {
+      const res = await fetch(`${getApiBaseUrl()}/public/forms/${formId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fullPayload),

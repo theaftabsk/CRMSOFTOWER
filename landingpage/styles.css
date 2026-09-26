@@ -562,7 +562,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  margin-bottom: 2rem;
+  margin-bottom: 3.25rem;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -1764,6 +1764,7 @@ body {
     flex-direction: column;
     width: 100%;
     gap: 0.75rem;
+    margin-bottom: 2rem;
   }
   .hero-cta-group .btn-primary,
   .hero-cta-group .btn-secondary {
@@ -1771,11 +1772,6 @@ body {
     justify-content: center;
     min-height: 48px;
     font-size: 0.9375rem;
-  }
-  .hero-social-proof {
-    flex-direction: column;
-    gap: 0.625rem;
-    margin-bottom: 2.25rem;
   }
 
   /* Dashboard Mockup Preview Frame */

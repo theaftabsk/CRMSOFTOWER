@@ -21,9 +21,13 @@
   <aside class="top-announcement" aria-label="Announcement">
     <div class="announcement-content">
       <span class="badge-accent">New</span>
-      <span>Experience Zyvo 2.0 with Cashfree Instant Checkout & GST Automation</span>
+      <span class="announcement-text">
+        <span class="text-desktop">Experience Zyvo 2.0 with Cashfree Instant Checkout & GST Automation</span>
+        <span class="text-mobile">Zyvo 2.0 with GST & Cashfree Checkout</span>
+      </span>
       <a href="https://app.zyvocrm.in/register" class="announcement-link">
-        Claim 14-Day Free Trial <i data-lucide="arrow-right"></i>
+        <span>Claim 14-Day Free Trial</span>
+        <i data-lucide="arrow-right" class="icon-xs"></i>
       </a>
     </div>
   </aside>
@@ -56,17 +60,31 @@
     </nav>
   </header>
 
-  <!-- Mobile Drawer -->
+  <!-- Mobile Drawer Backdrop Overlay -->
+  <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop"></div>
+
+  <!-- Mobile Slide Drawer -->
   <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="mobile-drawer-brand">
+        <img src="logo.svg" alt="Zyvo" style="height: 24px; width: auto;" />
+      </div>
+      <button class="mobile-drawer-close" id="mobileDrawerClose" aria-label="Close Menu">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
     <ul class="mobile-nav-links">
-      <li><a href="#features">Features</a></li>
-      <li><a href="#pipeline">Sales Pipeline</a></li>
-      <li><a href="#pricing">Pricing</a></li>
-      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#features"><i data-lucide="sparkles" class="icon-sm"></i> Features</a></li>
+      <li><a href="#pipeline"><i data-lucide="kanban" class="icon-sm"></i> Sales Pipeline</a></li>
+      <li><a href="#pricing"><i data-lucide="credit-card" class="icon-sm"></i> Pricing Plans</a></li>
+      <li><a href="#faq"><i data-lucide="help-circle" class="icon-sm"></i> FAQ</a></li>
     </ul>
     <div class="mobile-actions">
-      <a href="https://app.zyvocrm.in/login" class="btn-ghost w-full">Sign In</a>
-      <a href="https://app.zyvocrm.in/register" class="btn-primary w-full">Start 14-Day Free Trial</a>
+      <a href="https://app.zyvocrm.in/login" class="btn-secondary w-full">Sign In to Workspace</a>
+      <a href="https://app.zyvocrm.in/register" class="btn-primary w-full">
+        <span>Start 14-Day Free Trial</span>
+        <i data-lucide="arrow-right" class="icon-sm"></i>
+      </a>
     </div>
   </div>
 
@@ -182,6 +200,12 @@
                 </div>
               </div>
 
+              <!-- Mobile Swipe Hint -->
+              <div class="mobile-swipe-hint">
+                <i data-lucide="chevrons-right" class="icon-xs"></i>
+                <span>Swipe horizontally to view pipeline stages</span>
+              </div>
+
               <!-- Mock Kanban Columns -->
               <div class="mock-kanban">
                 <div class="mock-col">
@@ -225,13 +249,26 @@
     <section class="trust-strip">
       <div class="container">
         <p class="trust-title">TRUSTED BY FAST-GROWING SALES TEAMS, AGENCIES & CORPORATES</p>
-        <div class="trust-logos">
+      </div>
+      <div class="trust-marquee-wrapper">
+        <div class="trust-marquee-track">
           <span class="logo-item">TechMatrix</span>
           <span class="logo-item">Kolkata Ventures</span>
           <span class="logo-item">Nexus Retail</span>
           <span class="logo-item">CloudShift</span>
           <span class="logo-item">Veloce Finance</span>
           <span class="logo-item">Zenith Media</span>
+          <span class="logo-item">Apex Logistics</span>
+          <span class="logo-item">Optima Health</span>
+          <!-- Duplicate for seamless continuous loop -->
+          <span class="logo-item">TechMatrix</span>
+          <span class="logo-item">Kolkata Ventures</span>
+          <span class="logo-item">Nexus Retail</span>
+          <span class="logo-item">CloudShift</span>
+          <span class="logo-item">Veloce Finance</span>
+          <span class="logo-item">Zenith Media</span>
+          <span class="logo-item">Apex Logistics</span>
+          <span class="logo-item">Optima Health</span>
         </div>
       </div>
     </section>
@@ -310,6 +347,54 @@
               <li><i data-lucide="check"></i> Webhooks event dispatcher</li>
               <li><i data-lucide="check"></i> Idempotent request protection</li>
             </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SALES PIPELINE WORKFLOW SECTION -->
+    <section id="pipeline" class="pipeline-section">
+      <div class="container">
+        <div class="section-badge">Streamlined Sales Journey</div>
+        <h2 class="section-title">Accelerate Deals From Inbound to Closed-Won</h2>
+        <p class="section-subtitle">
+          A proven 5-stage pipeline engine designed to maximize win rates, track velocity, and eliminate sales friction.
+        </p>
+
+        <div class="pipeline-grid">
+          <div class="pipeline-card">
+            <div class="step-badge">Stage 01</div>
+            <div class="icon-box"><i data-lucide="user-plus"></i></div>
+            <h3>Capture & Ingest</h3>
+            <p>Leads captured via embedded web forms, API, or CSV imports are automatically routed and enriched.</p>
+          </div>
+
+          <div class="pipeline-card">
+            <div class="step-badge">Stage 02</div>
+            <div class="icon-box"><i data-lucide="filter"></i></div>
+            <h3>Qualify & Score</h3>
+            <p>Score inbound opportunities based on budget, timeline, and industry fit to focus on high-intent deals.</p>
+          </div>
+
+          <div class="pipeline-card highlighted">
+            <div class="step-badge accent">Stage 03</div>
+            <div class="icon-box"><i data-lucide="kanban"></i></div>
+            <h3>Kanban Velocity</h3>
+            <p>Drag deals across customizable visual stages with automatic task reminders and deal health tracking.</p>
+          </div>
+
+          <div class="pipeline-card">
+            <div class="step-badge">Stage 04</div>
+            <div class="icon-box"><i data-lucide="receipt"></i></div>
+            <h3>1-Click GST Quotes</h3>
+            <p>Convert deals directly into 18% GST-compliant quotations and proforma invoices with zero re-typing.</p>
+          </div>
+
+          <div class="pipeline-card">
+            <div class="step-badge">Stage 05</div>
+            <div class="icon-box"><i data-lucide="check-circle-2"></i></div>
+            <h3>Close & Collect</h3>
+            <p>Accept payments instantly through Cashfree UPI/Cards and sync ledgers seamlessly.</p>
           </div>
         </div>
       </div>

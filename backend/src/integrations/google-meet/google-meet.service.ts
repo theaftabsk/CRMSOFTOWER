@@ -42,8 +42,8 @@ export class GoogleMeetService {
     const config = (dbApp?.config as Record<string, any>) || {};
     const secrets = (dbApp?.encrypted_secrets as Record<string, any>) || {};
 
-    const clientId = config.client_id || process.env.GOOGLE_CLIENT_ID || '';
-    const clientSecret = secrets.client_secret || process.env.GOOGLE_CLIENT_SECRET || '';
+    const clientId = process.env.GOOGLE_CLIENT_ID || config.client_id || '';
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET || secrets.client_secret || '';
     const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${process.env.APP_URL || 'http://localhost:3000'}/integrations/callback`;
 
     return {

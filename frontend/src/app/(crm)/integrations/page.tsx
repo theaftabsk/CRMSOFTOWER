@@ -819,7 +819,7 @@ export default function IntegrationsPage() {
                       <input
                         type="text"
                         readOnly
-                        value="669286959294-inmhukj0fvqlo2upgkid4bfb28d96gus.apps.googleusercontent.com"
+                        value="669286959294-qqff33niiv1ild6278d2lbbt7hkgqgpg.apps.googleusercontent.com"
                         className="w-full px-3 py-1 text-xs font-mono bg-[#FAFAFA] border border-[#D4D4D4] rounded-lg select-all"
                       />
                     </div>

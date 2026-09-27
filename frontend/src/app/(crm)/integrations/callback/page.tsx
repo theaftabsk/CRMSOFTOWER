@@ -33,8 +33,9 @@ function CallbackContent() {
 
   const exchangeCode = async (code: string) => {
     try {
-      setMessage('Exchanging authorization code for Access & Refresh tokens...');
-      const res = await api.post('/integrations/google-meet/exchange', { code });
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.zyvocrm.in';
+      const redirect_uri = `${origin}/integrations/callback`;
+      const res = await api.post('/integrations/google-meet/exchange', { code, redirect_uri });
 
       if (res && (res.success || res.statusCode === 201 || res.data?.success)) {
         setStatus('success');

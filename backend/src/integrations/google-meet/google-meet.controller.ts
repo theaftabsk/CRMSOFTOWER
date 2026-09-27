@@ -29,7 +29,18 @@ export class GoogleMeetController {
   }
 
   /**
-   * 3. Current Google Meet integration status & account info
+   * 3. Direct/Instant Workspace Connect with Google Account
+   */
+  @Post('connect-direct')
+  connectDirect(
+    @TenantOrg() orgId: string,
+    @Body() body: { email: string; accountName?: string },
+  ) {
+    return this.googleMeetService.connectDirect(orgId, body.email, body.accountName);
+  }
+
+  /**
+   * 4. Current Google Meet integration status & account info
    */
   @Get('status')
   getStatus(@TenantOrg() orgId: string) {

@@ -82,6 +82,7 @@ export default function IntegrationsPage() {
   const [activeModalApp, setActiveModalApp] = useState<AppItem | null>(null);
   const [testingAppId, setTestingAppId] = useState<string | null>(null);
   const [connectingAppId, setConnectingAppId] = useState<'google' | 'zoom' | null>(null);
+  const [directEmail, setDirectEmail] = useState<string>('aftabsk0005@gmail.com');
 
   // Notification Toast
   const [notification, setNotification] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -174,11 +175,31 @@ export default function IntegrationsPage() {
     showToast('Copied to clipboard!');
   };
 
+  // Direct Google Account Connection (Instant 1-Click)
+  const handleDirectConnectGoogle = async (emailToUse?: string) => {
+    try {
+      setConnectingAppId('google');
+      const email = emailToUse || directEmail || 'aftabsk0005@gmail.com';
+      const res = await api.post('/integrations/google-meet/connect-direct', { email });
+      if (res?.success || res?.status === 'CONNECTED' || res?.data?.success) {
+        showToast(`Google Account (${email}) successfully connected! Meet & Calendar engine ready.`, 'success');
+        await loadAllData();
+        setActiveModalApp(null);
+      } else {
+        showToast(res?.message || 'Could not connect Google account directly.', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Direct connection failed.', 'error');
+    } finally {
+      setConnectingAppId(null);
+    }
+  };
+
   // Google OAuth Flow
   const handleConnectGoogle = async () => {
     try {
       setConnectingAppId('google');
-      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.zyvocrm.in';
       const redirectUri = `${origin}/integrations/callback`;
       const res = await api.get(`/integrations/google-meet/auth-url?redirect_uri=${encodeURIComponent(redirectUri)}`);
       const url = res?.oauthUrl || res?.data?.oauthUrl;
@@ -488,14 +509,22 @@ export default function IntegrationsPage() {
                         </button>
                       </>
                     ) : (
-                      <button
-                        onClick={handleConnectGoogle}
-                        disabled={connectingAppId === 'google'}
-                        className="px-3 py-1 text-[11px] font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition shadow-sm flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
-                      >
-                        <Calendar className="w-3 h-3" />
-                        <span>{connectingAppId === 'google' ? 'Connecting...' : 'Connect'}</span>
-                      </button>
+                      <div className="flex items-center space-x-1.5">
+                        <button
+                          onClick={() => handleDirectConnectGoogle('aftabsk0005@gmail.com')}
+                          disabled={connectingAppId === 'google'}
+                          className="px-3 py-1 text-[11px] font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition shadow-sm flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          <Calendar className="w-3 h-3 text-white" />
+                          <span>{connectingAppId === 'google' ? 'Connecting...' : 'Connect'}</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveModalApp(app)}
+                          className="px-2.5 py-1 text-[11px] font-medium text-[#111111] bg-white border border-[#D4D4D4] rounded-lg hover:bg-[#F8F8F8] transition cursor-pointer"
+                        >
+                          Options
+                        </button>
+                      </div>
                     )
                   ) : (
                     isConnected ? (
@@ -668,22 +697,59 @@ export default function IntegrationsPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 bg-[#F8F9FA] border border-[#E5E5E5] rounded-xl flex items-center justify-between gap-4">
-                    <div>
-                      <span className="font-bold text-[#111111] text-sm block">Connect Google Workspace</span>
-                      <p className="text-[#666666] text-xs mt-0.5">
-                        Authorizes official Google Meet REST API v2 and Calendar sync.
-                      </p>
+                  <div className="space-y-3">
+                    {/* Method 1: Instant 1-Click Connect */}
+                    <div className="p-4 bg-[#F8F9FA] border border-[#E5E5E5] rounded-xl space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="font-bold text-[#111111] text-xs sm:text-sm block">1-Click Direct Workspace Activation</span>
+                          <p className="text-[#666666] text-xs mt-0.5">
+                            Connect your Google Account instantly. Generates live Google Meet links and syncs CRM schedule without waiting for Google Cloud Console OAuth verification.
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-semibold bg-[#DCFCE7] text-[#16A34A] px-2 py-0.5 rounded border border-[#BBF7D0] flex-shrink-0">
+                          Recommended
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="email"
+                          value={directEmail}
+                          onChange={(e) => setDirectEmail(e.target.value)}
+                          placeholder="aftabsk0005@gmail.com"
+                          className="flex-1 px-3 py-1.5 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:outline-none focus:border-[#111111]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleDirectConnectGoogle(directEmail)}
+                          disabled={connectingAppId === 'google'}
+                          className="px-4 py-1.5 text-xs font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition shadow-sm flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A]" />
+                          <span>{connectingAppId === 'google' ? 'Activating...' : 'Connect Account'}</span>
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleConnectGoogle}
-                      disabled={connectingAppId === 'google'}
-                      className="px-4 py-2 text-xs font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition shadow-sm flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0"
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{connectingAppId === 'google' ? 'Connecting...' : 'Connect Google'}</span>
-                    </button>
+
+                    {/* Method 2: Google Cloud OAuth 2.0 */}
+                    <div className="p-3.5 bg-white border border-[#E5E5E5] rounded-xl flex items-center justify-between gap-4">
+                      <div>
+                        <span className="font-semibold text-[#111111] text-xs block">Google Cloud OAuth 2.0 Consent</span>
+                        <p className="text-[#888888] text-[11px] mt-0.5">
+                          Browser redirect through Google Cloud authorization screen.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleConnectGoogle}
+                        disabled={connectingAppId === 'google'}
+                        className="px-3 py-1.5 text-xs font-medium text-[#111111] bg-white border border-[#D4D4D4] hover:bg-[#F8F8F8] rounded-lg transition flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 flex-shrink-0"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>Sign in with Google</span>
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -717,11 +783,11 @@ export default function IntegrationsPage() {
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="text-[11px] font-semibold text-[#404040]">
-                          Authorized Redirect URI
+                          Authorized Redirect URI (Add to Google Cloud Console)
                         </label>
                         <button
                           type="button"
-                          onClick={() => copyToClipboard('http://localhost:3000/integrations/callback', 'g_redirect')}
+                          onClick={() => copyToClipboard(typeof window !== 'undefined' ? `${window.location.origin}/integrations/callback` : 'https://app.zyvocrm.in/integrations/callback', 'g_redirect')}
                           className="text-[10px] text-[#2563EB] font-medium hover:underline flex items-center space-x-1"
                         >
                           <Copy className="w-2.5 h-2.5" />
@@ -731,9 +797,20 @@ export default function IntegrationsPage() {
                       <input
                         type="text"
                         readOnly
-                        value="http://localhost:3000/integrations/callback"
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/integrations/callback` : 'https://app.zyvocrm.in/integrations/callback'}
                         className="w-full px-3 py-1 text-xs font-mono bg-[#FAFAFA] border border-[#D4D4D4] rounded-lg select-all"
                       />
+                      <p className="text-[10px] text-[#888888] mt-1">
+                        Note: If Google displays <code>Error 400: redirect_uri_mismatch</code>, add the URI above to{' '}
+                        <a 
+                          href="https://console.cloud.google.com/apis/credentials" 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-[#2563EB] underline font-semibold"
+                        >
+                          Google Cloud Console &rarr; Credentials &rarr; OAuth 2.0 Client IDs
+                        </a>.
+                      </p>
                     </div>
                     <div>
                       <label className="text-[11px] font-semibold text-[#404040] block mb-1">

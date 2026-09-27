@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Query, Param } from '@nestjs/common';
 import { GoogleMeetService, CreateMeetEventDto } from './google-meet.service';
 import { TenantOrg } from '../../common/decorators/tenant.decorator';
 
@@ -80,5 +80,32 @@ export class GoogleMeetController {
   @Get('meetings')
   getMeetings(@TenantOrg() orgId: string) {
     return this.googleMeetService.getGoogleMeetings(orgId);
+  }
+
+  /**
+   * 8. Clean up expired / past Google Meet meetings
+   */
+  @Delete('meetings/cleanup/expired')
+  cleanupExpiredMeetings(@TenantOrg() orgId: string) {
+    return this.googleMeetService.cleanupExpiredMeetings(orgId);
+  }
+
+  /**
+   * 9. Clear all Google Meet meetings
+   */
+  @Delete('meetings/cleanup/all')
+  clearAllMeetings(@TenantOrg() orgId: string) {
+    return this.googleMeetService.clearAllMeetings(orgId);
+  }
+
+  /**
+   * 10. Delete a specific scheduled meeting by ID
+   */
+  @Delete('meetings/:id')
+  deleteMeeting(
+    @TenantOrg() orgId: string,
+    @Param('id') id: string,
+  ) {
+    return this.googleMeetService.deleteMeeting(orgId, id);
   }
 }

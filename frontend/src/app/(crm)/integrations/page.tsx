@@ -154,11 +154,22 @@ export default function IntegrationsPage() {
   const handleDeleteMeeting = async (id: string) => {
     try {
       await api.delete(`/integrations/google-meet/meetings/${id}`);
-      showToast('Meeting record removed');
+      showToast('Meeting record removed from database');
       setMeetings((prev) => prev.filter((m) => m.id !== id));
       setMeetingCount((prev) => Math.max(0, prev - 1));
     } catch (err: any) {
       showToast(err.message || 'Failed to remove meeting', 'error');
+    }
+  };
+
+  const handleCleanupExpired = async () => {
+    try {
+      const res = await api.delete('/integrations/google-meet/meetings/cleanup/expired');
+      const data = res?.data || res;
+      showToast(data?.message || 'Past meetings cleaned up successfully!');
+      await loadAllData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to clean up expired meetings', 'error');
     }
   };
 
@@ -586,12 +597,14 @@ export default function IntegrationsPage() {
         onClose={() => setIsMeetsModalOpen(false)}
         meetings={meetings}
         onDelete={handleDeleteMeeting}
+        onCleanupExpired={handleCleanupExpired}
+        onRefresh={loadAllData}
         onCreateClick={() => {
           setIsMeetsModalOpen(false);
           setIsCreateModalOpen(true);
         }}
         loading={loading}
-        connectedEmail="aftabsk741156@gmail.com"
+        connectedEmail={apps.find((a) => a.app_id === 'google_calendar')?.account_identifier || 'aftabsk741156@gmail.com'}
       />
 
       {/* ============================================================== */}

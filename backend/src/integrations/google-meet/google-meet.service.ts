@@ -5,11 +5,14 @@ import * as crypto from 'crypto';
 
 export interface CreateMeetEventDto {
   title: string;
-  description?: string;
+  description?: string; // Purpose / reason why it was created
   startTime: string; // ISO string or format 'YYYY-MM-DD HH:mm'
   endTime?: string;   // ISO string or format 'YYYY-MM-DD HH:mm'
   attendeeEmail?: string;
   attendeeName?: string;
+  clientName?: string;
+  accountName?: string;
+  contactPhone?: string;
   calendarId?: string;
   meetingType?: string;
   leadId?: string;
@@ -620,7 +623,9 @@ export class GoogleMeetService {
         calendar_id: calendarId,
         organizer_email: 'admin@crmsoftower.com',
         sync_status: isLiveGoogleApi ? 'SYNCED' : 'LOCAL_READY',
+        account_name: dto.accountName || dto.clientName || dto.attendeeName || null,
         contact_email: dto.attendeeEmail || null,
+        contact_phone: dto.contactPhone || null,
         notes: dto.description || null,
       },
     });
@@ -903,13 +908,101 @@ export class GoogleMeetService {
         provider: 'GOOGLE_MEET',
       },
       orderBy: {
-        start_at: 'desc',
+        created_at: 'desc',
       },
-      take: 25,
+      take: 50,
       include: {
         lead: { select: { id: true, name: true, company: true, email: true } },
         contact: { select: { id: true, name: true, email: true } },
+        deal: { select: { id: true, title: true, value: true } },
       },
     });
+  }
+
+  /**
+   * Delete single Google Meet conference session from DB and Google Calendar
+   */
+  async deleteMeeting(orgId: string, meetingId: string) {
+    const meeting = await this.prisma.meeting.findFirst({
+      where: { id: meetingId, organization_id: orgId },
+    });
+
+    if (!meeting) {
+      throw new NotFoundException(`Meeting ${meetingId} not found`);
+    }
+
+    if (meeting.external_event_id) {
+      try {
+        const accessToken = await this.getValidAccessToken(orgId);
+        if (accessToken && !accessToken.startsWith('direct_token_')) {
+          await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(meeting.calendar_id || 'primary')}/events/${encodeURIComponent(meeting.external_event_id)}`,
+            {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }
+          );
+        }
+      } catch (err: any) {
+        this.logger.warn(`Could not delete Google Calendar event: ${err.message}`);
+      }
+    }
+
+    await this.prisma.meeting.delete({
+      where: { id: meetingId },
+    });
+
+    this.logger.log(`Deleted Google Meet session: ${meetingId} for org: ${orgId}`);
+
+    return {
+      success: true,
+      message: 'Meeting session deleted successfully.',
+      deletedId: meetingId,
+    };
+  }
+
+  /**
+   * Auto cleanup / delete expired or past meeting sessions
+   */
+  async cleanupExpiredMeetings(orgId: string) {
+    const nowIso = new Date().toISOString();
+
+    const result = await this.prisma.meeting.deleteMany({
+      where: {
+        organization_id: orgId,
+        provider: 'GOOGLE_MEET',
+        OR: [
+          { end_at: { lt: nowIso } },
+          { status: 'Completed' },
+          { status: 'Cancelled' },
+        ],
+      },
+    });
+
+    this.logger.log(`Cleaned up ${result.count} expired Google Meet sessions for org: ${orgId}`);
+
+    return {
+      success: true,
+      deletedCount: result.count,
+      message: `Cleaned up ${result.count} past / expired meeting sessions.`,
+    };
+  }
+
+  /**
+   * Clear all Google Meet sessions
+   */
+  async clearAllMeetings(orgId: string) {
+    const result = await this.prisma.meeting.deleteMany({
+      where: {
+        organization_id: orgId,
+        provider: 'GOOGLE_MEET',
+      },
+    });
+
+    return {
+      success: true,
+      deletedCount: result.count,
+      message: `Cleared all ${result.count} Google Meet sessions.`,
+    };
   }
 }

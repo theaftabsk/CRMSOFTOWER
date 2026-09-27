@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { 
   Video, Calendar, Clock, Mail, X, Check, Copy, 
-  ExternalLink, Sparkles, AlertCircle, CheckCircle2 
+  ExternalLink, Briefcase, FileText, AlertCircle, CheckCircle2, User, Phone
 } from 'lucide-react';
 import { api } from '@/lib/api';
 
@@ -18,9 +18,24 @@ export function CreateGoogleMeetModal({
   onClose,
   onCreated,
 }: CreateGoogleMeetModalProps) {
+  // Form State
   const [topic, setTopic] = useState('CRM Enterprise Architecture Review');
-  const [guestEmail, setGuestEmail] = useState('');
+  const [meetingType, setMeetingType] = useState('Product Demo');
+  const [purpose, setPurpose] = useState('Product demonstration, workflow requirement analysis, and pricing review');
+  const [clientName, setClientName] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
+  const [clientCompany, setClientCompany] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  
+  // Timing State
+  const [startDateTime, setStartDateTime] = useState(() => {
+    const d = new Date(Date.now() + 15 * 60000);
+    // Format YYYY-MM-DDTHH:mm for datetime-local input
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  });
   const [duration, setDuration] = useState(30);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -29,6 +44,8 @@ export function CreateGoogleMeetModal({
     spaceName: string;
     meetUrl: string;
     meetingId?: string;
+    title: string;
+    client: string;
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -46,16 +63,22 @@ export function CreateGoogleMeetModal({
     setIsSubmitting(true);
 
     try {
-      const now = new Date();
-      const startTime = new Date(now.getTime() + 15 * 60000).toISOString();
-      const endTime = new Date(now.getTime() + (duration + 15) * 60000).toISOString();
+      const startDate = new Date(startDateTime);
+      const startTimeIso = startDate.toISOString();
+      const endTimeIso = new Date(startDate.getTime() + duration * 60000).toISOString();
 
       const res = await api.post('/integrations/google-meet/create', {
-        title: topic,
-        startTime,
-        endTime,
+        title: topic.trim() || 'Google Meet Conference',
+        description: purpose.trim() || undefined,
+        meetingType,
+        clientName: clientName.trim() || undefined,
+        accountName: clientCompany.trim() || clientName.trim() || undefined,
+        attendeeName: clientName.trim() || undefined,
+        attendeeEmail: clientEmail.trim() || undefined,
+        contactPhone: clientPhone.trim() || undefined,
+        startTime: startTimeIso,
+        endTime: endTimeIso,
         durationMinutes: duration,
-        attendeeEmail: guestEmail.trim() || undefined,
         accessType: 'OPEN',
       });
 
@@ -65,6 +88,8 @@ export function CreateGoogleMeetModal({
           spaceName: data.google_space_name || 'spaces/active',
           meetUrl: data.google_meet_url || data.meet_link,
           meetingId: data.meeting_id || data.id,
+          title: topic,
+          client: clientName || clientCompany || clientEmail || 'Guest Client',
         };
         setCreatedSpace(spaceResult);
         if (onCreated) {
@@ -89,10 +114,10 @@ export function CreateGoogleMeetModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white border border-[#E5E5E5] rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-7 space-y-5 animate-scaleUp">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-md animate-fadeIn">
+      <div className="bg-white/95 backdrop-blur-lg border border-[#E5E5E5] rounded-2xl shadow-2xl max-w-xl w-full p-5 sm:p-6 space-y-4 animate-scaleUp max-h-[92vh] overflow-y-auto">
         {/* Modal Header */}
-        <div className="flex items-start justify-between pb-4 border-b border-[#E5E5E5]">
+        <div className="flex items-start justify-between pb-3 border-b border-[#E5E5E5]">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-[#FAFAFA] border border-[#E5E5E5] flex items-center justify-center flex-shrink-0 shadow-2xs">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -106,10 +131,10 @@ export function CreateGoogleMeetModal({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-[#111111] tracking-tight">
-                Create Google Meet Space
+                Schedule Google Meet Conference
               </h2>
               <p className="text-xs text-[#666666] mt-0.5">
-                Official Google Meet REST API v2 Real-time Space Provisioning
+                Official Google Meet REST API v2 space with full client record sync.
               </p>
             </div>
           </div>
@@ -130,33 +155,35 @@ export function CreateGoogleMeetModal({
           </div>
         )}
 
-        {/* Created Success Screen */}
+        {/* Success Screen after room provision */}
         {createdSpace ? (
           <div className="space-y-4 pt-1 animate-fadeIn">
-            <div className="p-4 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl space-y-3">
+            <div className="p-4.5 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl space-y-3">
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
-                <span className="text-xs font-bold text-[#111111]">
-                  Space Provisioned Successfully!
-                </span>
-                <span className="text-[10px] font-mono font-medium text-[#16A34A] bg-white px-2 py-0.5 rounded border border-[#BBF7D0]">
-                  {createdSpace.spaceName}
-                </span>
+                <CheckCircle2 className="w-4.5 h-4.5 text-[#16A34A] flex-shrink-0" />
+                <div>
+                  <span className="text-xs font-bold text-[#111111] block">
+                    Google Meet Space Created &amp; Saved to Database!
+                  </span>
+                  <span className="text-[11px] text-[#15803D]">
+                    Linked for {createdSpace.client} • {createdSpace.spaceName}
+                  </span>
+                </div>
               </div>
 
-              <div className="bg-white border border-[#E5E5E5] rounded-lg p-2.5 flex items-center justify-between">
+              <div className="bg-white border border-[#E5E5E5] rounded-lg p-2.5 flex items-center justify-between shadow-2xs">
                 <a
                   href={createdSpace.meetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-xs font-bold text-blue-600 hover:underline truncate mr-2"
+                  className="font-mono text-xs font-bold text-[#111111] hover:text-[#2563EB] hover:underline truncate mr-2"
                 >
                   {createdSpace.meetUrl}
                 </a>
                 <button
                   onClick={handleCopyLink}
                   type="button"
-                  className="px-2.5 py-1 text-xs font-medium text-[#111111] bg-white border border-[#D4D4D4] rounded hover:bg-[#F8F8F8] transition flex items-center space-x-1 cursor-pointer flex-shrink-0"
+                  className="px-2.5 py-1 text-xs font-medium text-[#111111] bg-white border border-[#D4D4D4] rounded hover:bg-[#F8F8F8] transition flex items-center space-x-1 cursor-pointer flex-shrink-0 shadow-2xs"
                 >
                   {copiedLink ? <Check className="w-3 h-3 text-[#16A34A]" /> : <Copy className="w-3 h-3 text-[#666666]" />}
                   <span>{copiedLink ? 'Copied' : 'Copy'}</span>
@@ -177,68 +204,179 @@ export function CreateGoogleMeetModal({
                 rel="noopener noreferrer"
                 className="px-4 py-2 text-xs font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition flex items-center space-x-1.5 shadow-sm"
               >
-                <span>Join Now</span>
+                <span>Join Meeting</span>
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             </div>
           </div>
         ) : (
-          /* Form Screen */
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-[#111111] mb-1.5">
-                Meeting Topic / Title
-              </label>
-              <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                required
-                placeholder="e.g. CRM Architecture Consultation"
-                className="w-full px-3.5 py-2 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none placeholder-[#999999]"
-              />
-            </div>
+          /* Input Form */
+          <form onSubmit={handleCreate} className="space-y-3.5 text-xs">
+            {/* Section 1: Meeting Topic & Type */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div className="sm:col-span-2">
+                <label className="block text-[11px] font-semibold text-[#111111] uppercase tracking-wider mb-1">
+                  Meeting Topic / Title *
+                </label>
+                <input
+                  type="text"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  required
+                  placeholder="e.g. CRM Architecture Consultation"
+                  className="w-full px-3 py-2 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none placeholder-[#999999]"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[#111111] mb-1.5">
-                Guest / Client Email (Optional)
-              </label>
-              <input
-                type="email"
-                value={guestEmail}
-                onChange={(e) => setGuestEmail(e.target.value)}
-                placeholder="e.g. client@enterprise.com"
-                className="w-full px-3.5 py-2 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none placeholder-[#999999]"
-              />
-              <p className="text-[11px] text-[#737373] mt-1">
-                An invitation with Google Meet space credentials will be linked to this contact.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-[#111111] mb-1.5">
-                Duration
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {[15, 30, 45, 60].map((mins) => (
-                  <button
-                    key={mins}
-                    type="button"
-                    onClick={() => setDuration(mins)}
-                    className={`py-1.5 text-xs font-medium rounded-lg border transition cursor-pointer ${
-                      duration === mins
-                        ? 'bg-[#111111] text-white border-[#111111]'
-                        : 'bg-white text-[#404040] border-[#D4D4D4] hover:bg-[#F8F8F8]'
-                    }`}
-                  >
-                    {mins} mins
-                  </button>
-                ))}
+              <div>
+                <label className="block text-[11px] font-semibold text-[#111111] uppercase tracking-wider mb-1">
+                  Meeting Type
+                </label>
+                <select
+                  value={meetingType}
+                  onChange={(e) => setMeetingType(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none"
+                >
+                  <option value="Product Demo">Product Demo</option>
+                  <option value="Client Consultation">Client Consultation</option>
+                  <option value="Deal Negotiation">Deal Negotiation</option>
+                  <option value="Discovery Call">Discovery Call</option>
+                  <option value="Technical Review">Technical Review</option>
+                  <option value="Customer Support">Customer Support</option>
+                </select>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="pt-2 border-t border-[#E5E5E5] flex items-center justify-end space-x-2">
+            {/* Section 2: Purpose / Agenda ("Keno kora hoyeche") */}
+            <div>
+              <label className="block text-[11px] font-semibold text-[#111111] uppercase tracking-wider mb-1">
+                Meeting Purpose / Agenda ("কেন করা হয়েছে")
+              </label>
+              <textarea
+                rows={2}
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+                placeholder="Explain the agenda, requirements or goal of this meeting session..."
+                className="w-full px-3 py-2 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none placeholder-[#999999] resize-none"
+              />
+            </div>
+
+            {/* Section 3: Client Details ("কোন ক্লায়েন্ট") */}
+            <div className="p-3 bg-[#FAFAFA] border border-[#E5E5E5] rounded-xl space-y-2.5">
+              <span className="text-[11px] font-semibold text-[#111111] uppercase tracking-wider block flex items-center space-x-1">
+                <Briefcase className="w-3.5 h-3.5 text-[#666666]" />
+                <span>Client &amp; Attendee Information ("কোন ক্লায়েন্ট")</span>
+              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] text-[#666666] mb-0.5">
+                    Client / Contact Name
+                  </label>
+                  <div className="relative">
+                    <User className="w-3.5 h-3.5 text-[#999999] absolute left-2.5 top-2.5" />
+                    <input
+                      type="text"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      placeholder="e.g. Rajesh Sharma"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-[#666666] mb-0.5">
+                    Client Company / Organization
+                  </label>
+                  <div className="relative">
+                    <Briefcase className="w-3.5 h-3.5 text-[#999999] absolute left-2.5 top-2.5" />
+                    <input
+                      type="text"
+                      value={clientCompany}
+                      onChange={(e) => setClientCompany(e.target.value)}
+                      placeholder="e.g. Apex Enterprises"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-[#666666] mb-0.5">
+                    Client Email (Google Calendar Invite)
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-3.5 h-3.5 text-[#999999] absolute left-2.5 top-2.5" />
+                    <input
+                      type="email"
+                      value={clientEmail}
+                      onChange={(e) => setClientEmail(e.target.value)}
+                      placeholder="e.g. client@enterprise.com"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-[#666666] mb-0.5">
+                    Client Phone (Optional)
+                  </label>
+                  <div className="relative">
+                    <Phone className="w-3.5 h-3.5 text-[#999999] absolute left-2.5 top-2.5" />
+                    <input
+                      type="tel"
+                      value={clientPhone}
+                      onChange={(e) => setClientPhone(e.target.value)}
+                      placeholder="e.g. +91 98765 43210"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Schedule Timing & Duration */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[11px] font-semibold text-[#111111] uppercase tracking-wider mb-1">
+                  Start Date &amp; Time
+                </label>
+                <div className="relative">
+                  <input
+                    type="datetime-local"
+                    value={startDateTime}
+                    onChange={(e) => setStartDateTime(e.target.value)}
+                    required
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-[#D4D4D4] rounded-lg focus:border-[#111111] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-[#111111] uppercase tracking-wider mb-1">
+                  Duration
+                </label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[15, 30, 45, 60].map((mins) => (
+                    <button
+                      key={mins}
+                      type="button"
+                      onClick={() => setDuration(mins)}
+                      className={`py-1.5 text-xs font-semibold rounded-lg border transition cursor-pointer ${
+                        duration === mins
+                          ? 'bg-[#111111] text-white border-[#111111]'
+                          : 'bg-white text-[#404040] border-[#D4D4D4] hover:bg-[#F8F8F8]'
+                      }`}
+                    >
+                      {mins}m
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="pt-3 border-t border-[#E5E5E5] flex items-center justify-end space-x-2">
               <button
                 type="button"
                 onClick={handleResetAndClose}
@@ -249,10 +387,10 @@ export function CreateGoogleMeetModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition disabled:opacity-50 flex items-center space-x-2 shadow-sm cursor-pointer"
+                className="px-4.5 py-2 text-xs font-semibold text-white bg-[#111111] hover:bg-[#262626] rounded-lg transition disabled:opacity-50 flex items-center space-x-2 shadow-sm cursor-pointer"
               >
                 <Video className="w-3.5 h-3.5" />
-                <span>{isSubmitting ? 'Creating Space...' : 'Create Real Google Meet'}</span>
+                <span>{isSubmitting ? 'Creating Meet Space...' : 'Create Google Meet Space'}</span>
               </button>
             </div>
           </form>

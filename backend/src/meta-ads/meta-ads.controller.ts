@@ -9,6 +9,7 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
+  Res,
 } from '@nestjs/common';
 import { MetaAdsService } from './meta-ads.service';
 import { MetaOAuthService, SelectedAssetsDto } from './meta-oauth.service';
@@ -32,8 +33,11 @@ export class MetaAdsController {
     @Query('hub.mode') mode: string,
     @Query('hub.verify_token') token: string,
     @Query('hub.challenge') challenge: string,
+    @Res() res: any,
   ) {
-    return this.webhookService.verifyWebhook(mode, token, challenge);
+    const result = this.webhookService.verifyWebhook(mode, token, challenge);
+    res.setHeader('Content-Type', 'text/plain');
+    return res.status(HttpStatus.OK).send(result);
   }
 
   /**

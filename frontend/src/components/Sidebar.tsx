@@ -8,9 +8,10 @@ import {
   LayoutDashboard, Target, Users, Building2, TrendingUp, 
   CheckSquare, Calendar, Package, FileText, ShoppingBag, 
   Receipt, CreditCard, BarChart3, Settings, ChevronLeft, ChevronRight,
-  ShieldCheck, Globe, Code2, Blocks, Sparkles, X
+  ShieldCheck, Globe, Code2, Blocks, Sparkles, X, Share2, ChevronDown
 } from 'lucide-react';
 import { ZyvoLogo, ZyvoIcon } from './ZyvoLogo';
+import { useTerminology } from '../hooks/useTerminology';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -19,7 +20,9 @@ export const Sidebar: React.FC = () => {
     organization, leads, tasks, invoices,
     mobileMenuOpen, setMobileMenuOpen
   } = useCRM();
+  const { dealPlural } = useTerminology();
   const [collapsed, setCollapsed] = useState(false);
+  const [metaAdsExpanded, setMetaAdsExpanded] = useState(true);
 
   // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar
   useEffect(() => {
@@ -52,7 +55,26 @@ export const Sidebar: React.FC = () => {
         { id: 'forms', label: 'Web Forms', href: '/forms', icon: Globe, badge: 'Live' },
         { id: 'contacts', label: 'Contacts', href: '/contacts', icon: Users },
         { id: 'accounts', label: 'Accounts', href: '/accounts', icon: Building2 },
-        { id: 'deals', label: 'Deals & Pipeline', href: '/deals', icon: TrendingUp },
+        { id: 'deals', label: `${dealPlural} & Pipeline`, href: '/deals', icon: TrendingUp },
+      ],
+    },
+    {
+      title: 'MARKETING & ADS',
+      items: [
+        { 
+          id: 'meta-ads', 
+          label: 'Meta Ads Center', 
+          href: '/meta-ads', 
+          icon: Share2, 
+          badge: 'Live',
+          subItems: [
+            { id: 'meta-overview', label: 'Overview & ROI', href: '/meta-ads' },
+            { id: 'meta-campaigns', label: 'Campaigns', href: '/meta-ads/campaigns' },
+            { id: 'meta-forms', label: 'Lead Forms', href: '/meta-ads/forms' },
+            { id: 'meta-leads', label: 'Ingested Leads', href: '/meta-ads/leads' },
+            { id: 'meta-settings', label: 'Connect & Webhook', href: '/meta-ads/settings' },
+          ],
+        },
       ],
     },
     {
@@ -178,9 +200,14 @@ export const Sidebar: React.FC = () => {
 
               {sec.items.map((item) => {
                 const Icon = item.icon;
+                const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
+                const isExactActive = pathname === item.href;
+                const isAnySubActive = Boolean(hasSubItems && item.subItems?.some((s: any) => pathname === s.href));
                 const isActive = item.href === '/dashboard' 
                   ? pathname === '/dashboard' 
-                  : (pathname === item.href || pathname.startsWith(`${item.href}/`));
+                  : (hasSubItems && !collapsed)
+                  ? (isExactActive && !isAnySubActive)
+                  : (isExactActive || isAnySubActive || pathname.startsWith(`${item.href}/`));
 
                 return (
                   <div key={item.id} className="relative group">
@@ -207,7 +234,27 @@ export const Sidebar: React.FC = () => {
                           <span className="truncate tracking-tight flex-1">
                             {item.label}
                           </span>
-                          {item.badge && (
+
+                          {hasSubItems && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setMetaAdsExpanded(!metaAdsExpanded);
+                              }}
+                              className={`p-1 rounded-md transition hover:bg-black/[0.08] ${
+                                isActive ? 'text-white' : 'text-[#666666]'
+                              }`}
+                              title={metaAdsExpanded ? 'Collapse Sub-menu' : 'Expand Sub-menu'}
+                            >
+                              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                                metaAdsExpanded ? 'rotate-180' : ''
+                              }`} />
+                            </button>
+                          )}
+
+                          {item.badge && !hasSubItems && (
                             <span 
                               className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold leading-none ${
                                 isActive 
@@ -223,6 +270,35 @@ export const Sidebar: React.FC = () => {
                         </>
                       )}
                     </Link>
+
+                    {/* Sub-navigation Items - Expandable & Collapsible */}
+                    {hasSubItems && !collapsed && metaAdsExpanded && (
+                      <div className="ml-5 pl-2.5 my-1 space-y-0.5 border-l border-[#E5E5E5]/90 transition-all duration-200 animate-fadeIn">
+                        {item.subItems?.map((sub: any) => {
+                          const isSubActive = pathname === sub.href;
+                          return (
+                            <Link
+                              key={sub.id}
+                              href={sub.href}
+                              onClick={() => {
+                                setActiveModule(item.id);
+                                setMobileMenuOpen(false);
+                              }}
+                              className={`flex items-center px-2 py-1.5 rounded-lg text-[11px] font-medium transition group/sub ${
+                                isSubActive
+                                  ? 'text-[#111111] font-semibold bg-black/[0.06]'
+                                  : 'text-[#666666] hover:text-[#111111] hover:bg-black/[0.03]'
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full mr-2 transition-colors ${
+                                isSubActive ? 'bg-[#111111]' : 'bg-[#AAAAAA] group-hover/sub:bg-[#111111]'
+                              }`} />
+                              <span className="truncate">{sub.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     {/* Desktop Tooltip for Collapsed Sidebar */}
                     {collapsed && (

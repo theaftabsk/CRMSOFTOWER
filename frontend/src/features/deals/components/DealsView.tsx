@@ -12,6 +12,7 @@ import {
 import { Deal, DealStage } from '../../../types/crm';
 import { formatNumber, formatCurrency } from '@/lib/utils';
 import { api } from '../../../lib/api';
+import { useTerminology } from '../../../hooks/useTerminology';
 
 const PIPELINES = [
   'All Pipelines',
@@ -40,6 +41,7 @@ const LOST_REASONS = [
 
 export const DealsView: React.FC = () => {
   const { deals, addDeal, updateDealStage, accounts, refreshData } = useCRM();
+  const { dealSingular, dealPlural, config: industryConfig } = useTerminology();
 
   // View Controls
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
@@ -221,16 +223,19 @@ export const DealsView: React.FC = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <PageHeader 
-        title="Sales Deals & Pipeline" 
-        subtitle="Manage deals, visual Kanban workflow, weighted revenue forecasting, and one-click invoice conversion."
+        title={`${dealPlural} & Sales Pipeline`} 
+        subtitle={`Manage ${dealPlural.toLowerCase()}, visual Kanban workflow, weighted revenue forecasting, and one-click invoice conversion.`}
         action={
           <div className="flex items-center space-x-2">
+            <span className="hidden sm:inline-flex items-center px-2.5 py-1 text-xs font-mono font-medium bg-[#FAFAFA] border border-[#E5E5E5] rounded-full text-[#666666]">
+              {industryConfig.name}
+            </span>
             <button 
               onClick={() => setShowCreateModal(true)} 
               className="btn-primary cursor-pointer flex items-center space-x-1.5"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Create Deal</span>
+              <span>+ Create {dealSingular}</span>
             </button>
           </div>
         }

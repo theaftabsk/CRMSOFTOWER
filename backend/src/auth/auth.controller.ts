@@ -93,7 +93,12 @@ export class AuthController {
       throw new UnauthorizedException('Invalid or expired authentication session');
     }
 
-    return this.authService.getSession(userId);
+    const session = await this.authService.getSession(userId);
+    return {
+      success: true,
+      data: session,
+      user: session.user,
+    };
   }
 
   @Post('logout')

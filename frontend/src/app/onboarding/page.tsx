@@ -6,14 +6,16 @@ import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import ZyvoLogo from '../../components/ZyvoLogo';
 import { 
-  Building2, CreditCard, Layers, FileText, GitBranch, Users, 
+  Building2, Layers, MapPin, GitBranch, Users, 
   CheckCircle2, ArrowRight, ArrowLeft, ChevronDown, Check, ShieldCheck, 
-  Sparkles, ExternalLink, Globe, Landmark, Zap
+  Sparkles, Compass, GraduationCap, UtensilsCrossed, ShoppingBag, Stethoscope, Laptop, Briefcase
 } from 'lucide-react';
+import { INDUSTRY_TEMPLATES } from '../../config/industryTemplates';
+import { api } from '../../lib/api';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user, organization, isAuthenticated, isLoading } = useAuth();
+  const { organization, isAuthenticated } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,28 +26,21 @@ export default function OnboardingPage() {
     businessType: 'Private Limited Company',
     companyName: '',
     industry: 'Software / SaaS & IT Services',
+    selectedIndustryKey: 'saas_it',
     currency: 'INR (₹)',
     timezone: 'Asia/Kolkata (IST)',
     website: '',
 
-    // Step 2: Bank & Cashfree
-    cashfreeAppId: '',
-    cashfreeSecretKey: '',
-    cashfreeMode: 'TEST',
-    skipCashfree: false,
+    // Step 2: Address (Only address kept, GST completely removed)
+    address: '',
+    city: '',
+    state: 'Maharashtra',
+    pincode: '',
 
     // Step 3: Plan
     selectedPlan: 'growth',
 
-    // Step 4: Billing & GST
-    gstin: '',
-    billingAddress: '',
-    city: '',
-    state: 'Maharashtra',
-    pincode: '',
-    invoicePrefix: 'ZYVO-2026-',
-
-    // Step 5: Sales Pipeline
+    // Step 4: Sales Pipeline
     pipelineStages: [
       { id: 1, name: 'New Lead', probability: 20 },
       { id: 2, name: 'Discovery & Demo', probability: 40 },
@@ -55,7 +50,7 @@ export default function OnboardingPage() {
     ],
     targetMonthlyRevenue: '₹25,00,000',
 
-    // Step 6: Team Invite
+    // Step 5: Team Invite
     teamInvites: [
       { email: '', role: 'Sales Rep' }
     ]
@@ -74,7 +69,7 @@ export default function OnboardingPage() {
               companyName: org.name || prev.companyName,
               currency: org.currency === '₹' ? 'INR (₹)' : prev.currency,
               timezone: org.timezone || prev.timezone,
-              billingAddress: org.address || prev.billingAddress,
+              address: org.address || prev.address,
             }));
           }
         }
@@ -92,16 +87,33 @@ export default function OnboardingPage() {
 
   const steps = [
     { number: 1, title: 'Company Info', desc: 'Legal entity & profile', icon: Building2 },
-    { number: 2, title: 'Verify Bank & Cashfree', desc: 'Direct gateway integration', icon: Landmark },
+    { number: 2, title: 'Office Address', desc: 'Operating location & city', icon: MapPin },
     { number: 3, title: 'Select a Plan', desc: 'Choose your scale tier', icon: Layers },
-    { number: 4, title: 'Billing & GST', desc: 'Tax invoice parameters', icon: FileText },
-    { number: 5, title: 'Sales Pipeline', desc: 'Deal stages & targets', icon: GitBranch },
-    { number: 6, title: 'Invite Team', desc: 'Assign user permissions', icon: Users },
-    { number: 7, title: 'Review & Launch', desc: 'Verify and start command', icon: CheckCircle2 },
+    { number: 4, title: 'Sales Pipeline', desc: 'Deal stages & targets', icon: GitBranch },
+    { number: 5, title: 'Invite Team', desc: 'Assign user permissions', icon: Users },
+    { number: 6, title: 'Review & Launch', desc: 'Verify and start command', icon: CheckCircle2 },
   ];
 
+  const handleSelectIndustry = (key: string) => {
+    const template = INDUSTRY_TEMPLATES[key];
+    if (!template) return;
+    setFormData(prev => ({
+      ...prev,
+      selectedIndustryKey: key,
+      industry: template.name,
+      targetMonthlyRevenue: template.targetMonthlyRevenue,
+      pipelineStages: template.pipelineStages.map(s => ({
+        id: s.id,
+        name: s.name,
+        probability: s.probability,
+      })),
+    }));
+  };
+
+  const totalSteps = 6;
+
   const handleNext = () => {
-    if (currentStep < 7) {
+    if (currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -120,11 +132,11 @@ export default function OnboardingPage() {
     setIsSubmitting(true);
     try {
       // 1. Real Database Update for Organization
-      const fullAddress = [formData.billingAddress, formData.city, formData.state, formData.pincode]
+      const fullAddress = [formData.address, formData.city, formData.state, formData.pincode]
         .filter(Boolean)
         .join(', ');
 
-      const orgRes = await fetch('/api/organizations/current', {
+      await fetch('/api/organizations/current', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -135,34 +147,24 @@ export default function OnboardingPage() {
         }),
       });
 
-      // 2. Real Integration Config (if Cashfree credentials entered)
-      if (formData.cashfreeAppId && !formData.skipCashfree) {
-        try {
-          await fetch('/api/integrations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              app_id: 'cashfree',
-              name: 'Cashfree Payments',
-              category: 'PAYMENTS',
-              status: 'CONNECTED',
-              config: {
-                appId: formData.cashfreeAppId,
-                mode: formData.cashfreeMode,
-              },
-              encrypted_secrets: {
-                secretKey: formData.cashfreeSecretKey,
-              }
-            }),
-          });
-        } catch (intErr) {
-          console.warn('Cashfree integration save fallback:', intErr);
-        }
+      // 2. Apply Industry Template & Provision Custom Fields / Forms / Sample Deals & Products
+      try {
+        await api.applyIndustry({
+          industry_id: formData.selectedIndustryKey || 'saas_it',
+          target_monthly_revenue: formData.targetMonthlyRevenue,
+          pipeline_stages: formData.pipelineStages,
+          seed_sample_deals: true,
+          seed_custom_fields: true,
+          seed_webform: true,
+        });
+      } catch (indErr) {
+        console.warn('Industry template apply fallback:', indErr);
       }
 
       // 3. Mark Onboarding Complete in session
       if (typeof window !== 'undefined') {
         localStorage.setItem(`onboarding_${organization?.id || 'org'}`, 'true');
+        localStorage.setItem('crm_selected_industry', formData.selectedIndustryKey || 'saas_it');
       }
 
       // Transition smoothly into live real dashboard
@@ -194,7 +196,7 @@ export default function OnboardingPage() {
           <div className="flex items-center space-x-2">
             <span className="text-xs font-semibold text-[#111111]">Company Setup</span>
             <span className="text-[10px] bg-[#F4F4F6] text-[#666666] px-2 py-0.5 rounded-full font-mono">
-              Step {currentStep} of 7
+              Step {currentStep} of 6
             </span>
           </div>
         </div>
@@ -295,7 +297,7 @@ export default function OnboardingPage() {
             {/* Bottom Security Assurance */}
             <div className="pt-6 border-t border-[#E5E5E5] mt-6 flex items-center space-x-2 text-[11px] text-[#666666]">
               <ShieldCheck className="w-4 h-4 text-[#16A34A] shrink-0" />
-              <span>Multi-tenant encrypted vault & GST compliant</span>
+              <span>Multi-tenant encrypted vault & enterprise security</span>
             </div>
           </aside>
 
@@ -345,35 +347,88 @@ export default function OnboardingPage() {
                       />
                     </div>
 
-                    {/* Industry Sector & Website */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block font-medium text-[#404040] mb-1.5">Industry Sector</label>
-                        <select 
-                          value={formData.industry}
-                          onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                          className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] outline-none transition"
-                        >
-                          <option>Software / SaaS & IT Services</option>
-                          <option>Financial Services & FinTech</option>
-                          <option>E-Commerce & D2C Retail</option>
-                          <option>Manufacturing & Industrial</option>
-                          <option>Consulting & Professional Services</option>
-                          <option>Healthcare & Pharmaceuticals</option>
-                          <option>Real Estate & Construction</option>
-                        </select>
+                    {/* Industry Sector Interactive Grid Selector */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block font-medium text-[#404040]">
+                          Select Your Business Industry / Vertical
+                        </label>
+                        <span className="text-[11px] font-medium text-[#16A34A] flex items-center space-x-1">
+                          <Sparkles className="w-3 h-3" />
+                          <span>Auto-configures pipelines & forms</span>
+                        </span>
                       </div>
 
-                      <div>
-                        <label className="block font-medium text-[#404040] mb-1.5">Company Website (Optional)</label>
-                        <input 
-                          type="text"
-                          value={formData.website}
-                          onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                          placeholder="https://yourcompany.com"
-                          className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] placeholder:text-[#999999] outline-none transition"
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                        {Object.values(INDUSTRY_TEMPLATES).map((template) => {
+                          const isSelected = formData.selectedIndustryKey === template.id;
+                          const iconMap: Record<string, React.ElementType> = {
+                            Building2,
+                            Compass,
+                            GraduationCap,
+                            UtensilsCrossed,
+                            ShoppingBag,
+                            Stethoscope,
+                            Laptop,
+                            Briefcase,
+                          };
+                          const IconComp = iconMap[template.iconName] || Building2;
+
+                          return (
+                            <div
+                              key={template.id}
+                              onClick={() => handleSelectIndustry(template.id)}
+                              className={`p-3 rounded-xl border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between ${
+                                isSelected
+                                  ? 'border-[#111111] bg-white ring-2 ring-[#111111] shadow-sm'
+                                  : 'border-[#E5E5E5] bg-[#FAFAFA] hover:border-[#D4D4D4] hover:bg-white'
+                              }`}
+                            >
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isSelected ? 'bg-[#111111] text-white' : 'bg-[#EFEFEF] text-[#444444]'}`}>
+                                    <IconComp className="w-4 h-4" />
+                                  </div>
+                                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${isSelected ? 'bg-[#111111] text-white' : 'bg-white border border-[#E5E5E5] text-[#666666]'}`}>
+                                    {template.badge}
+                                  </span>
+                                </div>
+                                <div className="font-semibold text-xs text-[#111111] mt-2.5 leading-snug">
+                                  {template.name}
+                                </div>
+                                <div className="text-[11px] text-[#666666] mt-0.5 line-clamp-1">
+                                  {template.tagline}
+                                </div>
+                              </div>
+
+                              <div className="mt-2.5 pt-2 border-t border-[#EAEAEA] flex items-center justify-between text-[10px]">
+                                <span className="text-[#888888] font-mono">
+                                  {template.dealTerminology}
+                                </span>
+                                {isSelected ? (
+                                  <span className="w-4 h-4 rounded-full bg-[#111111] text-white flex items-center justify-center">
+                                    <Check className="w-2.5 h-2.5" />
+                                  </span>
+                                ) : (
+                                  <span className="text-[#AAAAAA]">Select</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
+                    </div>
+
+                    {/* Company Website (Optional) */}
+                    <div>
+                      <label className="block font-medium text-[#404040] mb-1.5">Company Website (Optional)</label>
+                      <input 
+                        type="text"
+                        value={formData.website}
+                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                        placeholder="https://yourcompany.com"
+                        className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] placeholder:text-[#999999] outline-none transition"
+                      />
                     </div>
 
                     {/* Currency & Timezone Preferences */}
@@ -412,98 +467,64 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* STEP 2: VERIFY BANK & CASHFREE */}
+              {/* STEP 2: BUSINESS & OFFICE ADDRESS */}
               {currentStep === 2 && (
                 <div className="space-y-6 animate-in fade-in duration-300">
                   <div className="border-b border-[#E5E5E5] pb-4">
                     <h2 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight">
-                      Verify Bank & Cashfree Gateway
+                      Business & Office Address
                     </h2>
                     <p className="text-xs text-[#666666] mt-1">
-                      Integrate real-time UPI, Cards & NetBanking to automatically reconcile invoices directly into your bank.
+                      Enter your official headquarters or operating business address.
                     </p>
                   </div>
 
-                  {/* Cashfree Banner Card */}
-                  <div className="p-4 bg-[#F8F8F8] border border-[#E5E5E5] rounded-xl flex items-start space-x-3.5">
-                    <Landmark className="w-5 h-5 text-[#111111] shrink-0 mt-0.5" />
-                    <div className="text-xs">
-                      <div className="font-semibold text-[#111111]">Instant Settlement Architecture</div>
-                      <div className="text-[#666666] mt-0.5 leading-relaxed">
-                        Funds paid through customer invoices settle directly into your linked corporate bank account via Cashfree Payment Gateway with zero intermediary delay.
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="space-y-4 text-xs">
-                    {/* Sandbox vs Production Mode */}
+                    {/* Street Address */}
                     <div>
-                      <label className="block font-medium text-[#404040] mb-1.5">Gateway Environment</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, cashfreeMode: 'TEST' })}
-                          className={`p-3 border rounded-xl text-left transition ${
-                            formData.cashfreeMode === 'TEST'
-                              ? 'border-[#111111] bg-white ring-1 ring-[#111111]'
-                              : 'border-[#E5E5E5] bg-[#FAFAFA] text-[#666666]'
-                          }`}
-                        >
-                          <div className="font-semibold text-[#111111]">Sandbox / Test Mode</div>
-                          <div className="text-[11px] text-[#666666] mt-0.5">Simulate successful UPI & Card transactions</div>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, cashfreeMode: 'PRODUCTION' })}
-                          className={`p-3 border rounded-xl text-left transition ${
-                            formData.cashfreeMode === 'PRODUCTION'
-                              ? 'border-[#111111] bg-white ring-1 ring-[#111111]'
-                              : 'border-[#E5E5E5] bg-[#FAFAFA] text-[#666666]'
-                          }`}
-                        >
-                          <div className="font-semibold text-[#111111]">Live Production</div>
-                          <div className="text-[11px] text-[#666666] mt-0.5">Collect real funds from enterprise clients</div>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* App ID */}
-                    <div>
-                      <label className="block font-medium text-[#404040] mb-1.5">Cashfree App ID (Client ID)</label>
+                      <label className="block font-medium text-[#404040] mb-1.5">Registered Office / Street Address</label>
                       <input 
                         type="text"
-                        value={formData.cashfreeAppId}
-                        onChange={(e) => setFormData({ ...formData, cashfreeAppId: e.target.value })}
-                        placeholder="CF_APP_xxxxxx or TESTxxxxxx"
-                        className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] font-mono placeholder:text-[#999999] outline-none transition"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        placeholder="Enter official street address, suite or building name"
+                        className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] placeholder:text-[#999999] outline-none transition"
                       />
                     </div>
 
-                    {/* Secret Key */}
-                    <div>
-                      <label className="block font-medium text-[#404040] mb-1.5">Cashfree Secret Key</label>
-                      <input 
-                        type="password"
-                        value={formData.cashfreeSecretKey}
-                        onChange={(e) => setFormData({ ...formData, cashfreeSecretKey: e.target.value })}
-                        placeholder="cfsk_ma_prod_xxxxxx"
-                        className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] font-mono placeholder:text-[#999999] outline-none transition"
-                      />
-                    </div>
-
-                    {/* Skip Checkbox */}
-                    <div className="flex items-center space-x-2 pt-2">
-                      <input 
-                        type="checkbox"
-                        id="skipCashfree"
-                        checked={formData.skipCashfree}
-                        onChange={(e) => setFormData({ ...formData, skipCashfree: e.target.checked })}
-                        className="w-4 h-4 rounded border-[#D4D4D4] text-[#111111] accent-[#111111] focus:ring-0 cursor-pointer"
-                      />
-                      <label htmlFor="skipCashfree" className="text-xs text-[#666666] cursor-pointer">
-                        Skip API key entry for now (use default sandbox engine)
-                      </label>
+                    {/* City, State, PIN */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block font-medium text-[#404040] mb-1.5">City</label>
+                        <input 
+                          type="text"
+                          value={formData.city}
+                          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                          placeholder="City"
+                          className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] outline-none transition"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-medium text-[#404040] mb-1.5">State / Region</label>
+                        <input 
+                          type="text"
+                          value={formData.state}
+                          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                          placeholder="State"
+                          className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] outline-none transition"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-medium text-[#404040] mb-1.5">PIN / Postal Code</label>
+                        <input 
+                          type="text"
+                          value={formData.pincode}
+                          onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                          placeholder="400001"
+                          maxLength={10}
+                          className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] font-mono outline-none transition"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -546,7 +567,7 @@ export default function OnboardingPage() {
                           </li>
                           <li className="flex items-center space-x-1.5">
                             <Check className="w-3 h-3 text-[#16A34A]" />
-                            <span>Basic GST Invoicing</span>
+                            <span>Standard Pipeline Management</span>
                           </li>
                         </ul>
                       </div>
@@ -580,15 +601,15 @@ export default function OnboardingPage() {
                           </li>
                           <li className="flex items-center space-x-1.5">
                             <Check className="w-3 h-3 text-[#16A34A]" />
-                            <span>Live Cashfree Webhooks</span>
-                          </li>
-                          <li className="flex items-center space-x-1.5">
-                            <Check className="w-3 h-3 text-[#16A34A]" />
                             <span>Automated Deal Velocity</span>
                           </li>
                           <li className="flex items-center space-x-1.5">
                             <Check className="w-3 h-3 text-[#16A34A]" />
-                            <span>Custom GST Calculation</span>
+                            <span>Web Lead Capture Forms</span>
+                          </li>
+                          <li className="flex items-center space-x-1.5">
+                            <Check className="w-3 h-3 text-[#16A34A]" />
+                            <span>Multi-Industry Terminology</span>
                           </li>
                         </ul>
                       </div>
@@ -637,110 +658,21 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* STEP 4: BILLING & GST */}
+              {/* STEP 4: SALES PIPELINE */}
               {currentStep === 4 && (
                 <div className="space-y-6 animate-in fade-in duration-300">
-                  <div className="border-b border-[#E5E5E5] pb-4">
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight">
-                      Billing & GST Information
-                    </h2>
-                    <p className="text-xs text-[#666666] mt-1">
-                      Set up your official tax and billing profile for compliant invoice generation.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4 text-xs">
-                    {/* GSTIN */}
+                  <div className="border-b border-[#E5E5E5] pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="font-medium text-[#404040]">GSTIN / Tax Identification Number</label>
-                        <span className="text-[11px] text-[#888888]">15 characters</span>
-                      </div>
-                      <input 
-                        type="text"
-                        value={formData.gstin}
-                        onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                        placeholder="27AAAAA0000A1Z5"
-                        maxLength={15}
-                        className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] font-mono placeholder:text-[#999999] outline-none transition uppercase"
-                      />
+                      <h2 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight">
+                        Sales Pipeline Architecture
+                      </h2>
+                      <p className="text-xs text-[#666666] mt-1">
+                        Tailored for <span className="font-semibold text-[#111111]">{formData.industry}</span> ({INDUSTRY_TEMPLATES[formData.selectedIndustryKey]?.dealTerminology || 'Deal'} Lifecycle).
+                      </p>
                     </div>
-
-                    {/* Address */}
-                    <div>
-                      <label className="block font-medium text-[#404040] mb-1.5">Registered Office Address</label>
-                      <input 
-                        type="text"
-                        value={formData.billingAddress}
-                        onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })}
-                        placeholder="Enter official street address, suite or building name"
-                        className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] placeholder:text-[#999999] outline-none transition"
-                      />
-                    </div>
-
-                    {/* City, State, PIN */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block font-medium text-[#404040] mb-1.5">City</label>
-                        <input 
-                          type="text"
-                          value={formData.city}
-                          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                          placeholder="City"
-                          className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] outline-none transition"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-medium text-[#404040] mb-1.5">State</label>
-                        <input 
-                          type="text"
-                          value={formData.state}
-                          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                          placeholder="State"
-                          className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] outline-none transition"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-medium text-[#404040] mb-1.5">PIN Code</label>
-                        <input 
-                          type="text"
-                          value={formData.pincode}
-                          onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                          placeholder="400001"
-                          maxLength={6}
-                          className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] font-mono outline-none transition"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Invoice Prefix */}
-                    <div className="pt-2">
-                      <label className="block font-medium text-[#404040] mb-1.5">Default Invoice Number Prefix</label>
-                      <input 
-                        type="text"
-                        value={formData.invoicePrefix}
-                        onChange={(e) => setFormData({ ...formData, invoicePrefix: e.target.value })}
-                        placeholder="ZYVO-2026-"
-                        className="w-full bg-white border border-[#E5E5E5] focus:border-[#111111] rounded-lg px-3 py-2.5 text-[#111111] font-mono outline-none transition"
-                      />
-                      <span className="text-[11px] text-[#888888] mt-1 block">
-                        Generated invoices will format as: <code className="font-mono text-[#111111]">{formData.invoicePrefix}0001</code>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 5: SALES PIPELINE */}
-              {currentStep === 5 && (
-                <div className="space-y-6 animate-in fade-in duration-300">
-                  <div className="border-b border-[#E5E5E5] pb-4">
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight">
-                      Sales Pipeline Architecture
-                    </h2>
-                    <p className="text-xs text-[#666666] mt-1">
-                      Configure your deal lifecycle stages and monthly velocity revenue target.
-                    </p>
+                    <span className="self-start sm:self-auto text-xs px-2.5 py-1 bg-[#F4F4F6] text-[#111111] border border-[#E5E5E5] rounded-full font-mono">
+                      {INDUSTRY_TEMPLATES[formData.selectedIndustryKey]?.badge || 'Adaptive'} Vertical
+                    </span>
                   </div>
 
                   <div className="space-y-4 text-xs">
@@ -785,8 +717,8 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* STEP 6: INVITE TEAM */}
-              {currentStep === 6 && (
+              {/* STEP 5: INVITE TEAM */}
+              {currentStep === 5 && (
                 <div className="space-y-6 animate-in fade-in duration-300">
                   <div className="border-b border-[#E5E5E5] pb-4">
                     <h2 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight">
@@ -843,8 +775,8 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* STEP 7: REVIEW & LAUNCH */}
-              {currentStep === 7 && (
+              {/* STEP 6: REVIEW & LAUNCH */}
+              {currentStep === 6 && (
                 <div className="space-y-6 animate-in fade-in duration-300">
                   <div className="border-b border-[#E5E5E5] pb-4">
                     <h2 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight">
@@ -868,20 +800,20 @@ export default function OnboardingPage() {
                     </div>
 
                     <div className="flex items-center justify-between pb-3 border-b border-[#E5E5E5]">
-                      <span className="text-[#666666]">Cashfree Gateway</span>
-                      <span className="font-mono font-semibold text-[#16A34A]">
-                        {formData.skipCashfree ? 'Sandbox Engine Enabled' : `${formData.cashfreeMode} Mode`}
+                      <span className="text-[#666666]">Industry Vertical</span>
+                      <span className="font-medium text-[#111111]">{formData.industry}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between pb-3 border-b border-[#E5E5E5]">
+                      <span className="text-[#666666]">Office Location</span>
+                      <span className="font-medium text-[#111111]">
+                        {[formData.city, formData.state].filter(Boolean).join(', ') || 'Configured'}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between pb-3 border-b border-[#E5E5E5]">
                       <span className="text-[#666666]">Selected Plan</span>
                       <span className="font-semibold text-[#111111] capitalize">{formData.selectedPlan}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between pb-3 border-b border-[#E5E5E5]">
-                      <span className="text-[#666666]">Invoice Prefix</span>
-                      <span className="font-mono text-[#111111]">{formData.invoicePrefix}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -915,7 +847,7 @@ export default function OnboardingPage() {
                 <span>
                   {isSubmitting 
                     ? 'Launching Workspace...' 
-                    : currentStep === 7 
+                    : currentStep === 6 
                     ? 'Launch CRM Command Center' 
                     : 'Continue'}
                 </span>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_API = process.env.BACKEND_API_URL || 'http://localhost:4000/api/v1';
+const BACKEND_API = process.env.BACKEND_API_URL || 'http://127.0.0.1:4000/api/v1';
 
 export async function POST(
   req: NextRequest,
@@ -20,6 +20,7 @@ export async function POST(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
+    console.error('Mail proxy error:', error?.message || error);
     return NextResponse.json(
       { success: false, message: 'Failed to communicate with mail server' },
       { status: 500 }

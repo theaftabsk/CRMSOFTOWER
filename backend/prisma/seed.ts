@@ -372,6 +372,44 @@ async function main() {
     },
   });
 
+  // 16. Default Industry Vertical Configuration
+  await prisma.appIntegration.upsert({
+    where: {
+      organization_id_app_id: {
+        organization_id: org.id,
+        app_id: 'industry_preset',
+      },
+    },
+    update: {},
+    create: {
+      organization_id: org.id,
+      app_id: 'industry_preset',
+      name: 'Software, SaaS & IT Services Vertical Configuration',
+      category: 'INDUSTRY',
+      status: 'CONNECTED',
+      config: {
+        industry_id: 'saas_it',
+        industry_name: 'Software, SaaS & IT Services',
+        badge: 'Default Core',
+        icon_name: 'Laptop',
+        deal_terminology: 'Software Deal',
+        deals_terminology: 'Software Deals',
+        lead_terminology: 'Sales Lead',
+        target_monthly_revenue: '₹25,00,000',
+        pipeline_stages: [
+          { id: 1, name: 'New Inbound Lead', probability: 20 },
+          { id: 2, name: 'Discovery Call & Product Demo', probability: 40 },
+          { id: 3, name: 'Proposal & Commercials Sent', probability: 60 },
+          { id: 4, name: 'Procurement & Security Review', probability: 80 },
+          { id: 5, name: 'Contract Signed & Paid', probability: 100 },
+        ],
+        configured_at: new Date().toISOString(),
+      },
+      health_status: 'HEALTHY',
+      last_tested_at: new Date(),
+    },
+  });
+
   console.log('Enterprise CRM Seeding finished successfully.');
 }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_API = process.env.BACKEND_API_URL || 'http://localhost:4000/api/v1';
+const BACKEND_API = process.env.BACKEND_API_URL || 'http://127.0.0.1:4000/api/v1';
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,9 +20,17 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const data = await response.json();
+    if (!response.ok) {
+      return NextResponse.json(
+        { success: false, message: 'Session expired' },
+        { status: 401 }
+      );
+    }
 
-    if (!response.ok || !data.success) {
+    const data = await response.json();
+    const userData = data?.data?.user || data?.user;
+
+    if (!userData) {
       return NextResponse.json(
         { success: false, message: 'Session expired' },
         { status: 401 }
@@ -31,12 +39,13 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user: data.data.user,
+      user: userData,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.warn('/api/auth/me proxy caught error:', error?.message || error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
+      { success: false, message: 'Authentication service unavailable' },
+      { status: 401 }
     );
   }
 }

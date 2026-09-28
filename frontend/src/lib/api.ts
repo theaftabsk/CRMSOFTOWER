@@ -1796,7 +1796,325 @@ export const api = {
       return null;
     }
   },
+
+  // Industry Vertical Management & Persistence
+  async getCurrentIndustry(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/industries/current`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data || json;
+    } catch (e) {
+      console.warn('API getCurrentIndustry notice:', e);
+      return null;
+    }
+  },
+
+  async applyIndustry(
+    data: {
+      industry_id: string;
+      target_monthly_revenue?: string;
+      pipeline_stages?: Array<{ id: number; name: string; probability: number }>;
+      seed_sample_deals?: boolean;
+      seed_custom_fields?: boolean;
+      seed_webform?: boolean;
+    },
+    orgId?: string,
+  ) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/industries/apply`, {
+        method: 'POST',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data || json;
+    } catch (e) {
+      console.warn('API applyIndustry notice:', e);
+      return null;
+    }
+  },
+
+  // Meta Ads Center API Integrations
+  async getMetaOverview(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/overview`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API getMetaOverview error:', e);
+      return null;
+    }
+  },
+
+  async getMetaOAuthUrl(redirectUri?: string, orgId?: string) {
+    try {
+      const q = redirectUri ? `?redirect_uri=${encodeURIComponent(redirectUri)}` : '';
+      const res = await fetch(`${API_BASE_URL}/meta/auth/start${q}`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API getMetaOAuthUrl error:', e);
+      return null;
+    }
+  },
+
+  async handleMetaOAuthCallback(code: string, orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/auth/callback?code=${encodeURIComponent(code)}`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API handleMetaOAuthCallback error:', e);
+      return null;
+    }
+  },
+
+  async autoConnectMetaOAuth(payload?: any, orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/oauth/auto-connect`, {
+        method: 'POST',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+        body: JSON.stringify(payload || {}),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API autoConnectMetaOAuth error:', e);
+      return null;
+    }
+  },
+
+  async testWebhookHandshake(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/webhook/test`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API testWebhookHandshake error:', e);
+      return null;
+    }
+  },
+
+  async getMetaConnection(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/connection`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API getMetaConnection error:', e);
+      return null;
+    }
+  },
+
+  async getMetaAssets(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/assets`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return { adAccounts: [], pages: [], instagramAccounts: [] };
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API getMetaAssets error:', e);
+      return { adAccounts: [], pages: [], instagramAccounts: [] };
+    }
+  },
+
+  async selectMetaAssets(payload: any, orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/connection/select-assets`, {
+        method: 'POST',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API selectMetaAssets error:', e);
+      return null;
+    }
+  },
+
+  async saveMetaConnection(payload: any, orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/connection`, {
+        method: 'POST',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API saveMetaConnection error:', e);
+      return null;
+    }
+  },
+
+  async disconnectMeta(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/disconnect`, {
+        method: 'POST',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API disconnectMeta error:', e);
+      return null;
+    }
+  },
+
+  async getMetaCampaigns(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/campaigns`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return [];
+      const json = await res.json();
+      const data = json?.data !== undefined ? json.data : json;
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.warn('API getMetaCampaigns error:', e);
+      return [];
+    }
+  },
+
+  async createMetaCampaign(campaignData: any, orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/campaigns`, {
+        method: 'POST',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+        body: JSON.stringify(campaignData),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API createMetaCampaign error:', e);
+      return null;
+    }
+  },
+
+  async toggleMetaCampaign(campaignId: string, orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/campaigns/${campaignId}/toggle`, {
+        method: 'PATCH',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API toggleMetaCampaign error:', e);
+      return null;
+    }
+  },
+
+  async updateMetaCampaignBudget(campaignId: string, budget: number, orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/campaigns/${campaignId}/budget`, {
+        method: 'PATCH',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+        body: JSON.stringify({ daily_budget: budget }),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API updateMetaCampaignBudget error:', e);
+      return null;
+    }
+  },
+
+  async getMetaLeadForms(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/lead-forms`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return [];
+      const json = await res.json();
+      const data = json?.data !== undefined ? json.data : json;
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.warn('API getMetaLeadForms error:', e);
+      return [];
+    }
+  },
+
+  async getMetaLeads(orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/leads`, {
+        headers: getHeaders(orgId),
+        credentials: 'include',
+      });
+      if (!res.ok) return [];
+      const json = await res.json();
+      const data = json?.data !== undefined ? json.data : json;
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.warn('API getMetaLeads error:', e);
+      return [];
+    }
+  },
+
+  async simulateMetaLead(leadData?: any, orgId?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/meta/simulate-lead`, {
+        method: 'POST',
+        headers: getHeaders(orgId),
+        credentials: 'include',
+        body: JSON.stringify(leadData || {}),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.data !== undefined ? json.data : json;
+    } catch (e) {
+      console.warn('API simulateMetaLead error:', e);
+      return null;
+    }
+  },
 };
+
 
 
 

@@ -37,6 +37,9 @@ import { PublicApiModule } from './public-api/public-api.module';
 import { FormsModule } from './forms/forms.module';
 import { CommunicationsModule } from './communications/communications.module';
 import { MailModule } from './mail/mail.module';
+import { IndustriesModule } from './industries/industries.module';
+import { SuperAdminModule } from './superadmin/superadmin.module';
+import { MetaAdsModule } from './meta-ads/meta-ads.module';
 
 @Module({
   imports: [
@@ -76,6 +79,9 @@ import { MailModule } from './mail/mail.module';
     FormsModule,
     CommunicationsModule,
     MailModule,
+    IndustriesModule,
+    SuperAdminModule,
+    MetaAdsModule,
   ],
 })
 export class AppModule {}

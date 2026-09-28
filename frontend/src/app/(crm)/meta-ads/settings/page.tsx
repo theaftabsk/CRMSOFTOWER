@@ -82,7 +82,8 @@ export default function MetaSettingsPage() {
       } else if (code) {
         window.history.replaceState({}, document.title, window.location.pathname);
         showToast('success', 'Exchanging token with Meta and connecting assets...');
-        api.handleMetaOAuthCallback(code).then((res: any) => {
+        const redirectUri = `${window.location.origin}/meta-ads/settings`;
+        api.handleMetaOAuthCallback(code, redirectUri).then((res: any) => {
           if (res?.success) {
             showToast('success', '🎉 Meta account & assets connected seamlessly via Facebook Login!');
             loadData();
@@ -98,7 +99,7 @@ export default function MetaSettingsPage() {
   const handleFacebookOAuthLogin = async () => {
     try {
       const redirectUri = typeof window !== 'undefined'
-        ? `${window.location.origin}/meta-ads/settings?oauth=callback`
+        ? `${window.location.origin}/meta-ads/settings`
         : undefined;
       const res = await api.getMetaOAuthUrl(redirectUri);
       if (res?.url) {

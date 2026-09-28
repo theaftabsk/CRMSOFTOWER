@@ -1872,9 +1872,10 @@ export const api = {
     }
   },
 
-  async handleMetaOAuthCallback(code: string, orgId?: string) {
+  async handleMetaOAuthCallback(code: string, redirectUri?: string, orgId?: string) {
     try {
-      const res = await fetch(`${API_BASE_URL}/meta/auth/callback?code=${encodeURIComponent(code)}`, {
+      const q = redirectUri ? `&redirect_uri=${encodeURIComponent(redirectUri)}` : '';
+      const res = await fetch(`${API_BASE_URL}/meta/auth/callback?code=${encodeURIComponent(code)}${q}`, {
         headers: getHeaders(orgId),
         credentials: 'include',
       });

@@ -40,8 +40,8 @@ export class MetaOAuthService {
    * Includes cryptographically secure CSRF state token bound to orgId
    */
   async getOAuthUrl(orgId: string, redirectUri?: string) {
-    const appId = process.env.META_APP_ID || '1103399085496443';
-    const callback = redirectUri || 'http://localhost:3000/meta-ads/settings?oauth=callback';
+    const appId = process.env.META_APP_ID || '';
+    const callback = redirectUri || process.env.META_REDIRECT_URI || 'https://app.zyvocrm.in/meta-ads/settings';
     const stateToken = crypto.randomBytes(16).toString('hex') + `_${orgId}`;
     
     const scopes = [
@@ -73,9 +73,9 @@ export class MetaOAuthService {
    */
   async handleOAuthCallback(code: string, orgId: string, redirectUri?: string) {
     const cleanCode = code ? code.replace(/#_$/, '') : '';
-    const appId = process.env.META_APP_ID || '1103399085496443';
-    const appSecret = process.env.META_APP_SECRET || 'b00b2b90ce06f929433a0fff72f62065';
-    const callback = redirectUri || 'http://localhost:3000/meta-ads/settings?oauth=callback';
+    const appId = process.env.META_APP_ID || '';
+    const appSecret = process.env.META_APP_SECRET || '';
+    const callback = redirectUri || process.env.META_REDIRECT_URI || 'https://app.zyvocrm.in/meta-ads/settings';
 
     let accessToken = process.env.META_SYSTEM_ACCESS_TOKEN || '';
 

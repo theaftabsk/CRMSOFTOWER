@@ -15,8 +15,6 @@ export default function MetaSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
-  const [isSimulatingLead, setIsSimulatingLead] = useState(false);
-  const [simulatedResult, setSimulatedResult] = useState<any>(null);
   const [isTestingWebhook, setIsTestingWebhook] = useState(false);
   const [webhookTestResult, setWebhookTestResult] = useState<any>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -232,25 +230,11 @@ export default function MetaSettingsPage() {
     }
   };
 
-  // Simulate a live lead ingestion
-  const handleSimulateLead = async () => {
-    setIsSimulatingLead(true);
-    setSimulatedResult(null);
-    try {
-      const res = await api.simulateMetaLead();
-      setSimulatedResult(res);
-      showToast('success', `Live Lead Ingested: ${res?.leadName || 'Lead'} (Assigned to ${res?.assignedTo})`);
-    } catch (err) {
-      console.error('Failed to simulate lead:', err);
-      showToast('error', 'Lead simulation failed.');
-    } finally {
-      setIsSimulatingLead(false);
-    }
-  };
-
   const webhookUrl = typeof window !== 'undefined' 
-    ? `${window.location.protocol}//${window.location.hostname}:4000/api/v1/meta/webhook`
-    : 'http://localhost:4000/api/v1/meta/webhook';
+    ? (window.location.hostname.includes('zyvocrm.in')
+        ? 'https://api.zyvocrm.in/api/v1/meta/webhook'
+        : `${window.location.protocol}//${window.location.hostname}:4000/api/v1/meta/webhook`)
+    : 'https://api.zyvocrm.in/api/v1/meta/webhook';
 
   const isConnected = connection?.isConnected ?? false;
   const config = connection?.config || {};
@@ -669,68 +653,7 @@ export default function MetaSettingsPage() {
             </div>
           </div>
 
-          {/* Sandbox & Developer Lead Simulator Box */}
-          <div className="p-5 rounded-xl bg-white border border-[#E5E5E5]">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <Zap className="w-4 h-4 text-amber-500" />
-                <h3 className="text-sm font-semibold text-[#111111]">Developer Sandbox & Live Ingestion Test</h3>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200 uppercase tracking-wider">
-                DEVELOPMENT / TEST MODE
-              </span>
-            </div>
-            <p className="text-xs text-[#666666] mb-4">
-              Test your full pipeline right now: click below to simulate an incoming Meta lead. The system checks deduplication, assigns via round-robin, saves to PostgreSQL, and logs activity.
-            </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <button
-                onClick={handleSimulateLead}
-                disabled={isSimulatingLead}
-                className="w-full sm:w-auto px-4 py-2 rounded-lg bg-[#111111] hover:bg-[#262626] text-white text-xs font-semibold transition flex items-center justify-center space-x-2"
-              >
-                <Zap className={`w-3.5 h-3.5 text-amber-300 ${isSimulatingLead ? 'animate-spin' : ''}`} />
-                <span>{isSimulatingLead ? 'Ingesting Simulated Lead...' : '⚡ Test & Ingest Sample Lead'}</span>
-              </button>
-
-              <Link
-                href="/meta-ads/leads"
-                className="w-full sm:w-auto px-3.5 py-2 rounded-lg border border-[#E5E5E5] bg-white hover:bg-[#F8F8F8] text-[#111111] text-xs font-medium transition text-center flex items-center justify-center space-x-1"
-              >
-                <span>View Ingested Leads Table</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            {/* Simulation Result Box */}
-            {simulatedResult && (
-              <div className="mt-4 p-3.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-950 text-xs animate-fadeIn">
-                <div className="font-semibold flex items-center space-x-1.5 mb-1.5">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Lead Pipeline Ingestion Verified Successfully!</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono mt-2 pt-2 border-t border-emerald-200">
-                  <div>
-                    <span className="text-emerald-700 block">Lead Name</span>
-                    <span className="font-bold">{simulatedResult.leadName}</span>
-                  </div>
-                  <div>
-                    <span className="text-emerald-700 block">Lead ID</span>
-                    <span className="truncate block">{simulatedResult.leadId}</span>
-                  </div>
-                  <div>
-                    <span className="text-emerald-700 block">Assigned To</span>
-                    <span className="font-bold">{simulatedResult.assignedTo}</span>
-                  </div>
-                  <div>
-                    <span className="text-emerald-700 block">Status</span>
-                    <span className="font-bold">{simulatedResult.action}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Right Column: Webhook Setup Box */}

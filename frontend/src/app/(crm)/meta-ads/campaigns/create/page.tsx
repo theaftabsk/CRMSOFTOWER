@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, ChevronRight, CheckCircle2, AlertCircle, 
   Layers, Wallet, MapPin, Users, Sparkles, Send, 
-  Eye, HelpCircle, Building2, Facebook, Phone, Mail, 
+  Eye, Building2, Phone, Mail, 
   UserCheck, Image as ImageIcon, Video, Upload, X, 
-  MessageCircle, Target, Compass, Play, Plus
+  MessageCircle, Target
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';

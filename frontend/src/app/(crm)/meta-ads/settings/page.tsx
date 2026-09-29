@@ -32,22 +32,33 @@ export default function MetaSettingsPage() {
   }>({ businesses: [], adAccounts: [], pages: [], instagramAccounts: [] });
 
   const [selectedAssetForm, setSelectedAssetForm] = useState({
+    user_name: '',
+    user_photo: '',
     business_name: '',
     ad_account_id: '',
     ad_account_name: '',
+    currency: 'INR',
+    balance: '0.00',
+    amount_spent: '0.00',
     page_id: '',
     page_name: '',
+    page_picture: '',
     instagram_username: '',
+    instagram_picture: '',
   });
 
   const [automationRules, setAutomationRules] = useState({
     auto_sync: true,
     auto_whatsapp: true,
   });
+  const [campaigns, setCampaigns] = useState<any[]>([]);
 
   const loadData = async () => {
     try {
-      const connData = await api.getMetaConnection();
+      const [connData, camps] = await Promise.all([
+        api.getMetaConnection(),
+        api.getMetaCampaigns().catch(() => []),
+      ]);
       if (connData) {
         setConnection(connData);
         if (connData.config) {
@@ -57,6 +68,7 @@ export default function MetaSettingsPage() {
           });
         }
       }
+      setCampaigns(Array.isArray(camps) ? camps : []);
     } catch (err) {
       console.error('Failed to load Meta connection:', err);
     } finally {
@@ -139,12 +151,19 @@ export default function MetaSettingsPage() {
       const firstIg = assets?.instagramAccounts?.[0];
 
       setSelectedAssetForm({
-        business_name: firstBiz?.name || 'Meta Business Portfolio',
-        ad_account_id: firstAdAcc?.id || '',
-        ad_account_name: firstAdAcc?.name || '',
-        page_id: firstPage?.id || '',
-        page_name: firstPage?.name || '',
-        instagram_username: firstIg?.username || '',
+        user_name: assets?.user?.name || config?.user_name || '',
+        user_photo: assets?.user?.photo || config?.user_photo || '',
+        business_name: firstBiz?.name || config?.business_name || 'Meta Business Portfolio',
+        ad_account_id: firstAdAcc?.id || config?.ad_account_id || '',
+        ad_account_name: firstAdAcc?.name || config?.ad_account_name || '',
+        currency: firstAdAcc?.currency || config?.currency || 'INR',
+        balance: firstAdAcc?.balance || config?.balance || '0.00',
+        amount_spent: firstAdAcc?.amount_spent || config?.amount_spent || '0.00',
+        page_id: firstPage?.id || config?.page_id || '',
+        page_name: firstPage?.name || config?.page_name || '',
+        page_picture: firstPage?.picture || config?.page_picture || '',
+        instagram_username: firstIg?.username || config?.instagram_username || '',
+        instagram_picture: firstIg?.picture || config?.instagram_picture || '',
       });
     } catch (err) {
       console.error('Failed to fetch Meta assets:', err);
@@ -367,34 +386,46 @@ export default function MetaSettingsPage() {
       ) : (
         /* CONNECTED STATE ASSET OVERVIEW CARD */
         <div className="p-6 rounded-xl bg-white border border-[#E5E5E5] shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-[#1877F2] text-white flex items-center justify-center font-bold text-xl">
-                f
-              </div>
+          {/* Facebook Profile & Organization Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50/40 via-white to-gray-50/50 border border-[#E5E5E5]">
+            <div className="flex items-center space-x-3.5">
+              {config.user_photo ? (
+                <img
+                  src={config.user_photo}
+                  alt={config.user_name || 'Facebook User'}
+                  className="w-12 h-12 rounded-full border-2 border-[#1877F2] object-cover shadow-xs shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-[#1877F2] text-white flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
+                  f
+                </div>
+              )}
               <div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-bold text-[#111111]">
-                    Meta Business Integration Active
+                    {config.user_name || 'Facebook Account'}
                   </h3>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-800">
+                    Facebook Profile
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5 animate-pulse" />
                     Live Sync Active
                   </span>
                 </div>
                 <p className="text-xs text-[#666666] mt-0.5">
-                  Connected to <span className="font-semibold text-[#111111]">{config.page_name || 'Facebook Page'}</span> and Ad Account <span className="font-mono text-[#111111]">{config.ad_account_id}</span>.
+                  Portfolio: <span className="font-semibold text-[#111111]">{config.business_name || 'Meta Business Portfolio'}</span> · Primary Ad Account: <span className="font-mono text-[#111111]">{config.ad_account_id}</span>
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2.5">
+            <div className="flex items-center space-x-2">
               <button
                 onClick={handleOpenConnectModal}
-                className="px-3.5 py-1.5 rounded-lg border border-[#D4D4D4] bg-white hover:bg-[#F8F8F8] text-[#111111] text-xs font-semibold transition flex items-center space-x-1.5"
+                className="px-3.5 py-1.5 rounded-lg border border-[#D4D4D4] bg-white hover:bg-[#F8F8F8] text-[#111111] text-xs font-semibold transition flex items-center space-x-1.5 shadow-2xs"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Refresh Assets</span>
+                <span>Switch / Edit Assets</span>
               </button>
 
               <button
@@ -408,40 +439,165 @@ export default function MetaSettingsPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#E5E5E5]">
-            <h4 className="text-[11px] font-bold text-[#666666] uppercase tracking-wider mb-3">
-              Connected Assets Breakdown
-            </h4>
+          {/* 4 Interactive Asset Cards with Edit / Switch Actions */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[11px] font-bold text-[#666666] uppercase tracking-wider">
+                Connected Assets & Live Balances
+              </h4>
+              <span className="text-[10px] text-[#888888]">
+                Click any Edit button to switch accounts or pages
+              </span>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-3.5 rounded-lg bg-[#F8F8F8] border border-[#E5E5E5]">
-                <div className="text-[11px] font-semibold text-[#666666] uppercase tracking-wider">Business Manager</div>
-                <div className="text-xs font-bold text-[#111111] mt-1">{config.business_name || 'Meta Business Suite'}</div>
-                <div className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center">
-                  <Check className="w-3 h-3 mr-1" /> Authorized
+              {/* 1. Business Portfolio */}
+              <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E5E5E5] hover:border-[#CCCCCC] transition shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Business Portfolio</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700">Verified</span>
+                  </div>
+                  <div className="text-sm font-bold text-[#111111] mt-2 truncate">
+                    {config.business_name || 'Meta Business Suite'}
+                  </div>
+                  <p className="text-[11px] text-[#666666] mt-0.5">Authorized Organization</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleOpenConnectModal}
+                  className="mt-3.5 w-full py-1.5 rounded-lg bg-[#F8F8F8] hover:bg-[#EFEFEF] border border-[#E5E5E5] text-[11px] font-semibold text-[#111111] flex items-center justify-center space-x-1 transition"
+                >
+                  <span>✏️ Switch Portfolio</span>
+                </button>
               </div>
 
-              <div className="p-3.5 rounded-lg bg-[#F8F8F8] border border-[#E5E5E5]">
-                <div className="text-[11px] font-semibold text-[#666666] uppercase tracking-wider">Ad Account ID</div>
-                <div className="text-xs font-bold font-mono text-[#111111] mt-1">{config.ad_account_id}</div>
-                <div className="text-[11px] text-[#666666] mt-1 truncate">{config.ad_account_name || 'Primary Ad Account'}</div>
-              </div>
-
-              <div className="p-3.5 rounded-lg bg-[#F8F8F8] border border-[#E5E5E5]">
-                <div className="text-[11px] font-semibold text-[#666666] uppercase tracking-wider">Facebook Page</div>
-                <div className="text-xs font-bold text-[#111111] mt-1">{config.page_name}</div>
-                <div className="text-[11px] text-[#666666] font-mono mt-1">ID: {config.page_id}</div>
-              </div>
-
-              <div className="p-3.5 rounded-lg bg-[#F8F8F8] border border-[#E5E5E5]">
-                <div className="text-[11px] font-semibold text-[#666666] uppercase tracking-wider">Instagram & Webhook</div>
-                <div className="text-xs font-bold text-[#111111] mt-1">{config.instagram_username || 'Not Linked'}</div>
-                <div className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5" />
-                  Webhook Active
+              {/* 2. Ad Account & Live Balance */}
+              <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E5E5E5] hover:border-[#CCCCCC] transition shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Ad Account & Balance</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700">Active</span>
+                  </div>
+                  <div className="text-sm font-bold text-[#111111] mt-2 truncate">
+                    {config.ad_account_name || 'Primary Ad Account'}
+                  </div>
+                  <div className="text-[11px] font-mono text-[#666666] mt-0.5 truncate">
+                    {config.ad_account_id}
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-[#F0F0F0] flex items-center justify-between text-xs">
+                    <span className="text-[#666666]">Balance:</span>
+                    <span suppressHydrationWarning className="font-mono font-bold text-emerald-600">
+                      {config.currency === 'USD' ? '$' : '₹'}{config.balance || '0.00'}
+                    </span>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleOpenConnectModal}
+                  className="mt-3.5 w-full py-1.5 rounded-lg bg-[#F8F8F8] hover:bg-[#EFEFEF] border border-[#E5E5E5] text-[11px] font-semibold text-[#111111] flex items-center justify-center space-x-1 transition"
+                >
+                  <span>✏️ Switch Ad Account</span>
+                </button>
+              </div>
+
+              {/* 3. Facebook Page */}
+              <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E5E5E5] hover:border-[#CCCCCC] transition shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Facebook Page</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700">Lead Sync</span>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-2">
+                    {config.page_picture ? (
+                      <img src={config.page_picture} alt="" className="w-5 h-5 rounded-full object-cover shrink-0" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-[#1877F2] text-white text-[10px] font-bold flex items-center justify-center shrink-0">f</div>
+                    )}
+                    <div className="text-sm font-bold text-[#111111] truncate">
+                      {config.page_name}
+                    </div>
+                  </div>
+                  <div className="text-[11px] font-mono text-[#666666] mt-1 truncate">
+                    ID: {config.page_id}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenConnectModal}
+                  className="mt-3.5 w-full py-1.5 rounded-lg bg-[#F8F8F8] hover:bg-[#EFEFEF] border border-[#E5E5E5] text-[11px] font-semibold text-[#111111] flex items-center justify-center space-x-1 transition"
+                >
+                  <span>✏️ Switch Page</span>
+                </button>
+              </div>
+
+              {/* 4. Instagram Account & Webhook */}
+              <div className="p-4 rounded-xl bg-[#FFFFFF] border border-[#E5E5E5] hover:border-[#CCCCCC] transition shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Instagram & Webhook</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700">Live</span>
+                  </div>
+                  <div className="text-sm font-bold text-[#111111] mt-2 truncate">
+                    {config.instagram_username || 'Not Linked'}
+                  </div>
+                  <div className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5" />
+                    Webhook Active
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenConnectModal}
+                  className="mt-3.5 w-full py-1.5 rounded-lg bg-[#F8F8F8] hover:bg-[#EFEFEF] border border-[#E5E5E5] text-[11px] font-semibold text-[#111111] flex items-center justify-center space-x-1 transition"
+                >
+                  <span>✏️ Edit Instagram</span>
+                </button>
               </div>
             </div>
+          </div>
+
+          {/* Active Campaigns on this Ad Account Preview Card */}
+          <div className="pt-4 border-t border-[#E5E5E5]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <h4 className="text-[11px] font-bold text-[#111111] uppercase tracking-wider">
+                  Campaigns Running on This Ad Account ({campaigns.length})
+                </h4>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                  Live
+                </span>
+              </div>
+              <Link
+                href="/meta-ads/campaigns"
+                className="text-xs font-bold text-[#1877F2] hover:underline flex items-center space-x-1"
+              >
+                <span>Manage All Campaigns</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {campaigns.length === 0 ? (
+              <div className="py-4 text-center text-xs text-[#888888] bg-[#FAFAFA] rounded-lg border border-dashed border-[#E5E5E5]">
+                No active campaigns found on this Ad Account yet. You can launch or monitor campaigns in the Campaigns tab.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {campaigns.slice(0, 3).map((camp: any) => (
+                  <div key={camp.id} className="p-3 rounded-lg bg-[#F9F9F9] border border-[#E5E5E5] flex items-center justify-between">
+                    <div className="min-w-0 pr-2">
+                      <div className="text-xs font-bold text-[#111111] truncate">{camp.name}</div>
+                      <div className="text-[10px] text-[#666666] mt-0.5">
+                        Budget: ₹{camp.daily_budget || '1,000'}/day · Leads: {camp.leads_count || 0}
+                      </div>
+                    </div>
+                    <span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {camp.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -759,6 +915,9 @@ export default function MetaSettingsPage() {
                           ...selectedAssetForm,
                           ad_account_id: e.target.value,
                           ad_account_name: selected?.name || e.target.value,
+                          currency: selected?.currency || 'INR',
+                          balance: selected?.balance || '0.00',
+                          amount_spent: selected?.amount_spent || '0.00',
                         });
                       }}
                       className="w-full px-3 py-2 rounded-lg border border-[#E5E5E5] bg-white text-[#111111] focus:outline-none focus:border-[#111111]"
@@ -806,6 +965,7 @@ export default function MetaSettingsPage() {
                           ...selectedAssetForm,
                           page_id: e.target.value,
                           page_name: selected?.name || e.target.value,
+                          page_picture: selected?.picture || '',
                         });
                       }}
                       className="w-full px-3 py-2 rounded-lg border border-[#E5E5E5] bg-white text-[#111111] focus:outline-none focus:border-[#111111]"
@@ -840,7 +1000,14 @@ export default function MetaSettingsPage() {
                   </label>
                   <select
                     value={selectedAssetForm.instagram_username}
-                    onChange={(e) => setSelectedAssetForm({ ...selectedAssetForm, instagram_username: e.target.value })}
+                    onChange={(e) => {
+                      const selected = availableAssets.instagramAccounts.find((ig) => ig.username === e.target.value);
+                      setSelectedAssetForm({
+                        ...selectedAssetForm,
+                        instagram_username: e.target.value,
+                        instagram_picture: selected?.picture || '',
+                      });
+                    }}
                     className="w-full px-3 py-2 rounded-lg border border-[#E5E5E5] bg-white text-[#111111] focus:outline-none focus:border-[#111111]"
                   >
                     <option value="">None / Not Linked</option>

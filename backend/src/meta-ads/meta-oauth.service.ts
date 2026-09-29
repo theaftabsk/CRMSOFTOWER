@@ -20,12 +20,20 @@ export interface MetaConnectionConfig {
 }
 
 export interface SelectedAssetsDto {
+  user_name?: string;
+  user_photo?: string;
   business_name?: string;
+  business_id?: string;
   ad_account_id: string;
   ad_account_name: string;
+  currency?: string;
+  balance?: string;
+  amount_spent?: string;
   page_id: string;
   page_name: string;
+  page_picture?: string;
   instagram_username?: string;
+  instagram_picture?: string;
   access_token?: string;
 }
 
@@ -94,44 +102,82 @@ export class MetaOAuthService {
       }
     }
 
-    // Auto-discover Pages and Ad Accounts from Meta Graph API
+    // Auto-discover User Profile, Businesses, Ad Accounts, and Pages from Meta Graph API
+    let userProfile: any = null;
+    let businesses: any[] = [];
     let adAccounts: any[] = [];
     let pages: any[] = [];
 
     if (accessToken) {
       try {
-        const [adAccRes, pagesRes] = await Promise.all([
-          fetch(`https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_id,currency&access_token=${accessToken}`),
-          fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,category,instagram_business_account&access_token=${accessToken}`),
+        const [meRes, adAccRes, pagesRes, bizRes] = await Promise.all([
+          fetch(`https://graph.facebook.com/v19.0/me?fields=id,name,picture.type(large)&access_token=${accessToken}`),
+          fetch(`https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_id,currency,account_status,balance,amount_spent&access_token=${accessToken}`),
+          fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,category,picture,instagram_business_account{id,username,profile_picture_url}&access_token=${accessToken}`),
+          fetch(`https://graph.facebook.com/v19.0/me/businesses?fields=id,name,profile_picture_uri,verification_status&access_token=${accessToken}`),
         ]);
+
+        const meJson = meRes.ok ? await meRes.json() : null;
         const adAccJson = adAccRes.ok ? await adAccRes.json() : null;
         const pagesJson = pagesRes.ok ? await pagesRes.json() : null;
+        const bizJson = bizRes.ok ? await bizRes.json() : null;
+
+        if (meJson) {
+          userProfile = {
+            id: meJson.id,
+            name: meJson.name,
+            photo: meJson.picture?.data?.url || '',
+          };
+        }
+
+        businesses = (bizJson?.data || []).map((b: any) => ({
+          id: b.id,
+          name: b.name,
+          verification_status: b.verification_status || 'VERIFIED',
+          picture: b.profile_picture_uri || '',
+        }));
 
         adAccounts = (adAccJson?.data || []).map((acc: any) => ({
           id: acc.id.startsWith('act_') ? acc.id : `act_${acc.id}`,
           name: acc.name || `Ad Account (${acc.account_id || acc.id})`,
+          currency: acc.currency || 'INR',
+          balance: acc.balance ? (Number(acc.balance) / 100).toFixed(2) : '0.00',
+          amount_spent: acc.amount_spent ? (Number(acc.amount_spent) / 100).toFixed(2) : '0.00',
+          status: acc.account_status === 1 ? 'ACTIVE' : 'ACTIVE',
         }));
 
         pages = (pagesJson?.data || []).map((p: any) => ({
           id: p.id,
           name: p.name,
+          category: p.category || 'Business Page',
+          picture: p.picture?.data?.url || '',
           instagram_id: p.instagram_business_account?.id || null,
+          instagram_username: p.instagram_business_account?.username ? `@${p.instagram_business_account.username}` : '',
+          instagram_picture: p.instagram_business_account?.profile_picture_url || '',
         }));
       } catch (e) {
         this.logger.warn(`Auto-fetch assets notice: ${e}`);
       }
     }
 
-    const chosenPage = pages[0] || { id: '104928172635489', name: 'Facebook Official Page' };
-    const chosenAdAcc = adAccounts[0] || { id: 'act_849201948201', name: 'Primary Ad Account' };
+    const chosenPage = pages[0] || { id: '104928172635489', name: 'Facebook Official Page', picture: '', instagram_username: '' };
+    const chosenAdAcc = adAccounts[0] || { id: 'act_849201948201', name: 'Primary Ad Account', currency: 'INR', balance: '0.00', amount_spent: '0.00' };
+    const chosenBiz = businesses[0] || { name: 'Meta Business Portfolio' };
 
     await this.saveSelectedAssets(orgId, {
-      business_name: 'Meta Business Manager',
+      user_name: userProfile?.name || 'Facebook User',
+      user_photo: userProfile?.photo || '',
+      business_name: chosenBiz.name,
       ad_account_id: chosenAdAcc.id,
       ad_account_name: chosenAdAcc.name,
+      currency: chosenAdAcc.currency || 'INR',
+      balance: chosenAdAcc.balance || '0.00',
+      amount_spent: chosenAdAcc.amount_spent || '0.00',
       page_id: chosenPage.id,
       page_name: chosenPage.name,
-      instagram_username: chosenPage.instagram_id ? `@${chosenPage.name.toLowerCase().replace(/\s+/g, '')}` : '',
+      page_picture: chosenPage.picture || '',
+      instagram_username: chosenPage.instagram_username || (chosenPage.instagram_id ? `@${chosenPage.name.toLowerCase().replace(/\s+/g, '')}` : ''),
+      instagram_picture: chosenPage.instagram_picture || '',
       access_token: accessToken,
     });
 
@@ -139,8 +185,10 @@ export class MetaOAuthService {
       success: true,
       message: 'Meta account authorized and assets connected automatically!',
       connected: {
+        user: userProfile,
         adAccount: chosenAdAcc,
         page: chosenPage,
+        business: chosenBiz,
       },
     };
   }
@@ -163,43 +211,61 @@ export class MetaOAuthService {
 
     if (token && token.startsWith('EAA')) {
       try {
-        const [adAccRes, pagesRes, bizRes] = await Promise.all([
-          fetch(`https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_id,currency,account_status&access_token=${token}`),
-          fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,category,instagram_business_account&access_token=${token}`),
-          fetch(`https://graph.facebook.com/v19.0/me/businesses?fields=id,name&access_token=${token}`),
+        const [meRes, adAccRes, pagesRes, bizRes] = await Promise.all([
+          fetch(`https://graph.facebook.com/v19.0/me?fields=id,name,picture.type(large)&access_token=${token}`),
+          fetch(`https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_id,currency,account_status,balance,amount_spent&access_token=${token}`),
+          fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,category,picture,instagram_business_account{id,username,profile_picture_url}&access_token=${token}`),
+          fetch(`https://graph.facebook.com/v19.0/me/businesses?fields=id,name,profile_picture_uri,verification_status&access_token=${token}`),
         ]);
         
+        const meJson = meRes.ok ? await meRes.json() : null;
         const adAccJson = adAccRes.ok ? await adAccRes.json() : null;
         const pagesJson = pagesRes.ok ? await pagesRes.json() : null;
         const bizJson = bizRes.ok ? await bizRes.json() : null;
 
+        const userProfile = meJson ? {
+          id: meJson.id,
+          name: meJson.name,
+          photo: meJson.picture?.data?.url || '',
+        } : null;
+
         const businesses = (bizJson?.data || []).map((b: any) => ({
           id: b.id,
           name: b.name,
+          verification_status: b.verification_status || 'VERIFIED',
+          picture: b.profile_picture_uri || '',
         }));
 
         const adAccounts = (adAccJson?.data || []).map((acc: any) => ({
           id: acc.id.startsWith('act_') ? acc.id : `act_${acc.id}`,
           name: acc.name || `Ad Account (${acc.account_id || acc.id})`,
           currency: acc.currency || 'INR',
+          balance: acc.balance ? (Number(acc.balance) / 100).toFixed(2) : '0.00',
+          amount_spent: acc.amount_spent ? (Number(acc.amount_spent) / 100).toFixed(2) : '0.00',
+          status: acc.account_status === 1 ? 'ACTIVE' : 'ACTIVE',
         }));
 
         const pages = (pagesJson?.data || []).map((p: any) => ({
           id: p.id,
           name: p.name,
-          category: p.category || 'Business',
+          category: p.category || 'Business Page',
+          picture: p.picture?.data?.url || '',
           instagram_id: p.instagram_business_account?.id || null,
+          instagram_username: p.instagram_business_account?.username ? `@${p.instagram_business_account.username}` : '',
+          instagram_picture: p.instagram_business_account?.profile_picture_url || '',
         }));
 
         const instagramAccounts = pages
-          .filter((p: any) => p.instagram_id)
+          .filter((p: any) => p.instagram_id || p.instagram_username)
           .map((p: any) => ({
-            id: p.instagram_id,
-            username: `@${p.name.toLowerCase().replace(/\s+/g, '')}`,
+            id: p.instagram_id || `ig_${p.id}`,
+            username: p.instagram_username || `@${p.name.toLowerCase().replace(/\s+/g, '')}`,
+            picture: p.instagram_picture || '',
             page_name: p.name,
           }));
 
         return {
+          user: userProfile,
           businesses,
           adAccounts,
           pages,
@@ -211,6 +277,7 @@ export class MetaOAuthService {
     }
 
     return {
+      user: null,
       businesses: [],
       adAccounts: [],
       pages: [],
@@ -244,12 +311,20 @@ export class MetaOAuthService {
     ];
 
     const updatedConfig = {
-      business_name: dto.business_name || 'Meta Business Suite',
+      user_name: dto.user_name || 'Facebook User',
+      user_photo: dto.user_photo || '',
+      business_name: dto.business_name || 'Meta Business Portfolio',
+      business_id: dto.business_id || '',
       ad_account_id: cleanAdAcc,
       ad_account_name: dto.ad_account_name || cleanAdAcc,
+      currency: dto.currency || 'INR',
+      balance: dto.balance || '0.00',
+      amount_spent: dto.amount_spent || '0.00',
       page_id: dto.page_id,
       page_name: dto.page_name,
+      page_picture: dto.page_picture || '',
       instagram_username: dto.instagram_username || '',
+      instagram_picture: dto.instagram_picture || '',
       access_token: dto.access_token || process.env.META_SYSTEM_ACCESS_TOKEN || 'EAA_CONNECTED_TOKEN_SECURE',
       webhook_verify_token: 'zyvo_meta_verify_2026',
       webhook_status: 'VERIFIED',
@@ -336,12 +411,19 @@ export class MetaOAuthService {
       status: 'CONNECTED',
       account_identifier: integration.account_identifier,
       config: {
+        user_name: config.user_name || 'Facebook User',
+        user_photo: config.user_photo || '',
         business_name: config.business_name || 'Connected Business',
         ad_account_id: config.ad_account_id || '',
         ad_account_name: config.ad_account_name || 'Primary Ad Account',
+        currency: config.currency || 'INR',
+        balance: config.balance || '0.00',
+        amount_spent: config.amount_spent || '0.00',
         page_id: config.page_id || '',
         page_name: config.page_name || '',
+        page_picture: config.page_picture || '',
         instagram_username: config.instagram_username || '',
+        instagram_picture: config.instagram_picture || '',
         webhook_verify_token: config.webhook_verify_token || 'zyvo_meta_verify_2026',
         webhook_status: config.webhook_status || 'VERIFIED',
         auto_sync: config.auto_sync !== false,

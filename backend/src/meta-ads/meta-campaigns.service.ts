@@ -24,6 +24,9 @@ export interface MetaCampaignDto {
   lead_form_id?: string;
   lead_form_name?: string;
   media_url?: string;
+  media_type?: string;
+  custom_questions?: any[];
+  form_fields?: string[];
 }
 
 @Injectable()
@@ -135,6 +138,9 @@ export class MetaCampaignsService {
       lead_form_id: dto.lead_form_id || '',
       lead_form_name: dto.lead_form_name || 'Standard 3-Question Lead Form',
       media_url: dto.media_url || '',
+      media_type: dto.media_type || 'IMAGE',
+      custom_questions: Array.isArray(dto.custom_questions) ? dto.custom_questions : [],
+      form_fields: Array.isArray(dto.form_fields) ? dto.form_fields : ['full_name', 'phone_number', 'email'],
     };
 
     // If Meta Access Token exists, post to real Meta Graph API

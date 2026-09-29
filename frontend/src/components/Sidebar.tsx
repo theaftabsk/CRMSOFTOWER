@@ -58,25 +58,26 @@ export const Sidebar: React.FC = () => {
         { id: 'deals', label: `${dealPlural} & Pipeline`, href: '/deals', icon: TrendingUp },
       ],
     },
-    {
-      title: 'MARKETING & ADS',
-      items: [
-        { 
-          id: 'meta-ads', 
-          label: 'Meta Ads Center', 
-          href: '/meta-ads', 
-          icon: Share2, 
-          badge: 'Live',
-          subItems: [
-            { id: 'meta-overview', label: 'Overview & ROI', href: '/meta-ads' },
-            { id: 'meta-campaigns', label: 'Campaigns', href: '/meta-ads/campaigns' },
-            { id: 'meta-forms', label: 'Lead Forms', href: '/meta-ads/forms' },
-            { id: 'meta-leads', label: 'Ingested Leads', href: '/meta-ads/leads' },
-            { id: 'meta-settings', label: 'Connect & Webhook', href: '/meta-ads/settings' },
-          ],
-        },
-      ],
-    },
+    // MARKETING & ADS (Hidden temporarily as requested - to be activated when Meta configuration is resumed)
+    // {
+    //   title: 'MARKETING & ADS',
+    //   items: [
+    //     { 
+    //       id: 'meta-ads', 
+    //       label: 'Meta Ads Center', 
+    //       href: '/meta-ads', 
+    //       icon: Share2, 
+    //       badge: 'Live',
+    //       subItems: [
+    //         { id: 'meta-overview', label: 'Overview & ROI', href: '/meta-ads' },
+    //         { id: 'meta-campaigns', label: 'Campaigns', href: '/meta-ads/campaigns' },
+    //         { id: 'meta-forms', label: 'Lead Forms', href: '/meta-ads/forms' },
+    //         { id: 'meta-leads', label: 'Ingested Leads', href: '/meta-ads/leads' },
+    //         { id: 'meta-settings', label: 'Connect & Webhook', href: '/meta-ads/settings' },
+    //       ],
+    //     },
+    //   ],
+    // },
     {
       title: 'ACTIVITIES',
       items: [

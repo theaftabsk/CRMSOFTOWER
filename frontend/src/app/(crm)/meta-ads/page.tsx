@@ -118,16 +118,6 @@ export default function MetaAdsOverviewPage() {
 
         <div className="flex items-center space-x-2.5">
           <button
-            onClick={handleSimulateLead}
-            disabled={isSimulatingLead}
-            className="inline-flex items-center px-3 py-1.5 rounded-lg border border-[#D4D4D4] bg-white text-xs font-semibold text-[#111111] hover:bg-[#F8F8F8] transition shadow-xs disabled:opacity-50"
-            title="Simulate incoming Facebook/Instagram Lead"
-          >
-            <Zap className={`w-3.5 h-3.5 mr-1.5 text-amber-500 ${isSimulatingLead ? 'animate-spin' : ''}`} />
-            {isSimulatingLead ? 'Ingesting...' : '⚡ Test Lead Ingest'}
-          </button>
-
-          <button
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="inline-flex items-center px-3 py-1.5 rounded-lg border border-[#E5E5E5] bg-white text-xs font-medium text-[#666666] hover:text-[#111111] hover:bg-[#F8F8F8] transition"
@@ -137,7 +127,7 @@ export default function MetaAdsOverviewPage() {
           </button>
 
           <Link
-            href="/meta-ads/campaigns"
+            href="/meta-ads/campaigns/create"
             className="inline-flex items-center px-3.5 py-1.5 rounded-lg bg-[#111111] hover:bg-[#262626] text-white text-xs font-semibold transition shadow-xs"
           >
             <Plus className="w-3.5 h-3.5 mr-1.5" />

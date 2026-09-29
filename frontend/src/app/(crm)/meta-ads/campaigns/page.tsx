@@ -111,13 +111,13 @@ export default function MetaCampaignsPage() {
             Refresh
           </button>
 
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
+          <Link
+            href="/meta-ads/campaigns/create"
             className="inline-flex items-center px-3.5 py-1.5 rounded-lg bg-[#111111] hover:bg-[#262626] text-white text-xs font-semibold transition shadow-xs"
           >
             <Plus className="w-3.5 h-3.5 mr-1.5" />
             Create Campaign
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -129,13 +129,13 @@ export default function MetaCampaignsPage() {
           <p className="text-xs text-[#666666] max-w-sm mx-auto mt-1 mb-5">
             You don&apos;t have any campaigns in this Ad Account yet. Create your first Lead Ad campaign to start streaming prospects.
           </p>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
+          <Link
+            href="/meta-ads/campaigns/create"
             className="inline-flex items-center px-4 py-2 rounded-lg bg-[#111111] text-white text-xs font-semibold hover:bg-[#262626] transition shadow-xs"
           >
             <Plus className="w-3.5 h-3.5 mr-1.5" />
             Create First Campaign
-          </button>
+          </Link>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-[#E5E5E5] overflow-hidden">

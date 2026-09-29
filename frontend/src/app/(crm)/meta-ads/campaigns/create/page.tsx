@@ -6,10 +6,55 @@ import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, ChevronRight, CheckCircle2, AlertCircle, 
   Layers, Wallet, MapPin, Users, Sparkles, Send, 
-  Eye, HelpCircle, Building2, Facebook, Phone, Mail, UserCheck
+  Eye, HelpCircle, Building2, Facebook, Phone, Mail, 
+  UserCheck, Image as ImageIcon, Video, Upload, X, 
+  MessageCircle, Target, Compass, Play, Plus
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';
+
+// Stock industry templates for instant preview
+const SAMPLE_TEMPLATES = [
+  {
+    label: 'Real Estate / Property',
+    media_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
+    media_type: 'IMAGE',
+    headline: 'Luxury 3BHK Homes in Kolkata @ ₹45L',
+    caption: 'Experience world-class living with zero brokerage, rooftop swimming pool, gym, and 24x7 security. Schedule a private site visit today!',
+  },
+  {
+    label: 'Education / Coaching',
+    media_url: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1000&q=80',
+    media_type: 'IMAGE',
+    headline: 'Admissions Open 2026 | 100% Placement Support',
+    caption: 'Enroll in premier industry-certified training programs with real-world live projects and expert mentoring. Enquire now for scholarship!',
+  },
+  {
+    label: 'Corporate SaaS / Tech',
+    media_url: 'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1000&q=80',
+    media_type: 'IMAGE',
+    headline: 'Automate Sales & Marketing with Zyvo CRM',
+    caption: 'Capture Facebook leads instantly, sync calls, and boost sales pipeline revenue by 3x. Start your 14-day free trial today.',
+  },
+  {
+    label: 'Clinic / Healthcare',
+    media_url: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1000&q=80',
+    media_type: 'IMAGE',
+    headline: 'Consult Top Specialists | Online & In-Clinic',
+    caption: 'Advanced diagnostic care with renowned doctors. Book your consultation slot today and receive comprehensive health guidance.',
+  },
+];
+
+const PRESET_INTERESTS = [
+  '🏠 Real Estate & Property Buyers',
+  '💼 Business Owners & SMBs',
+  '🎓 Higher Education & Courses',
+  '💻 Software & Tech Professionals',
+  '🚗 Automobile & Luxury Cars',
+  '🩺 Healthcare & Medical',
+  '🛍️ Online Shopping & Fashion',
+  '✈️ Travel & Luxury Holidays',
+];
 
 export default function CreateMetaCampaignPage() {
   const router = useRouter();
@@ -34,6 +79,15 @@ export default function CreateMetaCampaignPage() {
 
   const [leadForms, setLeadForms] = useState<any[]>([]);
 
+  // Locations array
+  const [locations, setLocations] = useState<string[]>(['Kolkata', 'Howrah']);
+  const [newLocationInput, setNewLocationInput] = useState('');
+
+  // Interests array
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([
+    '🏠 Real Estate & Property Buyers',
+  ]);
+
   // Form State
   const [formData, setFormData] = useState({
     // Step 1: Campaign Identity & Accounts
@@ -49,12 +103,14 @@ export default function CreateMetaCampaignPage() {
 
     // Step 2: Budget & Audience
     daily_budget: 500,
-    target_location: 'Kolkata, West Bengal',
     target_age_min: 22,
     target_age_max: 55,
     target_gender: 'ALL',
 
-    // Step 3: Creative & Lead Form
+    // Step 3: Creative & Media
+    media_type: 'IMAGE' as 'IMAGE' | 'VIDEO',
+    media_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
+    media_file_name: '',
     headline: 'Book Luxury 3BHK Flat in Kolkata @ ₹45L',
     primary_text: 'Discover premium lifestyle residences with modern amenities, round-the-clock security, and prime connectivity. Book a private site visit today!',
     call_to_action: 'APPLY_NOW',
@@ -109,12 +165,72 @@ export default function CreateMetaCampaignPage() {
   }, []);
 
   // Budget calculations
-  const calculateEstimatedLeads = (budget: number) => {
+  const calculateEstimatedMetrics = (budget: number) => {
+    const minReach = Math.floor(budget * 25);
+    const maxReach = Math.floor(budget * 65);
     const minLeads = Math.max(2, Math.floor(budget / 35));
     const maxLeads = Math.max(5, Math.floor(budget / 18));
-    return `${minLeads} - ${maxLeads}`;
+    const cplMin = Math.round(budget / maxLeads);
+    const cplMax = Math.round(budget / minLeads);
+    return {
+      reach: `${minReach.toLocaleString('en-IN')} - ${maxReach.toLocaleString('en-IN')}`,
+      leads: `${minLeads} - ${maxLeads}`,
+      cpl: `₹${cplMin} - ₹${cplMax}`,
+    };
   };
 
+  const metrics = calculateEstimatedMetrics(formData.daily_budget);
+
+  // Handle Location addition
+  const handleAddLocation = (loc: string) => {
+    const clean = loc.trim();
+    if (clean && !locations.includes(clean)) {
+      setLocations([...locations, clean]);
+    }
+    setNewLocationInput('');
+  };
+
+  const handleRemoveLocation = (locToRemove: string) => {
+    setLocations(locations.filter((l) => l !== locToRemove));
+  };
+
+  // Handle Interest toggle
+  const handleToggleInterest = (item: string) => {
+    if (selectedInterests.includes(item)) {
+      setSelectedInterests(selectedInterests.filter((i) => i !== item));
+    } else {
+      setSelectedInterests([...selectedInterests, item]);
+    }
+  };
+
+  // Handle File Upload for Image / Video
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const objectUrl = URL.createObjectURL(file);
+    const isVideo = file.type.startsWith('video');
+
+    setFormData((prev) => ({
+      ...prev,
+      media_type: isVideo ? 'VIDEO' : 'IMAGE',
+      media_url: objectUrl,
+      media_file_name: file.name,
+    }));
+  };
+
+  // Apply template
+  const handleApplyTemplate = (tmpl: typeof SAMPLE_TEMPLATES[0]) => {
+    setFormData((prev) => ({
+      ...prev,
+      media_url: tmpl.media_url,
+      media_type: tmpl.media_type as any,
+      headline: tmpl.headline,
+      primary_text: tmpl.caption,
+    }));
+  };
+
+  // Launch campaign
   const handleLaunchCampaign = async () => {
     if (!formData.name.trim()) {
       setErrorMessage('Please provide a campaign name.');
@@ -127,10 +243,11 @@ export default function CreateMetaCampaignPage() {
         name: formData.name,
         objective: formData.objective,
         daily_budget: formData.daily_budget,
-        target_location: formData.target_location,
+        target_location: locations.join(', ') || 'All India',
         target_age_min: formData.target_age_min,
         target_age_max: formData.target_age_max,
         target_gender: formData.target_gender,
+        target_interests: selectedInterests,
         page_id: formData.page_id,
         page_name: formData.page_name,
         page_picture: formData.page_picture,
@@ -141,6 +258,8 @@ export default function CreateMetaCampaignPage() {
         call_to_action: formData.call_to_action,
         lead_form_id: formData.lead_form_id,
         lead_form_name: formData.lead_form_name,
+        media_url: formData.media_url,
+        media_type: formData.media_type,
       };
 
       const result = await api.createMetaCampaign(payload);
@@ -159,8 +278,21 @@ export default function CreateMetaCampaignPage() {
     }
   };
 
+  const getCtaLabel = (key: string) => {
+    switch (key) {
+      case 'APPLY_NOW': return 'Apply Now';
+      case 'BOOK_NOW': return 'Book Now';
+      case 'CONTACT_US': return 'Contact Us';
+      case 'GET_QUOTE': return 'Get Quote';
+      case 'LEARN_MORE': return 'Learn More';
+      case 'SIGN_UP': return 'Sign Up';
+      case 'WHATSAPP_MESSAGE': return 'Chat on WhatsApp';
+      default: return 'Apply Now';
+    }
+  };
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20">
+    <div className="max-w-7xl mx-auto space-y-6 pb-24">
       {/* Top Navigation & Title */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E5E5E5] pb-5">
         <div>
@@ -180,7 +312,7 @@ export default function CreateMetaCampaignPage() {
             </span>
           </div>
           <p className="text-xs text-[#666666] mt-1">
-            Launch Facebook & Instagram Lead Ads with 1-click forms directly into Zyvo CRM.
+            Launch targeted Facebook & Instagram ads with photos/videos, multi-city targeting, and instant CRM lead sync.
           </p>
         </div>
 
@@ -243,9 +375,9 @@ export default function CreateMetaCampaignPage() {
         </button>
       </div>
 
-      {/* Main Grid: Wizard Form on Left, Live Ad Preview on Right */}
+      {/* Main Grid: Wizard Form on Left (7 cols), Live Ad Preview on Right (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Form Body (7 cols) */}
+        {/* Left Form Body */}
         <div className="lg:col-span-7 bg-white rounded-xl border border-[#E5E5E5] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-6">
           {errorMessage && (
             <div className="flex items-center space-x-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 p-3 rounded-lg">
@@ -293,7 +425,7 @@ export default function CreateMetaCampaignPage() {
                     </div>
                     <div>
                       <div className="text-xs font-bold text-[#111111]">Generate High-Intent Leads</div>
-                      <div className="text-[11px] text-[#666666]">Optimized for Instant Forms on Facebook & Instagram</div>
+                      <div className="text-[11px] text-[#666666]">Optimized for Instant Lead Forms on Facebook & Instagram</div>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
@@ -398,21 +530,21 @@ export default function CreateMetaCampaignPage() {
               <div>
                 <h2 className="text-base font-bold text-[#111111]">2. Target Audience & Daily Budget</h2>
                 <p className="text-xs text-[#666666] mt-0.5">
-                  Set how much you wish to spend each day and specify the geographic reach and demographics.
+                  Set daily budget, multi-city target locations, demographics, and interest categories.
                 </p>
               </div>
 
-              {/* Daily Budget Selector */}
+              {/* Daily Budget Selector with Live Forecast */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-[#111111]">Daily Budget (INR)</label>
                   <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    Est. {calculateEstimatedLeads(formData.daily_budget)} Leads / day
+                    Est. {metrics.leads} Leads / day
                   </span>
                 </div>
 
                 <div className="grid grid-cols-4 gap-2">
-                  {[300, 500, 1000, 2000].map((amt) => (
+                  {[300, 500, 1000, 2500].map((amt) => (
                     <button
                       key={amt}
                       type="button"
@@ -432,38 +564,98 @@ export default function CreateMetaCampaignPage() {
                   <input
                     type="number"
                     min="100"
-                    step="50"
+                    step="100"
                     value={formData.daily_budget}
                     onChange={(e) => setFormData({ ...formData, daily_budget: Number(e.target.value) || 100 })}
                     className="w-full px-3.5 py-2 text-xs font-mono font-semibold rounded-lg border border-[#D4D4D4] focus:outline-none focus:border-[#111111] bg-white transition"
-                    placeholder="Or enter custom daily budget"
+                    placeholder="Enter custom daily budget (e.g. 5000)"
                   />
+                </div>
+
+                {/* Realtime Reach Metrics Banner */}
+                <div className="grid grid-cols-3 gap-2 p-3 bg-[#FAFAFA] rounded-lg border border-[#E5E5E5] text-center mt-2">
+                  <div>
+                    <div className="text-[10px] text-[#666666]">Estimated Daily Reach</div>
+                    <div className="text-xs font-mono font-bold text-[#111111] mt-0.5">{metrics.reach}</div>
+                  </div>
+                  <div className="border-x border-[#E5E5E5]">
+                    <div className="text-[10px] text-[#666666]">Estimated Leads</div>
+                    <div className="text-xs font-mono font-bold text-emerald-600 mt-0.5">{metrics.leads}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-[#666666]">Estimated CPL</div>
+                    <div className="text-xs font-mono font-bold text-[#111111] mt-0.5">{metrics.cpl}</div>
+                  </div>
                 </div>
               </div>
 
-              {/* Target Location */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#111111] flex items-center">
-                  <MapPin className="w-3.5 h-3.5 mr-1" />
-                  Target Location (City / State / Country)
-                </label>
-                <input
-                  type="text"
-                  value={formData.target_location}
-                  onChange={(e) => setFormData({ ...formData, target_location: e.target.value })}
-                  placeholder="e.g. Kolkata, West Bengal or All India"
-                  className="w-full px-3.5 py-2 text-xs rounded-lg border border-[#D4D4D4] focus:outline-none focus:border-[#111111] bg-white transition"
-                />
-                {/* Location Quick Presets */}
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {['Kolkata, West Bengal', 'West Bengal', 'Delhi NCR', 'Mumbai, Maharashtra', 'All India'].map((loc) => (
-                    <button
+              {/* Multi-Location Targeting */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[#111111] flex items-center">
+                    <MapPin className="w-3.5 h-3.5 mr-1" />
+                    Target Locations ({locations.length} Selected)
+                  </label>
+                  <span className="text-[10px] text-[#666666]">Add multiple cities or states</span>
+                </div>
+
+                {/* Selected Location Chips */}
+                <div className="flex flex-wrap gap-1.5 p-2 rounded-lg border border-[#E5E5E5] bg-[#FAFAFA] min-h-[42px] items-center">
+                  {locations.map((loc) => (
+                    <span 
                       key={loc}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, target_location: loc })}
-                      className="text-[10px] px-2 py-0.5 rounded border border-[#E5E5E5] bg-[#F8F8F8] text-[#666666] hover:text-[#111111] hover:border-[#111111] transition"
+                      className="inline-flex items-center text-xs font-medium bg-white text-[#111111] px-2.5 py-1 rounded-md border border-[#D4D4D4] shadow-2xs"
                     >
-                      + {loc}
+                      <span>{loc}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLocation(loc)}
+                        className="ml-1.5 p-0.5 hover:bg-[#F0F0F0] rounded text-[#666666] hover:text-rose-600 transition"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                  <div className="flex items-center space-x-1 flex-1 min-w-[140px]">
+                    <input
+                      type="text"
+                      value={newLocationInput}
+                      onChange={(e) => setNewLocationInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddLocation(newLocationInput);
+                        }
+                      }}
+                      placeholder="+ Type city and press Enter"
+                      className="w-full text-xs bg-transparent focus:outline-none px-1.5 py-0.5 text-[#111111]"
+                    />
+                    {newLocationInput && (
+                      <button
+                        type="button"
+                        onClick={() => handleAddLocation(newLocationInput)}
+                        className="text-[11px] font-semibold text-[#111111] px-2 py-0.5 rounded bg-[#E5E5E5] hover:bg-[#D4D4D4]"
+                      >
+                        Add
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Popular City Quick Add Chips */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {['Kolkata', 'Howrah', 'Durgapur', 'Siliguri', 'Delhi NCR', 'Mumbai', 'Bangalore', 'All India'].map((city) => (
+                    <button
+                      key={city}
+                      type="button"
+                      onClick={() => handleAddLocation(city)}
+                      className={`text-[10px] px-2 py-0.5 rounded border transition ${
+                        locations.includes(city)
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                          : 'border-[#E5E5E5] bg-[#F8F8F8] text-[#666666] hover:text-[#111111]'
+                      }`}
+                    >
+                      {locations.includes(city) ? '✓ ' : '+ '}{city}
                     </button>
                   ))}
                 </div>
@@ -524,6 +716,33 @@ export default function CreateMetaCampaignPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Detailed Targeting / Interests */}
+              <div className="space-y-1.5 pt-2 border-t border-[#E5E5E5]">
+                <label className="text-xs font-semibold text-[#111111] flex items-center">
+                  <Target className="w-3.5 h-3.5 mr-1" />
+                  Detailed Audience Interests
+                </label>
+                <p className="text-[11px] text-[#666666]">
+                  Select the customer profiles you wish to target on Meta algorithms:
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {PRESET_INTERESTS.map((interest) => (
+                    <button
+                      key={interest}
+                      type="button"
+                      onClick={() => handleToggleInterest(interest)}
+                      className={`text-xs px-2.5 py-1.5 rounded-lg border transition flex items-center ${
+                        selectedInterests.includes(interest)
+                          ? 'border-[#111111] bg-[#111111] text-white shadow-xs'
+                          : 'border-[#E5E5E5] bg-white text-[#666666] hover:border-[#111111] hover:text-[#111111]'
+                      }`}
+                    >
+                      {interest}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -533,8 +752,104 @@ export default function CreateMetaCampaignPage() {
               <div>
                 <h2 className="text-base font-bold text-[#111111]">3. Ad Creative & Instant Lead Form</h2>
                 <p className="text-xs text-[#666666] mt-0.5">
-                  Compose the ad caption, headline, call-to-action button, and configure the lead capture form.
+                  Upload an image or video, write your copy, choose a CTA button, and select the lead capture form.
                 </p>
+              </div>
+
+              {/* Industry Quick Templates */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#111111] flex items-center">
+                  <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-500" />
+                  Or Pick a 1-Click Industry Creative Template:
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {SAMPLE_TEMPLATES.map((tmpl) => (
+                    <button
+                      key={tmpl.label}
+                      type="button"
+                      onClick={() => handleApplyTemplate(tmpl)}
+                      className="p-2 rounded-lg border border-[#E5E5E5] hover:border-[#111111] bg-[#FAFAFA] hover:bg-white text-left transition group"
+                    >
+                      <div className="text-[11px] font-semibold text-[#111111] group-hover:underline truncate">
+                        {tmpl.label}
+                      </div>
+                      <div className="text-[10px] text-[#666666] truncate mt-0.5">
+                        High Converting
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Media Type Toggle: Image vs Video */}
+              <div className="space-y-2 pt-2 border-t border-[#E5E5E5]">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[#111111]">Ad Media Format</label>
+                  <span className="text-[11px] text-[#666666]">
+                    Supported: JPG, PNG, MP4, WebM
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, media_type: 'IMAGE' })}
+                    className={`py-2.5 px-4 rounded-lg border text-xs font-semibold flex items-center justify-center space-x-2 transition ${
+                      formData.media_type === 'IMAGE'
+                        ? 'border-[#111111] bg-[#111111] text-white shadow-xs'
+                        : 'border-[#E5E5E5] bg-white text-[#666666] hover:bg-[#F8F8F8] hover:text-[#111111]'
+                    }`}
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                    <span>Single Image / Photo Ad</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, media_type: 'VIDEO' })}
+                    className={`py-2.5 px-4 rounded-lg border text-xs font-semibold flex items-center justify-center space-x-2 transition ${
+                      formData.media_type === 'VIDEO'
+                        ? 'border-[#111111] bg-[#111111] text-white shadow-xs'
+                        : 'border-[#E5E5E5] bg-white text-[#666666] hover:bg-[#F8F8F8] hover:text-[#111111]'
+                    }`}
+                  >
+                    <Video className="w-4 h-4" />
+                    <span>Video / Reel Ad</span>
+                  </button>
+                </div>
+
+                {/* Upload or Direct URL */}
+                <div className="p-3.5 rounded-lg border border-dashed border-[#D4D4D4] bg-[#FAFAFA] flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center space-x-2.5 text-xs text-[#666666]">
+                    <Upload className="w-4 h-4 text-[#111111]" />
+                    <span>
+                      {formData.media_file_name 
+                        ? `Selected: ${formData.media_file_name}` 
+                        : `Upload ${formData.media_type === 'VIDEO' ? 'video (.mp4)' : 'image (.jpg, .png)'} from computer`}
+                    </span>
+                  </div>
+                  <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-[#111111] text-white text-xs font-semibold hover:bg-[#262626] transition shadow-xs">
+                    Choose Local File
+                    <input
+                      type="file"
+                      accept={formData.media_type === 'VIDEO' ? 'video/mp4,video/webm' : 'image/*'}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* Or paste online media URL */}
+                <div className="space-y-1">
+                  <div className="text-[11px] text-[#666666]">Or Paste Direct Web URL:</div>
+                  <input
+                    type="text"
+                    value={formData.media_url}
+                    onChange={(e) => setFormData({ ...formData, media_url: e.target.value })}
+                    placeholder="https://example.com/ad-creative.jpg"
+                    className="w-full px-3.5 py-1.5 text-xs font-mono rounded-lg border border-[#D4D4D4] focus:outline-none focus:border-[#111111] bg-white transition"
+                  />
+                </div>
               </div>
 
               {/* Primary Text / Ad Caption */}
@@ -561,20 +876,33 @@ export default function CreateMetaCampaignPage() {
                 />
               </div>
 
-              {/* Call To Action */}
+              {/* Call To Action Buttons */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#111111]">Call To Action Button</label>
-                <select
-                  value={formData.call_to_action}
-                  onChange={(e) => setFormData({ ...formData, call_to_action: e.target.value })}
-                  className="w-full px-3.5 py-2 text-xs rounded-lg border border-[#D4D4D4] focus:outline-none focus:border-[#111111] bg-white transition"
-                >
-                  <option value="APPLY_NOW">Apply Now</option>
-                  <option value="LEARN_MORE">Learn More</option>
-                  <option value="GET_QUOTE">Get Quote</option>
-                  <option value="SIGN_UP">Sign Up</option>
-                  <option value="CONTACT_US">Contact Us</option>
-                </select>
+                <label className="text-xs font-semibold text-[#111111]">Call To Action (CTA) Button</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { key: 'APPLY_NOW', label: 'Apply Now' },
+                    { key: 'BOOK_NOW', label: 'Book Now' },
+                    { key: 'CONTACT_US', label: 'Contact Us' },
+                    { key: 'GET_QUOTE', label: 'Get Quote' },
+                    { key: 'LEARN_MORE', label: 'Learn More' },
+                    { key: 'SIGN_UP', label: 'Sign Up' },
+                    { key: 'WHATSAPP_MESSAGE', label: 'WhatsApp' },
+                  ].map((cta) => (
+                    <button
+                      key={cta.key}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, call_to_action: cta.key })}
+                      className={`py-2 px-2.5 rounded-lg border text-xs font-semibold transition text-center truncate ${
+                        formData.call_to_action === cta.key
+                          ? 'border-[#111111] bg-[#111111] text-white shadow-xs'
+                          : 'border-[#E5E5E5] bg-white text-[#666666] hover:bg-[#F8F8F8] hover:text-[#111111]'
+                      }`}
+                    >
+                      {cta.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Instant Lead Form Selection */}
@@ -590,14 +918,14 @@ export default function CreateMetaCampaignPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-[#111111] flex items-center">
                       <UserCheck className="w-4 h-4 mr-1.5 text-emerald-600" />
-                      Standard 3-Question Lead Form
+                      Standard 3-Question Instant Lead Form
                     </span>
                     <span className="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">
                       Recommended
                     </span>
                   </div>
                   <p className="text-[11px] text-[#666666]">
-                    Automatically collects prospective buyer&apos;s verified Facebook profile details:
+                    Automatically collects prospective customer&apos;s verified Facebook profile details directly into Zyvo CRM:
                   </p>
                   <div className="grid grid-cols-3 gap-2 text-[11px] text-[#111111] font-medium">
                     <div className="p-2 rounded bg-white border border-[#E5E5E5] flex items-center space-x-1.5">
@@ -711,22 +1039,40 @@ export default function CreateMetaCampaignPage() {
               {formData.primary_text || 'Your primary ad copy will appear here...'}
             </div>
 
-            {/* Ad Banner Preview */}
-            <div className="aspect-video bg-gradient-to-br from-zinc-100 to-zinc-200 border-y border-[#E5E5E5] flex flex-col items-center justify-center p-6 text-center">
-              <Building2 className="w-10 h-10 text-[#666666] mb-2" />
-              <div className="text-xs font-bold text-[#111111]">
-                {formData.name}
-              </div>
-              <div className="text-[11px] text-[#666666] mt-0.5">
-                Instant Lead Generation Campaign
-              </div>
+            {/* Real Image or Video Ad Banner Preview */}
+            <div className="aspect-video bg-zinc-900 border-y border-[#E5E5E5] relative overflow-hidden flex items-center justify-center">
+              {formData.media_url ? (
+                formData.media_type === 'VIDEO' ? (
+                  <video 
+                    src={formData.media_url} 
+                    controls 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img 
+                    src={formData.media_url} 
+                    alt="Ad Creative" 
+                    className="w-full h-full object-cover"
+                  />
+                )
+              ) : (
+                <div className="flex flex-col items-center justify-center p-6 text-center text-zinc-400">
+                  <Building2 className="w-10 h-10 mb-2 opacity-50" />
+                  <div className="text-xs font-bold text-zinc-200">
+                    {formData.name}
+                  </div>
+                  <div className="text-[11px] text-zinc-400 mt-0.5">
+                    Instant Lead Generation Ad
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Ad Action Footer */}
             <div className="p-3.5 bg-[#FAFAFA] flex items-center justify-between">
               <div className="truncate pr-2">
-                <div className="text-[10px] uppercase font-mono tracking-wider text-[#666666]">
-                  {formData.target_location}
+                <div className="text-[10px] uppercase font-mono tracking-wider text-[#666666] truncate">
+                  {locations.join(', ') || 'Target Geo'}
                 </div>
                 <div className="text-xs font-bold text-[#111111] truncate mt-0.5">
                   {formData.headline || 'Headline goes here'}
@@ -734,9 +1080,16 @@ export default function CreateMetaCampaignPage() {
               </div>
               <button
                 type="button"
-                className="shrink-0 px-3.5 py-1.5 rounded-lg bg-[#111111] text-white text-xs font-semibold shadow-xs"
+                className={`shrink-0 px-3.5 py-1.5 rounded-lg text-white text-xs font-semibold shadow-xs flex items-center space-x-1.5 ${
+                  formData.call_to_action === 'WHATSAPP_MESSAGE'
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-[#111111] hover:bg-[#262626]'
+                }`}
               >
-                {formData.call_to_action.replace('_', ' ')}
+                {formData.call_to_action === 'WHATSAPP_MESSAGE' && (
+                  <MessageCircle className="w-3.5 h-3.5" />
+                )}
+                <span>{getCtaLabel(formData.call_to_action)}</span>
               </button>
             </div>
           </div>
@@ -758,16 +1111,28 @@ export default function CreateMetaCampaignPage() {
               </span>
             </div>
             <div className="flex justify-between text-[#666666]">
-              <span>Target Geo:</span>
-              <span className="font-medium text-[#111111] truncate max-w-[160px]">{formData.target_location}</span>
+              <span>Target Locations:</span>
+              <span className="font-medium text-[#111111] truncate max-w-[170px]" title={locations.join(', ')}>
+                {locations.join(', ')}
+              </span>
             </div>
             <div className="flex justify-between text-[#666666]">
-              <span>Target Age:</span>
-              <span className="font-mono text-[#111111]">{formData.target_age_min} - {formData.target_age_max} Yrs</span>
+              <span>Age & Gender:</span>
+              <span className="font-mono text-[#111111]">{formData.target_age_min} - {formData.target_age_max} Yrs ({formData.target_gender})</span>
             </div>
             <div className="flex justify-between text-[#666666]">
-              <span>Lead Capture:</span>
-              <span className="text-emerald-700 font-medium">Instant Ingestion to CRM</span>
+              <span>Format:</span>
+              <span className="font-medium text-[#111111]">
+                {formData.media_type === 'VIDEO' ? '🎥 Video Ad' : '🖼️ Image Ad'}
+              </span>
+            </div>
+            <div className="flex justify-between text-[#666666]">
+              <span>Button (CTA):</span>
+              <span className="font-semibold text-[#111111]">{getCtaLabel(formData.call_to_action)}</span>
+            </div>
+            <div className="flex justify-between text-[#666666]">
+              <span>Lead Sync:</span>
+              <span className="text-emerald-700 font-semibold">Instant to Zyvo CRM</span>
             </div>
           </div>
         </div>
